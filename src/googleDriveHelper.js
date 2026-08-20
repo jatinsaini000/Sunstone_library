@@ -3,8 +3,10 @@
  * Automatically converts normal Google Drive share links into embeddable PDF preview URLs.
  */
 
+export const PRAYAS_DRIVE_FOLDER_URL = "https://drive.google.com/drive/folders/1s8UCx6D1NtNLPmsOhie0mrKwsBdZhyGl";
+
 /**
- * Converts any Google Drive share link into a direct PDF preview URL suitable for the reader.
+ * Converts any Google Drive share link into a direct PDF preview URL suitable for the reader iframe.
  * @param {string} url - Google Drive share link (e.g. https://drive.google.com/file/d/1A2B3C.../view?usp=sharing)
  * @returns {string} Converted embeddable preview URL or original URL
  */
@@ -12,7 +14,9 @@ export function convertGoogleDriveUrl(url) {
   if (!url || typeof url !== 'string') return url;
 
   // Extract File ID from standard Google Drive URLs
-  const fileIdMatch = url.match(/\/file\/d\/([a-zA-Z0-9_-]+)/) || url.match(/[?&]id=([a-zA-Z0-9_-]+)/);
+  const fileIdMatch = url.match(/\/file\/d\/([a-zA-Z0-9_-]+)/) ||
+                      url.match(/[?&]id=([a-zA-Z0-9_-]+)/) ||
+                      url.match(/\/d\/([a-zA-Z0-9_-]+)/);
 
   if (fileIdMatch && fileIdMatch[1]) {
     const fileId = fileIdMatch[1];
@@ -30,7 +34,9 @@ export function convertGoogleDriveUrl(url) {
 export function convertGoogleDriveImageUrl(url) {
   if (!url || typeof url !== 'string') return url;
 
-  const fileIdMatch = url.match(/\/file\/d\/([a-zA-Z0-9_-]+)/) || url.match(/[?&]id=([a-zA-Z0-9_-]+)/);
+  const fileIdMatch = url.match(/\/file\/d\/([a-zA-Z0-9_-]+)/) ||
+                      url.match(/[?&]id=([a-zA-Z0-9_-]+)/) ||
+                      url.match(/\/d\/([a-zA-Z0-9_-]+)/);
 
   if (fileIdMatch && fileIdMatch[1]) {
     const fileId = fileIdMatch[1];
@@ -39,3 +45,9 @@ export function convertGoogleDriveImageUrl(url) {
 
   return url;
 }
+
+export default {
+  PRAYAS_DRIVE_FOLDER_URL,
+  convertGoogleDriveUrl,
+  convertGoogleDriveImageUrl
+};

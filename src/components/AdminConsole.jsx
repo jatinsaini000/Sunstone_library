@@ -1,6 +1,6 @@
 import React, { useState } from 'react';
-import { ShieldCheck, Lock, Upload, Link as LinkIcon, Plus, CheckCircle, XCircle, MessageSquare, Users, BookOpen, Trash2, Search, Mail, Send, AlertTriangle, HardDrive } from 'lucide-react';
-import { convertGoogleDriveUrl, convertGoogleDriveImageUrl } from '../googleDriveHelper.js';
+import { ShieldCheck, Lock, Upload, Link as LinkIcon, Plus, CheckCircle, XCircle, MessageSquare, Users, BookOpen, Trash2, Search, Mail, Send, AlertTriangle, HardDrive, ExternalLink } from 'lucide-react';
+import { convertGoogleDriveUrl, convertGoogleDriveImageUrl, PRAYAS_DRIVE_FOLDER_URL } from '../googleDriveHelper.js';
 
 export default function AdminConsole({
   user,
@@ -398,8 +398,63 @@ export default function AdminConsole({
         <div style={{ background: 'var(--sunstone-card-bg)', border: '1px solid var(--sunstone-border)', borderRadius: 'var(--radius-lg)', padding: '28px', boxShadow: 'var(--shadow-card)' }}>
           <h3 style={{ fontSize: '18px', fontWeight: '800', marginBottom: '6px', color: 'var(--sunstone-text-primary)' }}>Upload & Publish New Book Daily</h3>
           <p style={{ color: 'var(--sunstone-text-secondary)', fontSize: '13px', marginBottom: '20px' }}>
-            Add new academic textbooks, lab manuals, or journals. Choose between uploading a PDF file from your computer OR providing an external URL link.
+            Add new academic textbooks, lab manuals, or journals. Upload PDF files directly or link files from your designated Google Drive repository folder.
           </p>
+
+          {/* Google Drive Repository Box */}
+          <div style={{
+            background: 'linear-gradient(135deg, rgba(37, 99, 235, 0.08), rgba(255, 77, 90, 0.08))',
+            border: '1px solid rgba(37, 99, 235, 0.3)',
+            borderRadius: '12px',
+            padding: '16px 20px',
+            marginBottom: '24px',
+            display: 'flex',
+            alignItems: 'center',
+            justifyContent: 'space-between',
+            gap: '16px',
+            flexWrap: 'wrap'
+          }}>
+            <div style={{ display: 'flex', alignItems: 'center', gap: '14px' }}>
+              <div style={{
+                width: '42px',
+                height: '42px',
+                borderRadius: '10px',
+                background: '#2563eb',
+                color: '#ffffff',
+                display: 'flex',
+                alignItems: 'center',
+                justifyContent: 'center',
+                flexShrink: 0
+              }}>
+                <HardDrive size={22} />
+              </div>
+              <div>
+                <h4 style={{ fontSize: '14px', fontWeight: '800', color: 'var(--sunstone-text-primary)', marginBottom: '3px' }}>
+                  Official Sunstone Prayas Lab Google Drive Repository
+                </h4>
+                <p style={{ fontSize: '12px', color: 'var(--sunstone-text-secondary)', margin: 0 }}>
+                  Upload textbooks and cover images to your Google Drive folder, copy their share link, and paste below.
+                </p>
+              </div>
+            </div>
+            <a
+              href={PRAYAS_DRIVE_FOLDER_URL}
+              target="_blank"
+              rel="noopener noreferrer"
+              className="btn-primary"
+              style={{
+                padding: '8px 16px',
+                fontSize: '12px',
+                background: '#2563eb',
+                textDecoration: 'none',
+                display: 'inline-flex',
+                alignItems: 'center',
+                gap: '6px'
+              }}
+            >
+              <ExternalLink size={14} /> Open Drive Folder ↗
+            </a>
+          </div>
 
           {uploadSuccessMsg && (
             <div style={{ background: 'rgba(16, 185, 129, 0.1)', border: '1px solid rgba(16, 185, 129, 0.3)', color: '#059669', padding: '12px', borderRadius: '8px', fontSize: '14px', marginBottom: '20px', fontWeight: '700' }}>

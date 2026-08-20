@@ -44,14 +44,34 @@ export default function App() {
   const [searchQuery, setSearchQuery] = useState('');
   const [toastMessage, setToastMessage] = useState(null);
 
-  // Active student user session
-  const [user, setUser] = useState({
-    id: 'usr_student1',
-    name: 'Jatin',
-    email: 'jatin@sunstone.in',
-    role: 'student',
-    program: 'B.Tech CS'
+  // Active user session (persisted in localStorage or null for guest visitors)
+  const [user, setUser] = useState(() => {
+    try {
+      const savedUser = localStorage.getItem('sunstone_user');
+      return savedUser ? JSON.parse(savedUser) : null;
+    } catch (e) {
+      return null;
+    }
   });
+
+  const handleSetUser = (userData) => {
+    if (userData) {
+      try {
+        localStorage.setItem('sunstone_user', JSON.stringify(userData));
+      } catch (e) {}
+      setUser(userData);
+    } else {
+      try {
+        localStorage.removeItem('sunstone_user');
+      } catch (e) {}
+      setUser(null);
+    }
+  };
+
+  const handleLogout = () => {
+    handleSetUser(null);
+    setCurrentView('catalog');
+  };
 
   // Catalog Books State with immediate starter catalog
   const [books, setBooks] = useState(initialBooks);
@@ -367,10 +387,7 @@ export default function App() {
         theme={theme}
         setTheme={setTheme}
         onOpenAuth={() => setShowAuthModal(true)}
-        onLogout={() => {
-          setUser(null);
-          setCurrentView('catalog');
-        }}
+        onLogout={handleLogout}
         setProfileSubTab={setProfileSubTab}
       />
 
@@ -381,10 +398,7 @@ export default function App() {
           searchQuery={searchQuery}
           setSearchQuery={setSearchQuery}
           onOpenAuth={() => setShowAuthModal(true)}
-          onLogout={() => {
-            setUser(null);
-            setCurrentView('catalog');
-          }}
+          onLogout={handleLogout}
           currentView={currentView}
           setCurrentView={setCurrentView}
         />
@@ -583,7 +597,7 @@ export default function App() {
           <main style={{ padding: '0 32px 60px' }}>
             <AdminConsole
               user={user}
-              onAdminLogin={(adminUser) => setUser(adminUser)}
+              onAdminLogin={(adminUser) => handleSetUser(adminUser)}
               allBooks={books}
               onUploadBook={handleUploadBook}
               onDeleteBook={handleDeleteBook}
@@ -601,15 +615,15 @@ export default function App() {
         <AuthModal
           onClose={() => setShowAuthModal(false)}
           onLoginSuccess={(usr) => {
-            setUser(usr);
+            handleSetUser(usr);
             setShowAuthModal(false);
           }}
           onRegisterSuccess={(usr) => {
-            setUser(usr);
+            handleSetUser(usr);
             setShowAuthModal(false);
           }}
           onAdminLoginSuccess={(adminUsr) => {
-            setUser(adminUsr);
+            handleSetUser(adminUsr);
             setCurrentView('admin');
             setShowAuthModal(false);
           }}
