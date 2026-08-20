@@ -1,13 +1,15 @@
 import React from 'react';
-import { BookOpen, Zap, Bookmark, Star, Send } from 'lucide-react';
+import { BookOpen, Zap, Bookmark, Star, Send, FileText, Lock, Unlock } from 'lucide-react';
 
 export default function BookCard({
   book,
   onOpenReader,
+  onOpenSnippets,
   onOpenQuickSummary,
   onOpenBorrowModal,
   isSaved,
-  onToggleSave
+  onToggleSave,
+  isBorrowed = false
 }) {
   return (
     <div className="netflix-card" style={{ width: '250px', flex: '0 0 250px' }}>
@@ -22,6 +24,27 @@ export default function BookCard({
           }}
         />
         <div className="poster-badge">{book.program}</div>
+
+        {/* Borrow Status Badge */}
+        <div
+          style={{
+            position: 'absolute',
+            top: '8px',
+            right: '8px',
+            background: isBorrowed ? '#10b981' : 'rgba(15, 23, 42, 0.85)',
+            color: '#ffffff',
+            fontSize: '10px',
+            fontWeight: '700',
+            padding: '3px 8px',
+            borderRadius: '12px',
+            display: 'flex',
+            alignItems: 'center',
+            gap: '4px',
+            boxShadow: '0 2px 6px rgba(0,0,0,0.3)'
+          }}
+        >
+          {isBorrowed ? <><Unlock size={10} /> Borrowed</> : <><Lock size={10} /> Snippets Only</>}
+        </div>
 
         {/* Quick Summary Badge Button */}
         <div
@@ -59,22 +82,35 @@ export default function BookCard({
         </div>
 
         {/* Card Action Buttons */}
-        <div className="netflix-card-footer">
+        <div className="netflix-card-footer" style={{ display: 'flex', gap: '6px' }}>
           <button
             className="btn-primary"
-            style={{ flex: 1, padding: '6px', fontSize: '12px', justifyContent: 'center' }}
-            onClick={() => onOpenReader(book)}
+            style={{ flex: 1, padding: '6px', fontSize: '11px', justifyContent: 'center' }}
+            onClick={() => onOpenSnippets(book)}
+            title="Read Chapter Snippets & Summary"
           >
-            <BookOpen size={13} /> Read
+            <FileText size={12} /> Read Snippets
           </button>
-          <button
-            className="btn-secondary"
-            style={{ padding: '6px 10px', fontSize: '12px', justifyContent: 'center' }}
-            onClick={() => onOpenBorrowModal(book)}
-            title="Borrow Copy"
-          >
-            <Send size={12} />
-          </button>
+
+          {isBorrowed ? (
+            <button
+              className="btn-secondary"
+              style={{ padding: '6px 10px', fontSize: '11px', justifyContent: 'center', background: 'rgba(16, 185, 129, 0.15)', color: '#10b981', borderColor: 'rgba(16, 185, 129, 0.4)' }}
+              onClick={() => onOpenReader(book)}
+              title="Read Complete Full Book"
+            >
+              <BookOpen size={12} /> Full Book
+            </button>
+          ) : (
+            <button
+              className="btn-secondary"
+              style={{ padding: '6px 10px', fontSize: '11px', justifyContent: 'center' }}
+              onClick={() => onOpenBorrowModal(book)}
+              title="Borrow Book to Unlock Full Access"
+            >
+              <Send size={12} /> Borrow
+            </button>
+          )}
         </div>
       </div>
     </div>

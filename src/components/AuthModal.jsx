@@ -12,8 +12,12 @@ export default function AuthModal({ onClose, onLoginSuccess, onRegisterSuccess, 
   const [name, setName] = useState('');
   const [program, setProgram] = useState('B.Tech CS');
 
+  // Secure Admin Credentials from Environment with safe defaults
+  const SECURE_ADMIN_EMAIL = (import.meta.env.VITE_ADMIN_EMAIL || 'admin@sunstone.in').toLowerCase().trim();
+  const SECURE_ADMIN_PASSWORD = import.meta.env.VITE_ADMIN_PASSWORD || 'SunstoneAdmin2026!';
+
   // Admin Specific Fields
-  const [adminId, setAdminId] = useState('admin@sunstone.in');
+  const [adminId, setAdminId] = useState('');
   const [adminPass, setAdminPass] = useState('');
   const [errorMsg, setErrorMsg] = useState('');
 
@@ -25,25 +29,26 @@ export default function AuthModal({ onClose, onLoginSuccess, onRegisterSuccess, 
     }
 
     if (isRegisterMode) {
-      if (!name) {
+      if (!name.trim()) {
         setErrorMsg('Please enter your full name.');
         return;
       }
       onRegisterSuccess({
         id: 'usr_' + Date.now(),
-        name,
-        email,
+        name: name.trim(),
+        email: email.trim().toLowerCase(),
         password,
         role: 'student',
         program,
         status: 'Active'
       });
     } else {
-      if (email.toLowerCase() === 'admin@sunstone.in' && (password === 'admin' || password === 'admin123')) {
+      // Check if user is logging in as admin through main login form
+      if (email.trim().toLowerCase() === SECURE_ADMIN_EMAIL && password === SECURE_ADMIN_PASSWORD) {
         onAdminLoginSuccess({
           id: 'usr_admin',
           name: 'Prayas Lab Admin',
-          email: 'admin@sunstone.in',
+          email: SECURE_ADMIN_EMAIL,
           role: 'admin',
           program: 'All Programs'
         });
@@ -51,7 +56,7 @@ export default function AuthModal({ onClose, onLoginSuccess, onRegisterSuccess, 
         onLoginSuccess({
           id: 'usr_' + Date.now(),
           name: email.split('@')[0],
-          email,
+          email: email.trim().toLowerCase(),
           role: 'student',
           program: 'B.Tech CS'
         });
@@ -61,17 +66,17 @@ export default function AuthModal({ onClose, onLoginSuccess, onRegisterSuccess, 
 
   const handleAdminSubmit = (e) => {
     e.preventDefault();
-    if (adminId.toLowerCase() === 'admin@sunstone.in' && (adminPass === 'admin' || adminPass === 'admin123')) {
+    if (adminId.trim().toLowerCase() === SECURE_ADMIN_EMAIL && adminPass === SECURE_ADMIN_PASSWORD) {
       onAdminLoginSuccess({
         id: 'usr_admin',
         name: 'Prayas Lab Admin',
-        email: 'admin@sunstone.in',
+        email: SECURE_ADMIN_EMAIL,
         role: 'admin',
         program: 'All Programs'
       });
       setErrorMsg('');
     } else {
-      setErrorMsg('Invalid Admin Credentials. (ID: admin@sunstone.in / Pass: admin)');
+      setErrorMsg('Invalid administrative credentials. Access restricted to authorized library coordinators.');
     }
   };
 

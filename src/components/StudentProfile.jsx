@@ -7,13 +7,15 @@ export default function StudentProfile({
   savedBookIds,
   onToggleSave,
   onOpenReader,
+  onOpenSnippets,
   onOpenQuickSummary,
   onOpenBorrowModal,
   borrowRequests = [],
   userNotes = [],
   onDeleteNote,
   activeTab = 'shelf',
-  setActiveTab
+  setActiveTab,
+  borrowedBookIds = []
 }) {
   if (!user) {
     return (
@@ -282,28 +284,31 @@ export default function StudentProfile({
                       <button
                         className="btn-primary"
                         style={{ flex: 1, padding: '8px', fontSize: '12px', justifyContent: 'center' }}
-                        onClick={() => onOpenReader(book)}
+                        onClick={() => onOpenSnippets(book)}
+                        title="Read Chapter Snippets & Summary"
                       >
-                        <BookOpen size={14} /> Resume Reading
+                        <FileText size={14} /> Read Snippets
                       </button>
 
-                      <button
-                        className="btn-secondary"
-                        style={{ padding: '8px 10px', fontSize: '12px', justifyContent: 'center' }}
-                        onClick={() => onOpenQuickSummary(book)}
-                        title="Quick Summary"
-                      >
-                        <Zap size={14} color="var(--accent-gold)" />
-                      </button>
-
-                      <button
-                        className="btn-secondary"
-                        style={{ padding: '8px 10px', fontSize: '12px', justifyContent: 'center' }}
-                        onClick={() => onOpenBorrowModal(book)}
-                        title="Request Borrow Copy"
-                      >
-                        <Send size={14} />
-                      </button>
+                      {borrowedBookIds.includes(book.id) ? (
+                        <button
+                          className="btn-secondary"
+                          style={{ padding: '8px 12px', fontSize: '12px', justifyContent: 'center', background: 'rgba(16, 185, 129, 0.15)', color: '#10b981', borderColor: 'rgba(16, 185, 129, 0.4)' }}
+                          onClick={() => onOpenReader(book)}
+                          title="Read Full Book"
+                        >
+                          <BookOpen size={14} /> Full Book
+                        </button>
+                      ) : (
+                        <button
+                          className="btn-secondary"
+                          style={{ padding: '8px 10px', fontSize: '12px', justifyContent: 'center' }}
+                          onClick={() => onOpenBorrowModal(book)}
+                          title="Request Borrow Copy"
+                        >
+                          <Send size={14} /> Borrow
+                        </button>
+                      )}
 
                       <button
                         className="btn-secondary"

@@ -1,5 +1,6 @@
 import React, { useState } from 'react';
-import { ShieldCheck, Lock, Upload, Link as LinkIcon, Plus, CheckCircle, XCircle, MessageSquare, Users, BookOpen, Trash2, Search, Mail, Send, AlertTriangle } from 'lucide-react';
+import { ShieldCheck, Lock, Upload, Link as LinkIcon, Plus, CheckCircle, XCircle, MessageSquare, Users, BookOpen, Trash2, Search, Mail, Send, AlertTriangle, HardDrive } from 'lucide-react';
+import { convertGoogleDriveUrl, convertGoogleDriveImageUrl } from '../googleDriveHelper.js';
 
 export default function AdminConsole({
   user,
@@ -29,62 +30,60 @@ export default function AdminConsole({
   const [description, setDescription] = useState('');
   const [highlightsText, setHighlightsText] = useState('');
   const [takeawaysText, setTakeawaysText] = useState('');
+  const [chapterSnippetsText, setChapterSnippetsText] = useState('');
   const [uploadSuccessMsg, setUploadSuccessMsg] = useState('');
+
+  // Secure Admin Credentials from Environment with safe defaults
+  const SECURE_ADMIN_EMAIL = (import.meta.env.VITE_ADMIN_EMAIL || 'admin@sunstone.in').toLowerCase().trim();
+  const SECURE_ADMIN_PASSWORD = import.meta.env.VITE_ADMIN_PASSWORD || 'SunstoneAdmin2026!';
 
   const isAdminAuthenticated = user && user.role === 'admin';
 
   const handleAdminLoginFormSubmit = (e) => {
     e.preventDefault();
-    if (adminEmail.toLowerCase() === 'admin@sunstone.in' && (adminPassword === 'admin' || adminPassword === 'admin123')) {
+    if (adminEmail.trim().toLowerCase() === SECURE_ADMIN_EMAIL && adminPassword === SECURE_ADMIN_PASSWORD) {
       onAdminLogin({
         id: 'usr_admin',
         name: 'Prayas Lab Admin',
-        email: 'admin@sunstone.in',
+        email: SECURE_ADMIN_EMAIL,
         role: 'admin',
         program: 'All Programs'
       });
       setLoginError('');
     } else {
-      setLoginError('Invalid Admin ID or Password. (Demo Admin ID: admin@sunstone.in / Pass: admin)');
+      setLoginError('Invalid administrative credentials. Access restricted to authorized library coordinators.');
     }
-  };
-
-  const handleQuickDemoAdmin = () => {
-    onAdminLogin({
-      id: 'usr_admin',
-      name: 'Prayas Lab Admin',
-      email: 'admin@sunstone.in',
-      role: 'admin',
-      program: 'All Programs'
-    });
   };
 
   const handleCreateBookSubmit = async (e) => {
     e.preventDefault();
-    if (!title || !author) {
+    if (!title.trim() || !author.trim()) {
       alert('Please provide book title and author name.');
       return;
     }
 
+    const finalUploadedPdfUrl = convertGoogleDriveUrl(pdfUrl);
+
     const formData = new FormData();
-    formData.append('title', title);
-    formData.append('author', author);
+    formData.append('title', title.trim());
+    formData.append('author', author.trim());
     formData.append('program', program);
     formData.append('category', category);
     formData.append('fileType', uploadMode);
     formData.append('description', description);
     formData.append('highlights', highlightsText);
     formData.append('keyTakeaways', takeawaysText);
+    formData.append('chapterSnippets', chapterSnippetsText);
     formData.append('downloadable', 'true');
 
     if (uploadMode === 'file' && pdfFile) {
       formData.append('pdfFile', pdfFile);
     } else {
-      formData.append('pdfUrl', pdfUrl || 'https://raw.githubusercontent.com/mozilla/pdf.js/ba2edeae/web/compressed.tracemonkey-pldi-09.pdf');
+      formData.append('pdfUrl', finalUploadedPdfUrl || 'https://raw.githubusercontent.com/mozilla/pdf.js/ba2edeae/web/compressed.tracemonkey-pldi-09.pdf');
     }
 
     if (coverUrl) {
-      formData.append('coverUrl', coverUrl);
+      formData.append('coverUrl', convertGoogleDriveImageUrl(coverUrl));
     }
 
     await onUploadBook(formData);
@@ -98,6 +97,7 @@ export default function AdminConsole({
     setDescription('');
     setHighlightsText('');
     setTakeawaysText('');
+    setChapterSnippetsText('');
     setTimeout(() => setUploadSuccessMsg(''), 4000);
   };
 
@@ -169,16 +169,6 @@ export default function AdminConsole({
             <Lock size={16} /> Authenticate Admin
           </button>
         </form>
-
-        <div style={{ marginTop: '20px', paddingTop: '16px', borderTop: '1px solid var(--sunstone-border)' }}>
-          <button
-            onClick={handleQuickDemoAdmin}
-            className="btn-secondary"
-            style={{ width: '100%', justifyContent: 'center', fontSize: '13px' }}
-          >
-            ⚡ Quick Demo Admin Login
-          </button>
-        </div>
       </div>
     );
   }
@@ -420,7 +410,7 @@ export default function AdminConsole({
           <form onSubmit={handleCreateBookSubmit}>
             <div style={{ background: 'var(--sunstone-bg)', border: '1px solid var(--sunstone-border)', padding: '16px', borderRadius: '12px', marginBottom: '20px' }}>
               <label className="form-label" style={{ marginBottom: '10px', display: 'block' }}>Choose Book Ingestion Mode:</label>
-              <div style={{ display: 'flex', gap: '20px' }}>
+              <div style={{ display: 'flex', gap: '20px', flexWrap: 'wrap' }}>
                 <label style={{ display: 'flex', alignItems: 'center', gap: '8px', cursor: 'pointer', fontSize: '14px', fontWeight: '700', color: 'var(--sunstone-text-primary)' }}>
                   <input
                     type="radio"
@@ -440,7 +430,7 @@ export default function AdminConsole({
                     checked={uploadMode === 'url'}
                     onChange={() => setUploadMode('url')}
                   />
-                  <LinkIcon size={16} color="var(--accent-blue)" /> External PDF Web URL Link
+                  <LinkIcon size={16} color="var(--accent-blue)" /> Google Drive / Web PDF Link
                 </label>
               </div>
             </div>
@@ -512,14 +502,17 @@ export default function AdminConsole({
               </div>
             ) : (
               <div className="form-group">
-                <label className="form-label">Direct PDF URL Link *</label>
+                <label className="form-label">📁 Google Drive Share Link OR Direct PDF Web URL *</label>
                 <input
                   type="url"
                   className="form-control"
-                  placeholder="https://example.com/books/sample-textbook.pdf"
+                  placeholder="Paste Google Drive link (e.g. https://drive.google.com/file/d/...) or any PDF URL"
                   value={pdfUrl}
                   onChange={(e) => setPdfUrl(e.target.value)}
                 />
+                <div style={{ fontSize: '11px', color: 'var(--sunstone-text-muted)', marginTop: '4px' }}>
+                  💡 Tip: Set your Google Drive file permission to "Anyone with the link can view". It will automatically open in the PDF reader!
+                </div>
               </div>
             )}
 
@@ -559,6 +552,20 @@ export default function AdminConsole({
                   value={takeawaysText}
                   onChange={(e) => setTakeawaysText(e.target.value)}
                 />
+              </div>
+
+              <div className="form-group" style={{ marginTop: '12px' }}>
+                <label className="form-label">📖 Chapter-Wise Snippets / Summaries (Available for free preview without borrowing)</label>
+                <textarea
+                  className="form-control"
+                  rows="4"
+                  placeholder="Chapter 1: Foundational Principles&#10;Detailed chapter summary and key formulas here...&#10;&#10;Chapter 2: Advanced Implementations&#10;Summary of chapter 2 methodologies and case studies..."
+                  value={chapterSnippetsText}
+                  onChange={(e) => setChapterSnippetsText(e.target.value)}
+                />
+                <div style={{ fontSize: '11px', color: 'var(--sunstone-text-muted)', marginTop: '4px' }}>
+                  Students can read these chapter snippets for free. Full book PDF reading is restricted until borrowed.
+                </div>
               </div>
             </div>
 

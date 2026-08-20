@@ -1,12 +1,14 @@
 import React, { useState } from 'react';
-import { X, Zap, BookOpen, Clock, BarChart2, CheckCircle2, Send, Star, ShieldCheck } from 'lucide-react';
+import { X, Zap, BookOpen, Clock, BarChart2, CheckCircle2, Send, Star, ShieldCheck, FileText, Lock, Unlock } from 'lucide-react';
 
 export default function BookDetailModal({
   book,
   onClose,
   onOpenReader,
+  onOpenSnippets,
   onOpenBorrowModal,
-  initialTab = 'summary'
+  initialTab = 'summary',
+  isBorrowed = false
 }) {
   const [activeTab, setActiveTab] = useState(initialTab);
 
@@ -56,6 +58,15 @@ export default function BookDetailModal({
               <span className="status-badge" style={{ background: 'rgba(37, 99, 235, 0.1)', color: 'var(--accent-blue)' }}>
                 {book.category}
               </span>
+              {isBorrowed ? (
+                <span className="status-badge" style={{ background: 'rgba(16, 185, 129, 0.15)', color: '#10b981' }}>
+                  <Unlock size={11} style={{ display: 'inline', marginRight: '4px' }} /> Borrowed & Unlocked
+                </span>
+              ) : (
+                <span className="status-badge" style={{ background: 'rgba(255, 77, 90, 0.1)', color: 'var(--accent-sunstone-red)' }}>
+                  <Lock size={11} style={{ display: 'inline', marginRight: '4px' }} /> Borrow Required for Full Access
+                </span>
+              )}
             </div>
             <h2 style={{ fontSize: '22px', fontWeight: '800', marginBottom: '6px', color: 'var(--sunstone-text-primary)' }}>{book.title}</h2>
             <p style={{ color: 'var(--sunstone-text-secondary)', fontSize: '14px', marginBottom: '14px' }}>
@@ -75,20 +86,34 @@ export default function BookDetailModal({
                 className="btn-primary"
                 onClick={() => {
                   onClose();
-                  onOpenReader(book);
+                  onOpenSnippets(book);
                 }}
               >
-                <BookOpen size={16} /> Read Online Now
+                <FileText size={16} /> Read Chapter Snippets
               </button>
-              <button
-                className="btn-secondary"
-                onClick={() => {
-                  onClose();
-                  onOpenBorrowModal(book);
-                }}
-              >
-                <Send size={16} /> Borrow Book
-              </button>
+
+              {isBorrowed ? (
+                <button
+                  className="btn-secondary"
+                  style={{ background: 'rgba(16, 185, 129, 0.15)', color: '#10b981', borderColor: 'rgba(16, 185, 129, 0.4)' }}
+                  onClick={() => {
+                    onClose();
+                    onOpenReader(book);
+                  }}
+                >
+                  <BookOpen size={16} /> Read Full Book
+                </button>
+              ) : (
+                <button
+                  className="btn-secondary"
+                  onClick={() => {
+                    onClose();
+                    onOpenBorrowModal(book);
+                  }}
+                >
+                  <Send size={16} /> Borrow to Unlock Full Book
+                </button>
+              )}
             </div>
           </div>
         </div>

@@ -1,0 +1,20 @@
+{
+  "rules": {
+    "books": {
+      ".read": true,
+      ".write": true
+    },
+    "borrowRequests": {
+      ".read": true,
+      ".write": true
+    },
+    "notes": {
+      ".read": true,
+      ".write": true
+    },
+    "users": {
+      ".read": true,
+      ".write": true
+    }
+  }
+}

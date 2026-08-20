@@ -6,12 +6,23 @@ import ProgramTabs from './components/ProgramTabs.jsx';
 import NetflixRow from './components/NetflixRow.jsx';
 import BookGrid from './components/BookGrid.jsx';
 import BookDetailModal from './components/BookDetailModal.jsx';
+import ChapterSnippetsModal from './components/ChapterSnippetsModal.jsx';
 import PdfReaderModal from './components/PdfReaderModal.jsx';
 import StudentProfile from './components/StudentProfile.jsx';
 import AdminConsole from './components/AdminConsole.jsx';
 import AuthModal from './components/AuthModal.jsx';
 import BorrowModal from './components/BorrowModal.jsx';
-import { Flame, Code, GraduationCap, Server, Briefcase, Sparkles, BookOpenCheck, CheckCircle2, ArrowRight, X } from 'lucide-react';
+import {
+  getBooksFromFirestore,
+  getBorrowRequestsFromFirestore,
+  addBookToFirestore,
+  deleteBookFromFirestore,
+  addBorrowRequestToFirestore,
+  updateBorrowStatusInFirestore,
+  getNotesFromFirestore,
+  addNoteToFirestore,
+  deleteNoteFromFirestore
+} from './firebase.js';
 
 export default function App() {
   const [theme, setTheme] = useState('light');
@@ -72,34 +83,70 @@ export default function App() {
   // Modal Control States
   const [showAuthModal, setShowAuthModal] = useState(false);
   const [selectedQuickSummaryBook, setSelectedQuickSummaryBook] = useState(null);
+  const [activeSnippetBook, setActiveSnippetBook] = useState(null);
   const [activeReaderBook, setActiveReaderBook] = useState(null);
   const [activeBorrowBook, setActiveBorrowBook] = useState(null);
+
+  const borrowedBookIds = borrowRequests
+    .filter((r) => user && r.studentId === user.id && r.status === 'Approved')
+    .map((r) => r.bookId);
 
   useEffect(() => {
     document.documentElement.setAttribute('data-theme', theme);
   }, [theme]);
 
   useEffect(() => {
-    fetch('/api/books')
-      .then((res) => res.json())
-      .then((data) => {
-        if (Array.isArray(data) && data.length > 0) {
-          setBooks(data);
-        }
-      })
-      .catch((err) => console.warn('API fallback:', err));
+    async function loadBooksData() {
+      const fsBooks = await getBooksFromFirestore();
+      if (fsBooks && fsBooks.length > 0) {
+        setBooks(fsBooks);
+      } else {
+        fetch('/api/books')
+          .then((res) => res.json())
+          .then((data) => {
+            if (Array.isArray(data) && data.length > 0) setBooks(data);
+          })
+          .catch((err) => console.warn('API fallback:', err));
+      }
+    }
+    loadBooksData();
   }, []);
 
   useEffect(() => {
-    fetch('/api/borrow-requests')
-      .then((res) => res.json())
-      .then((data) => {
-        if (Array.isArray(data) && data.length > 0) {
-          setBorrowRequests(data);
-        }
-      })
-      .catch(() => {});
+    async function loadRequestsData() {
+      const fsReqs = await getBorrowRequestsFromFirestore();
+      if (fsReqs && fsReqs.length > 0) {
+        setBorrowRequests(fsReqs);
+      } else {
+        fetch('/api/borrow-requests')
+          .then((res) => res.json())
+          .then((data) => {
+            if (Array.isArray(data) && data.length > 0) setBorrowRequests(data);
+          })
+          .catch(() => {});
+      }
+    }
+    loadRequestsData();
   }, []);
+
+  useEffect(() => {
+    async function loadNotesData() {
+      if (user && user.id) {
+        const fsNotes = await getNotesFromFirestore(user.id);
+        if (fsNotes && fsNotes.length > 0) {
+          setUserNotes(fsNotes);
+        } else {
+          fetch(`/api/notes/${user.id}`)
+            .then((res) => res.json())
+            .then((data) => {
+              if (Array.isArray(data) && data.length > 0) setUserNotes(data);
+            })
+            .catch(() => {});
+        }
+      }
+    }
+    loadNotesData();
+  }, [user]);
 
   const handleSwitchUserRole = (roleKey) => {
     if (roleKey === 'student1') {
@@ -161,6 +208,7 @@ export default function App() {
       createdAt: new Date().toISOString()
     };
     setUserNotes((prev) => [noteObj, ...prev]);
+    addNoteToFirestore(noteObj).catch(() => {});
     fetch('/api/notes', {
       method: 'POST',
       headers: { 'Content-Type': 'application/json' },
@@ -170,21 +218,91 @@ export default function App() {
 
   const handleDeleteNote = (noteId) => {
     setUserNotes((prev) => prev.filter((n) => n.id !== noteId));
+    deleteNoteFromFirestore(noteId).catch(() => {});
     fetch(`/api/notes/${noteId}`, { method: 'DELETE' }).catch(() => {});
   };
 
   const handleUploadBook = async (formData) => {
+    let newBook = null;
     try {
       const res = await fetch('/api/books', { method: 'POST', body: formData });
-      const data = await res.json();
-      if (data.book) setBooks((prev) => [data.book, ...prev]);
+      if (res.ok) {
+        const data = await res.json();
+        if (data.book) newBook = data.book;
+      }
     } catch (e) {
-      console.error(e);
+      console.warn('Local API unavailable, falling back to direct Firebase/client sync:', e.message);
     }
+
+    if (!newBook) {
+      const parseSnippets = (input) => {
+        if (!input) return [];
+        if (Array.isArray(input)) return input;
+        try {
+          const parsed = JSON.parse(input);
+          if (Array.isArray(parsed)) return parsed;
+        } catch(e) {}
+        const blocks = String(input).split(/\n\s*\n/).map(s => s.trim()).filter(Boolean);
+        return blocks.map((block, idx) => {
+          const firstLine = block.split('\n')[0];
+          const rest = block.split('\n').slice(1).join(' ').trim();
+          return {
+            chapterNumber: idx + 1,
+            title: firstLine.startsWith('Chapter') ? firstLine : `Chapter ${idx + 1}: ${firstLine.slice(0, 40)}`,
+            summary: rest || block
+          };
+        });
+      };
+
+      const parseArray = (input) => {
+        if (!input) return [];
+        if (Array.isArray(input)) return input;
+        return String(input).split('\n').map(s => s.trim()).filter(Boolean);
+      };
+
+      const title = formData.get('title') || 'Untitled Book';
+      const author = formData.get('author') || 'Unknown Author';
+      const program = formData.get('program') || 'All Programs';
+      const category = formData.get('category') || 'General Academic';
+      const coverUrl = formData.get('coverUrl') || 'https://images.unsplash.com/photo-1497633762265-9d179a990aa6?auto=format&fit=crop&w=600&q=80';
+      const pdfUrl = formData.get('pdfUrl') || 'https://raw.githubusercontent.com/mozilla/pdf.js/ba2edeae/web/compressed.tracemonkey-pldi-09.pdf';
+      const description = formData.get('description') || 'No description provided.';
+      const highlights = parseArray(formData.get('highlights'));
+      const keyTakeaways = parseArray(formData.get('keyTakeaways'));
+      const chapterSnippets = parseSnippets(formData.get('chapterSnippets'));
+
+      newBook = {
+        id: 'bk_' + Date.now(),
+        title,
+        author,
+        program,
+        category,
+        coverUrl,
+        fileType: 'url',
+        pdfUrl,
+        downloadable: true,
+        isbn: 'ISBN-' + Math.floor(100000000 + Math.random() * 900000000),
+        rating: 4.8,
+        pages: 350,
+        publishedYear: 2026,
+        chapterSnippets,
+        quickSummary: {
+          highlights: highlights.length > 0 ? highlights : ['Comprehensive academic material mapped to Sunstone curriculum.'],
+          keyTakeaways: keyTakeaways.length > 0 ? keyTakeaways : ['Gain key theoretical and practical insights.'],
+          estimatedReadingTime: '6 Hours',
+          difficultyLevel: 'Standard Academic'
+        },
+        description
+      };
+    }
+
+    setBooks((prev) => [newBook, ...prev]);
+    addBookToFirestore(newBook).catch((err) => console.warn('Firebase book sync error:', err));
   };
 
   const handleDeleteBook = async (bookId) => {
     setBooks((prev) => prev.filter((b) => b.id !== bookId));
+    deleteBookFromFirestore(bookId).catch(() => {});
     fetch(`/api/books/${bookId}`, { method: 'DELETE' }).catch(() => {});
   };
 
@@ -201,6 +319,7 @@ export default function App() {
       ...reqData
     };
     setBorrowRequests((prev) => [newReq, ...prev]);
+    addBorrowRequestToFirestore(newReq).catch(() => {});
     fetch('/api/borrow-requests', {
       method: 'POST',
       headers: { 'Content-Type': 'application/json' },
@@ -218,6 +337,7 @@ export default function App() {
     setBorrowRequests((prev) =>
       prev.map((r) => (r.id === reqId ? { ...r, status, adminNote } : r))
     );
+    updateBorrowStatusInFirestore(reqId, status, adminNote).catch(() => {});
     fetch(`/api/borrow-requests/${reqId}`, {
       method: 'PUT',
       headers: { 'Content-Type': 'application/json' },
@@ -260,7 +380,10 @@ export default function App() {
           searchQuery={searchQuery}
           setSearchQuery={setSearchQuery}
           onOpenAuth={() => setShowAuthModal(true)}
-          onSwitchUserRole={handleSwitchUserRole}
+          onLogout={() => {
+            setUser(null);
+            setCurrentView('catalog');
+          }}
           currentView={currentView}
           setCurrentView={setCurrentView}
         />
@@ -300,7 +423,13 @@ export default function App() {
               <HeroBanner
                 book={featuredBook}
                 onOpenReader={(b) => setActiveReaderBook(b)}
+                onOpenSnippets={(b) => setActiveSnippetBook(b)}
                 onOpenQuickSummary={(b) => setSelectedQuickSummaryBook(b)}
+                onOpenBorrowModal={(b) => {
+                  if (!user) setShowAuthModal(true);
+                  else setActiveBorrowBook(b);
+                }}
+                isBorrowed={borrowedBookIds.includes(featuredBook?.id)}
               />
             )}
 
@@ -318,6 +447,7 @@ export default function App() {
                   selectedProgram={selectedProgram}
                   books={filteredBooks}
                   onOpenReader={(b) => setActiveReaderBook(b)}
+                  onOpenSnippets={(b) => setActiveSnippetBook(b)}
                   onOpenQuickSummary={(b) => setSelectedQuickSummaryBook(b)}
                   onOpenBorrowModal={(b) => {
                     if (!user) setShowAuthModal(true);
@@ -325,6 +455,7 @@ export default function App() {
                   }}
                   savedBookIds={savedBookIds}
                   onToggleSave={handleToggleSaveBook}
+                  borrowedBookIds={borrowedBookIds}
                 />
               </main>
             ) : (
@@ -334,10 +465,12 @@ export default function App() {
                   icon={Flame}
                   books={trendingBooks}
                   onOpenReader={(b) => setActiveReaderBook(b)}
+                  onOpenSnippets={(b) => setActiveSnippetBook(b)}
                   onOpenQuickSummary={(b) => setSelectedQuickSummaryBook(b)}
                   onOpenBorrowModal={(b) => setActiveBorrowBook(b)}
                   savedBookIds={savedBookIds}
                   onToggleSave={handleToggleSaveBook}
+                  borrowedBookIds={borrowedBookIds}
                 />
 
                 <NetflixRow
@@ -345,10 +478,12 @@ export default function App() {
                   icon={Code}
                   books={btechBooks}
                   onOpenReader={(b) => setActiveReaderBook(b)}
+                  onOpenSnippets={(b) => setActiveSnippetBook(b)}
                   onOpenQuickSummary={(b) => setSelectedQuickSummaryBook(b)}
                   onOpenBorrowModal={(b) => setActiveBorrowBook(b)}
                   savedBookIds={savedBookIds}
                   onToggleSave={handleToggleSaveBook}
+                  borrowedBookIds={borrowedBookIds}
                 />
 
                 <NetflixRow
@@ -356,10 +491,12 @@ export default function App() {
                   icon={GraduationCap}
                   books={mbaBooks}
                   onOpenReader={(b) => setActiveReaderBook(b)}
+                  onOpenSnippets={(b) => setActiveSnippetBook(b)}
                   onOpenQuickSummary={(b) => setSelectedQuickSummaryBook(b)}
                   onOpenBorrowModal={(b) => setActiveBorrowBook(b)}
                   savedBookIds={savedBookIds}
                   onToggleSave={handleToggleSaveBook}
+                  borrowedBookIds={borrowedBookIds}
                 />
 
                 <NetflixRow
@@ -367,10 +504,12 @@ export default function App() {
                   icon={Server}
                   books={bcaBooks}
                   onOpenReader={(b) => setActiveReaderBook(b)}
+                  onOpenSnippets={(b) => setActiveSnippetBook(b)}
                   onOpenQuickSummary={(b) => setSelectedQuickSummaryBook(b)}
                   onOpenBorrowModal={(b) => setActiveBorrowBook(b)}
                   savedBookIds={savedBookIds}
                   onToggleSave={handleToggleSaveBook}
+                  borrowedBookIds={borrowedBookIds}
                 />
 
                 <NetflixRow
@@ -378,10 +517,12 @@ export default function App() {
                   icon={Briefcase}
                   books={bbaBooks}
                   onOpenReader={(b) => setActiveReaderBook(b)}
+                  onOpenSnippets={(b) => setActiveSnippetBook(b)}
                   onOpenQuickSummary={(b) => setSelectedQuickSummaryBook(b)}
                   onOpenBorrowModal={(b) => setActiveBorrowBook(b)}
                   savedBookIds={savedBookIds}
                   onToggleSave={handleToggleSaveBook}
+                  borrowedBookIds={borrowedBookIds}
                 />
 
                 <NetflixRow
@@ -389,10 +530,12 @@ export default function App() {
                   icon={Sparkles}
                   books={specialBooks}
                   onOpenReader={(b) => setActiveReaderBook(b)}
+                  onOpenSnippets={(b) => setActiveSnippetBook(b)}
                   onOpenQuickSummary={(b) => setSelectedQuickSummaryBook(b)}
                   onOpenBorrowModal={(b) => setActiveBorrowBook(b)}
                   savedBookIds={savedBookIds}
                   onToggleSave={handleToggleSaveBook}
+                  borrowedBookIds={borrowedBookIds}
                 />
 
                 <NetflixRow
@@ -400,10 +543,12 @@ export default function App() {
                   icon={BookOpenCheck}
                   books={journalBooks}
                   onOpenReader={(b) => setActiveReaderBook(b)}
+                  onOpenSnippets={(b) => setActiveSnippetBook(b)}
                   onOpenQuickSummary={(b) => setSelectedQuickSummaryBook(b)}
                   onOpenBorrowModal={(b) => setActiveBorrowBook(b)}
                   savedBookIds={savedBookIds}
                   onToggleSave={handleToggleSaveBook}
+                  borrowedBookIds={borrowedBookIds}
                 />
               </div>
             )}
@@ -419,6 +564,7 @@ export default function App() {
               savedBookIds={savedBookIds}
               onToggleSave={handleToggleSaveBook}
               onOpenReader={(b) => setActiveReaderBook(b)}
+              onOpenSnippets={(b) => setActiveSnippetBook(b)}
               onOpenQuickSummary={(b) => setSelectedQuickSummaryBook(b)}
               onOpenBorrowModal={(b) => setActiveBorrowBook(b)}
               borrowRequests={borrowRequests}
@@ -426,6 +572,7 @@ export default function App() {
               onDeleteNote={handleDeleteNote}
               activeTab={profileSubTab}
               setActiveTab={setProfileSubTab}
+              borrowedBookIds={borrowedBookIds}
             />
           </main>
         )}
@@ -473,11 +620,26 @@ export default function App() {
           book={selectedQuickSummaryBook}
           onClose={() => setSelectedQuickSummaryBook(null)}
           onOpenReader={(b) => setActiveReaderBook(b)}
+          onOpenSnippets={(b) => setActiveSnippetBook(b)}
           onOpenBorrowModal={(b) => {
             if (!user) setShowAuthModal(true);
             else setActiveBorrowBook(b);
           }}
           initialTab="summary"
+          isBorrowed={borrowedBookIds.includes(selectedQuickSummaryBook.id)}
+        />
+      )}
+
+      {activeSnippetBook && (
+        <ChapterSnippetsModal
+          book={activeSnippetBook}
+          onClose={() => setActiveSnippetBook(null)}
+          onOpenBorrowModal={(b) => {
+            if (!user) setShowAuthModal(true);
+            else setActiveBorrowBook(b);
+          }}
+          onOpenReader={(b) => setActiveReaderBook(b)}
+          isBorrowed={borrowedBookIds.includes(activeSnippetBook.id)}
         />
       )}
 
@@ -488,6 +650,12 @@ export default function App() {
           userNotes={userNotes}
           onAddNote={handleAddNote}
           onDeleteNote={handleDeleteNote}
+          isBorrowed={borrowedBookIds.includes(activeReaderBook.id)}
+          onOpenSnippets={(b) => setActiveSnippetBook(b)}
+          onOpenBorrowModal={(b) => {
+            if (!user) setShowAuthModal(true);
+            else setActiveBorrowBook(b);
+          }}
         />
       )}
 

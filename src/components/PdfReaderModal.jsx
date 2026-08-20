@@ -1,7 +1,7 @@
 import React, { useState, useEffect } from 'react';
 import {
   X, ChevronLeft, ChevronRight, ZoomIn, ZoomOut, Bookmark, FileText, Plus, Trash2,
-  Maximize2, Minimize2, Sun, Moon, Sparkles, BookOpen, Layers, CheckCircle2, Search, Volume2
+  Maximize2, Minimize2, Sun, Moon, Sparkles, BookOpen, Layers, CheckCircle2, Search, Volume2, Lock, Send
 } from 'lucide-react';
 import SunstoneLogo from './SunstoneLogo.jsx';
 
@@ -10,7 +10,10 @@ export default function PdfReaderModal({
   onClose,
   userNotes = [],
   onAddNote,
-  onDeleteNote
+  onDeleteNote,
+  isBorrowed = false,
+  onOpenSnippets,
+  onOpenBorrowModal
 }) {
   const [currentPage, setCurrentPage] = useState(1);
   const [zoomLevel, setZoomLevel] = useState(100);
@@ -22,6 +25,108 @@ export default function PdfReaderModal({
   const [notesSearch, setNotesSearch] = useState('');
 
   if (!book) return null;
+
+  // Security Guard: If user tries to open full reader without borrowing
+  if (!isBorrowed) {
+    return (
+      <div
+        style={{
+          position: 'fixed',
+          inset: 0,
+          zIndex: 9999,
+          background: 'rgba(9, 13, 22, 0.95)',
+          backdropFilter: 'blur(10px)',
+          display: 'flex',
+          alignItems: 'center',
+          justifyContent: 'center',
+          padding: '24px'
+        }}
+      >
+        <div
+          style={{
+            background: 'var(--sunstone-card-bg)',
+            border: '1px solid var(--sunstone-border)',
+            borderRadius: 'var(--radius-lg)',
+            boxShadow: '0 20px 50px rgba(0,0,0,0.5)',
+            maxWidth: '520px',
+            width: '100%',
+            padding: '36px',
+            textAlign: 'center',
+            position: 'relative'
+          }}
+        >
+          <button
+            onClick={onClose}
+            style={{
+              position: 'absolute',
+              top: '16px',
+              right: '16px',
+              background: 'var(--sunstone-bg)',
+              border: '1px solid var(--sunstone-border)',
+              borderRadius: '50%',
+              width: '32px',
+              height: '32px',
+              display: 'flex',
+              alignItems: 'center',
+              justifyContent: 'center',
+              color: 'var(--sunstone-text-primary)',
+              cursor: 'pointer'
+            }}
+          >
+            <X size={16} />
+          </button>
+
+          <div
+            style={{
+              width: '64px',
+              height: '64px',
+              borderRadius: '50%',
+              background: 'rgba(255, 77, 90, 0.15)',
+              color: 'var(--accent-sunstone-red)',
+              display: 'flex',
+              alignItems: 'center',
+              justifyContent: 'center',
+              margin: '0 auto 20px'
+            }}
+          >
+            <Lock size={32} />
+          </div>
+
+          <h2 style={{ fontSize: '22px', fontWeight: '800', marginBottom: '10px', color: 'var(--sunstone-text-primary)' }}>
+            Full Book Access Restricted
+          </h2>
+
+          <p style={{ color: 'var(--sunstone-text-secondary)', fontSize: '14px', lineHeight: 1.6, marginBottom: '24px' }}>
+            To read the complete book <strong>"{book.title}"</strong> ({book.pages} pages), you must submit a borrow request and get approval from the Prayas Lab Admin. You can read chapter snippets for free right now.
+          </p>
+
+          <div style={{ display: 'flex', flexDirection: 'column', gap: '12px' }}>
+            <button
+              className="btn-primary"
+              style={{ width: '100%', justifyContent: 'center', padding: '12px', fontSize: '14px' }}
+              onClick={() => {
+                onClose();
+                if (onOpenSnippets) onOpenSnippets(book);
+              }}
+            >
+              <FileText size={16} /> Read Chapter Snippets & Summary (Free)
+            </button>
+
+            <button
+              className="btn-secondary"
+              style={{ width: '100%', justifyContent: 'center', padding: '12px', fontSize: '14px' }}
+              onClick={() => {
+                onClose();
+                if (onOpenBorrowModal) onOpenBorrowModal(book);
+              }}
+            >
+              <Send size={16} /> Request Borrow Copy to Unlock Full Book
+            </button>
+          </div>
+        </div>
+      </div>
+    );
+  }
 
   const totalPages = book.pages || 350;
   const progressPercent = Math.round((currentPage / totalPages) * 100);

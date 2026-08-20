@@ -39,7 +39,25 @@ const storage = multer.diskStorage({
   }
 });
 
-const upload = multer({ storage, limits: { fileSize: 50 * 1024 * 1024 } });
+const upload = multer({
+  storage,
+  limits: { fileSize: 50 * 1024 * 1024 },
+  fileFilter: (req, file, cb) => {
+    if (file.fieldname === 'pdfFile') {
+      const isPdf = file.mimetype === 'application/pdf' || path.extname(file.originalname).toLowerCase() === '.pdf';
+      if (isPdf) return cb(null, true);
+      return cb(new Error('Security check: Only PDF files (.pdf) are allowed for book uploads.'));
+    } else if (file.fieldname === 'coverImage') {
+      const allowedImageExts = ['.jpg', '.jpeg', '.png', '.webp'];
+      const ext = path.extname(file.originalname).toLowerCase();
+      if (file.mimetype.startsWith('image/') && allowedImageExts.includes(ext)) {
+        return cb(null, true);
+      }
+      return cb(new Error('Security check: Only image files (JPG, PNG, WEBP) are allowed for covers.'));
+    }
+    cb(null, true);
+  }
+});
 
 const DATA_FILE = path.join(__dirname, 'data_store.json');
 
@@ -700,10 +718,24 @@ app.post('/api/books', upload.fields([{ name: 'pdfFile', maxCount: 1 }, { name: 
     finalCoverUrl = req.body.coverUrl;
   }
 
-  const parseArray = (input) => {
+  const parseSnippets = (input) => {
     if (!input) return [];
     if (Array.isArray(input)) return input;
-    return input.split('\n').map(s => s.trim()).filter(Boolean);
+    try {
+      const parsed = JSON.parse(input);
+      if (Array.isArray(parsed)) return parsed;
+    } catch(e) {}
+    // Text fallback: split by blank lines or 'Chapter' headers
+    const blocks = input.split(/\n\s*\n/).map(s => s.trim()).filter(Boolean);
+    return blocks.map((block, idx) => {
+      const firstLine = block.split('\n')[0];
+      const rest = block.split('\n').slice(1).join(' ').trim();
+      return {
+        chapterNumber: idx + 1,
+        title: firstLine.startsWith('Chapter') ? firstLine : `Chapter ${idx + 1}: ${firstLine.slice(0, 40)}`,
+        summary: rest || block
+      };
+    });
   };
 
   const newBook = {
@@ -720,6 +752,7 @@ app.post('/api/books', upload.fields([{ name: 'pdfFile', maxCount: 1 }, { name: 
     rating: 4.8,
     pages: parseInt(pages) || 350,
     publishedYear: parseInt(publishedYear) || 2026,
+    chapterSnippets: parseSnippets(req.body.chapterSnippets),
     quickSummary: {
       highlights: parseArray(highlights).length > 0 ? parseArray(highlights) : ['Comprehensive academic material mapped to Sunstone curriculum.'],
       keyTakeaways: parseArray(keyTakeaways).length > 0 ? parseArray(keyTakeaways) : ['Gain key theoretical and practical insights.'],

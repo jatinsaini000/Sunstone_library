@@ -1,5 +1,5 @@
 import React from 'react';
-import { Home, Bookmark, Sun, Moon, LogOut, User, Send, BarChart2 } from 'lucide-react';
+import { Home, Bookmark, Sun, Moon, LogOut, User, Send, BarChart2, ShieldCheck } from 'lucide-react';
 import SunstoneLogo from './SunstoneLogo.jsx';
 
 export default function Sidebar({
@@ -31,6 +31,14 @@ export default function Sidebar({
         >
           <Home size={18} />
           <span>Home Catalog</span>
+        </button>
+
+        <button
+          className={`sidebar-link ${currentView === 'admin' ? 'active' : ''}`}
+          onClick={() => setCurrentView('admin')}
+        >
+          <ShieldCheck size={18} color={currentView === 'admin' ? 'var(--accent-sunstone-red)' : '#94a3b8'} />
+          <span>Admin Portal</span>
         </button>
 
         {user && user.role === 'student' && (

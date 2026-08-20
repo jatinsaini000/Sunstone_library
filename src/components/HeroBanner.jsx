@@ -1,7 +1,14 @@
 import React from 'react';
-import { Play, Info, Zap, Sparkles, BookOpen } from 'lucide-react';
+import { Play, Zap, Sparkles, BookOpen, FileText, Send, Unlock, Lock } from 'lucide-react';
 
-export default function HeroBanner({ book, onOpenReader, onOpenQuickSummary }) {
+export default function HeroBanner({
+  book,
+  onOpenReader,
+  onOpenSnippets,
+  onOpenQuickSummary,
+  onOpenBorrowModal,
+  isBorrowed = false
+}) {
   if (!book) return null;
 
   return (
@@ -26,11 +33,22 @@ export default function HeroBanner({ book, onOpenReader, onOpenQuickSummary }) {
         </p>
 
         <div className="billboard-actions">
-          <button className="btn-play-netflix" onClick={() => onOpenReader(book)}>
-            <Play size={18} fill="#0f172a" /> Read Online Now
+          <button className="btn-play-netflix" onClick={() => onOpenSnippets(book)}>
+            <FileText size={18} /> Read Chapter Snippets
           </button>
-          <button className="btn-info-netflix" onClick={() => onOpenQuickSummary(book)}>
-            <Zap size={18} color="var(--accent-gold)" /> Quick Summary & Takeaways
+
+          {isBorrowed ? (
+            <button className="btn-info-netflix" style={{ background: 'rgba(16, 185, 129, 0.25)', border: '1px solid #10b981', color: '#ffffff' }} onClick={() => onOpenReader(book)}>
+              <BookOpen size={18} /> Read Full Book
+            </button>
+          ) : (
+            <button className="btn-info-netflix" onClick={() => onOpenBorrowModal(book)}>
+              <Send size={18} color="var(--accent-gold)" /> Borrow to Unlock Full Book
+            </button>
+          )}
+
+          <button className="btn-info-netflix" style={{ padding: '10px 16px', background: 'rgba(255,255,255,0.1)' }} onClick={() => onOpenQuickSummary(book)} title="Quick Overview">
+            <Zap size={18} color="var(--accent-gold)" /> Summary
           </button>
         </div>
       </div>

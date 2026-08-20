@@ -1,17 +1,17 @@
 import React from 'react';
-import { Search, GraduationCap, User, Tag } from 'lucide-react';
+import { Search, GraduationCap, User, Tag, ShieldCheck, LogOut } from 'lucide-react';
 
 export default function TopHeader({
   user,
   searchQuery,
   setSearchQuery,
   onOpenAuth,
-  onSwitchUserRole,
+  onLogout,
   currentView,
   setCurrentView
 }) {
-  const userName = user ? user.name.split(' ')[0] : 'Jatin';
-  const userProgram = user ? (user.program === 'All Programs' ? 'BTECH CS' : user.program) : 'BTECH';
+  const userName = user ? user.name.split(' ')[0] : '';
+  const userProgram = user ? (user.program === 'All Programs' ? 'Sunstone Admin' : user.program) : '';
 
   const popularTags = [
     { label: 'Python', query: 'Python' },
@@ -27,7 +27,11 @@ export default function TopHeader({
       <div style={{ display: 'flex', alignItems: 'center', justifyContent: 'space-between', width: '100%', gap: '20px' }}>
         <div className="greeting-text">
           <h1>
-            Hello, {userName} <span style={{ fontSize: '24px' }}>🌟</span>
+            {user ? (
+              <>Hello, {userName} <span style={{ fontSize: '24px' }}>🌟</span></>
+            ) : (
+              <>Sunstone Library <span style={{ fontSize: '24px' }}>📚</span></>
+            )}
           </h1>
         </div>
 
@@ -54,65 +58,94 @@ export default function TopHeader({
           </div>
         </div>
 
+        {/* Right Header Navigation & User Actions */}
         <div style={{ display: 'flex', alignItems: 'center', gap: '12px' }}>
-          {/* Student Profile Quick Switcher */}
-          <div style={{
-            display: 'flex',
-            alignItems: 'center',
-            gap: '4px',
-            background: 'var(--sunstone-card-bg)',
-            border: '1px solid var(--sunstone-border)',
-            borderRadius: '30px',
-            padding: '3px'
-          }}>
-            <button
-              onClick={() => onSwitchUserRole('student1')}
-              style={{
-                padding: '5px 12px',
-                borderRadius: '20px',
-                border: 'none',
-                background: user && user.id === 'usr_student1' ? 'var(--sunstone-navy-dark)' : 'transparent',
-                color: user && user.id === 'usr_student1' ? '#ffffff' : 'var(--sunstone-text-secondary)',
-                fontSize: '12px',
-                fontWeight: '700',
-                cursor: 'pointer',
-                display: 'flex',
-                alignItems: 'center',
-                gap: '4px'
-              }}
-              title="Switch to Student Jatin (B.Tech CS)"
-            >
-              <GraduationCap size={13} /> Jatin (B.Tech)
-            </button>
-
-            <button
-              onClick={() => onSwitchUserRole('student2')}
-              style={{
-                padding: '5px 12px',
-                borderRadius: '20px',
-                border: 'none',
-                background: user && user.id === 'usr_student2' ? 'var(--sunstone-navy-dark)' : 'transparent',
-                color: user && user.id === 'usr_student2' ? '#ffffff' : 'var(--sunstone-text-secondary)',
-                fontSize: '12px',
-                fontWeight: '700',
-                cursor: 'pointer',
-                display: 'flex',
-                alignItems: 'center',
-                gap: '4px'
-              }}
-              title="Switch to Student Ananya (MBA)"
-            >
-              <GraduationCap size={13} /> Ananya (MBA)
-            </button>
-          </div>
-
-          <div className="student-badge-pill">
-            <span>{userProgram} · 2023–27</span>
-          </div>
-
-          <button className="btn-secondary" style={{ padding: '6px 14px', fontSize: '12px' }} onClick={onOpenAuth}>
-            <User size={13} /> Login
+          {/* Admin Portal Button */}
+          <button
+            className="btn-secondary"
+            style={{
+              padding: '6px 14px',
+              fontSize: '12px',
+              borderRadius: '20px',
+              background: currentView === 'admin' ? 'var(--sunstone-navy-dark)' : 'var(--sunstone-card-bg)',
+              color: currentView === 'admin' ? '#ffffff' : 'var(--sunstone-text-primary)',
+              border: '1px solid var(--sunstone-border)',
+              display: 'flex',
+              alignItems: 'center',
+              gap: '6px'
+            }}
+            onClick={() => setCurrentView('admin')}
+            title="Access Prayas Lab Admin Portal"
+          >
+            <ShieldCheck size={14} color={currentView === 'admin' ? '#ffffff' : 'var(--accent-blue)'} />
+            <span>Admin Portal</span>
           </button>
+
+          {/* Logged In User State vs Login Button */}
+          {user ? (
+            <div style={{ display: 'flex', alignItems: 'center', gap: '10px' }}>
+              <div
+                onClick={() => {
+                  if (user.role === 'student') setCurrentView('profile');
+                  else setCurrentView('admin');
+                }}
+                style={{
+                  display: 'flex',
+                  alignItems: 'center',
+                  gap: '8px',
+                  background: 'var(--sunstone-card-bg)',
+                  border: '1px solid var(--sunstone-border)',
+                  borderRadius: '25px',
+                  padding: '4px 12px 4px 6px',
+                  cursor: 'pointer'
+                }}
+                title="View Profile & Bookshelf"
+              >
+                <div
+                  style={{
+                    width: '26px',
+                    height: '26px',
+                    borderRadius: '50%',
+                    background: user.role === 'admin' ? 'var(--accent-sunstone-red)' : 'var(--accent-blue)',
+                    color: '#ffffff',
+                    display: 'flex',
+                    alignItems: 'center',
+                    justifyContent: 'center',
+                    fontSize: '12px',
+                    fontWeight: '800'
+                  }}
+                >
+                  {user.name.charAt(0).toUpperCase()}
+                </div>
+                <div style={{ display: 'flex', flexDirection: 'column' }}>
+                  <span style={{ fontSize: '12px', fontWeight: '800', color: 'var(--sunstone-text-primary)', lineHeight: 1.1 }}>
+                    {user.name}
+                  </span>
+                  <span style={{ fontSize: '10px', color: 'var(--sunstone-text-muted)', fontWeight: '600' }}>
+                    {userProgram}
+                  </span>
+                </div>
+              </div>
+
+              {/* Logout Button */}
+              <button
+                className="btn-secondary"
+                style={{ padding: '6px 10px', fontSize: '12px', borderRadius: '20px', color: '#ef4444', borderColor: 'rgba(239, 68, 68, 0.3)' }}
+                onClick={onLogout}
+                title="Sign Out"
+              >
+                <LogOut size={13} />
+              </button>
+            </div>
+          ) : (
+            <button
+              className="btn-primary"
+              style={{ padding: '7px 16px', fontSize: '12px', borderRadius: '20px' }}
+              onClick={onOpenAuth}
+            >
+              <User size={13} /> Login / Register
+            </button>
+          )}
         </div>
       </div>
 

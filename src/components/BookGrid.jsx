@@ -6,10 +6,12 @@ export default function BookGrid({
   selectedProgram = 'All Programs',
   books = [],
   onOpenReader,
+  onOpenSnippets,
   onOpenQuickSummary,
   onOpenBorrowModal,
   savedBookIds = [],
-  onToggleSave
+  onToggleSave,
+  borrowedBookIds = []
 }) {
   const programDetails = {
     'MBA': {
@@ -128,10 +130,12 @@ export default function BookGrid({
               key={book.id}
               book={book}
               onOpenReader={onOpenReader}
+              onOpenSnippets={onOpenSnippets}
               onOpenQuickSummary={onOpenQuickSummary}
               onOpenBorrowModal={onOpenBorrowModal}
               isSaved={savedBookIds.includes(book.id)}
               onToggleSave={onToggleSave}
+              isBorrowed={borrowedBookIds.includes(book.id)}
             />
           ))}
         </div>
