@@ -13,6 +13,18 @@ import AdminConsole from './components/AdminConsole.jsx';
 import AuthModal from './components/AuthModal.jsx';
 import BorrowModal from './components/BorrowModal.jsx';
 import {
+  Flame,
+  Code,
+  GraduationCap,
+  Server,
+  Briefcase,
+  Sparkles,
+  BookOpenCheck,
+  CheckCircle2,
+  X
+} from 'lucide-react';
+import { initialBooks, initialBorrowRequests, initialStudents } from './starterBooks.js';
+import {
   getBooksFromFirestore,
   getBorrowRequestsFromFirestore,
   addBookToFirestore,
@@ -41,8 +53,8 @@ export default function App() {
     program: 'B.Tech CS'
   });
 
-  // Catalog Books State
-  const [books, setBooks] = useState([]);
+  // Catalog Books State with immediate starter catalog
+  const [books, setBooks] = useState(initialBooks);
   const [savedBookIds, setSavedBookIds] = useState(['bk_cs_1', 'bk_spec_1']);
   const [userNotes, setUserNotes] = useState([
     {
@@ -56,29 +68,8 @@ export default function App() {
     }
   ]);
 
-  const [borrowRequests, setBorrowRequests] = useState([
-    {
-      id: 'req_101',
-      studentId: 'usr_student1',
-      studentName: 'Jatin',
-      studentEmail: 'jatin@sunstone.in',
-      studentProgram: 'B.Tech CS',
-      bookId: 'bk_cs_1',
-      bookTitle: 'Data Structures and Algorithms in Python',
-      requestDate: new Date().toISOString(),
-      borrowType: 'Physical Copy',
-      studentMessage: 'Respected Admin, I need the physical copy for 2 weeks to prepare for the Prayas Lab hackathon and end-term exam. Kindly approve.',
-      status: 'Pending',
-      adminNote: ''
-    }
-  ]);
-
-  const [students, setStudents] = useState([
-    { id: 'usr_student1', name: 'Jatin', email: 'jatin@sunstone.in', program: 'B.Tech CS', status: 'Active' },
-    { id: 'usr_student2', name: 'Ananya Verma', email: 'ananya@sunstone.in', program: 'MBA', status: 'Active' },
-    { id: 'usr_student3', name: 'Rohan Gupta', email: 'rohan@sunstone.in', program: 'BCA', status: 'Active' },
-    { id: 'usr_student4', name: 'Priya Singh', email: 'priya@sunstone.in', program: 'BBA', status: 'Active' }
-  ]);
+  const [borrowRequests, setBorrowRequests] = useState(initialBorrowRequests);
+  const [students, setStudents] = useState(initialStudents);
 
   // Modal Control States
   const [showAuthModal, setShowAuthModal] = useState(false);
@@ -97,34 +88,44 @@ export default function App() {
 
   useEffect(() => {
     async function loadBooksData() {
-      const fsBooks = await getBooksFromFirestore();
-      if (fsBooks && fsBooks.length > 0) {
-        setBooks(fsBooks);
-      } else {
-        fetch('/api/books')
-          .then((res) => res.json())
-          .then((data) => {
-            if (Array.isArray(data) && data.length > 0) setBooks(data);
-          })
-          .catch((err) => console.warn('API fallback:', err));
-      }
+      try {
+        const fsBooks = await getBooksFromFirestore();
+        if (fsBooks && fsBooks.length > 0) {
+          setBooks(fsBooks);
+          return;
+        }
+      } catch (e) {}
+
+      try {
+        const res = await fetch('/api/books');
+        const contentType = res.headers.get('content-type');
+        if (res.ok && contentType && contentType.includes('application/json')) {
+          const data = await res.json();
+          if (Array.isArray(data) && data.length > 0) setBooks(data);
+        }
+      } catch (err) {}
     }
     loadBooksData();
   }, []);
 
   useEffect(() => {
     async function loadRequestsData() {
-      const fsReqs = await getBorrowRequestsFromFirestore();
-      if (fsReqs && fsReqs.length > 0) {
-        setBorrowRequests(fsReqs);
-      } else {
-        fetch('/api/borrow-requests')
-          .then((res) => res.json())
-          .then((data) => {
-            if (Array.isArray(data) && data.length > 0) setBorrowRequests(data);
-          })
-          .catch(() => {});
-      }
+      try {
+        const fsReqs = await getBorrowRequestsFromFirestore();
+        if (fsReqs && fsReqs.length > 0) {
+          setBorrowRequests(fsReqs);
+          return;
+        }
+      } catch (e) {}
+
+      try {
+        const res = await fetch('/api/borrow-requests');
+        const contentType = res.headers.get('content-type');
+        if (res.ok && contentType && contentType.includes('application/json')) {
+          const data = await res.json();
+          if (Array.isArray(data) && data.length > 0) setBorrowRequests(data);
+        }
+      } catch (e) {}
     }
     loadRequestsData();
   }, []);
