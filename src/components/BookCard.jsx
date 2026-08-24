@@ -41,20 +41,6 @@ export default function BookCard({
         />
         <div className="poster-badge">{book.program}</div>
 
-        {/* Borrow Status / Free Preview Badge */}
-        <div className={`poster-borrow-badge ${isBorrowed ? 'unlocked' : 'locked'}`}>
-          {isBorrowed ? (
-            <>
-              <Unlock size={10} />
-              <span>Full Book</span>
-            </>
-          ) : (
-            <>
-              <Eye size={10} />
-              <span>1–5p Preview</span>
-            </>
-          )}
-        </div>
 
         {/* Quick Summary Badge Button */}
         <button

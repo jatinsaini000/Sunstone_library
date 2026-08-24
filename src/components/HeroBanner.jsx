@@ -42,14 +42,16 @@ export default function HeroBanner({
         </p>
 
         <div className="billboard-actions">
-          <button
-            type="button"
-            className="btn-play-netflix"
-            onClick={() => onOpenReader(book)}
-          >
-            <BookOpen size={16} />
-            <span>{isBorrowed ? 'Read Full Book' : 'Read Free Preview (1–5p)'}</span>
-          </button>
+          {isBorrowed && (
+            <button
+              type="button"
+              className="btn-play-netflix"
+              onClick={() => onOpenReader(book)}
+            >
+              <BookOpen size={16} />
+              <span>Read Full Book</span>
+            </button>
+          )}
 
           <button
             type="button"
