@@ -1,5 +1,6 @@
 import React from 'react';
 import { BookOpen, Zap, Bookmark, Star, Send, FileText, Lock, Unlock, Eye } from 'lucide-react';
+import { getDriveFileIdForFilename } from '../driveBookMap.js';
 
 export default function BookCard({
   book,
@@ -11,6 +12,15 @@ export default function BookCard({
   onToggleSave,
   isBorrowed = false
 }) {
+  const localFilename = book?.localPath
+    ? book.localPath.split('/').pop()
+    : (book?.pdfUrl && book.pdfUrl.includes('/uploads/') ? book.pdfUrl.split('/').pop() : book ? `${book.title}.pdf` : null);
+
+  const driveId = getDriveFileIdForFilename(localFilename || book.title);
+  const finalCoverUrl = driveId 
+    ? `https://drive.google.com/thumbnail?id=${driveId}&sz=w400`
+    : book.coverUrl;
+
   return (
     <div className="netflix-card">
       {/* Poster Image Container - Clicking directly opens Reader */}
@@ -21,7 +31,7 @@ export default function BookCard({
         title={isBorrowed ? 'Click image to read full book' : 'Click image to open free preview (Pages 1–5)'}
       >
         <img
-          src={book.coverUrl}
+          src={finalCoverUrl}
           alt={book.title}
           className="poster-img"
           loading="lazy"
