@@ -24,37 +24,47 @@ export default function BorrowModal({ book, user, onClose, onSubmitBorrowRequest
 
   return (
     <div className="modal-overlay" onClick={onClose}>
-      <div className="modal-card" style={{ maxWidth: '520px' }} onClick={(e) => e.stopPropagation()}>
-        <button className="modal-close-btn" onClick={onClose}>
+      <div className="modal-card bottom-sheet-modal" style={{ maxWidth: '520px' }} onClick={(e) => e.stopPropagation()}>
+        {/* Mobile Drag Handle */}
+        <div className="sheet-drag-handle"></div>
+
+        <button type="button" className="modal-close-btn" onClick={onClose} aria-label="Close modal">
           <X size={18} />
         </button>
 
-        <div style={{ padding: '28px', background: 'var(--sunstone-card-bg)' }}>
-          <div style={{ display: 'flex', alignItems: 'center', gap: '14px', marginBottom: '20px' }}>
-            <div style={{ width: '44px', height: '44px', borderRadius: '12px', background: 'rgba(37, 99, 235, 0.1)', color: 'var(--accent-blue)', display: 'flex', alignItems: 'center', justifyContent: 'center' }}>
-              <Send size={22} style={{ margin: '0 auto' }} />
+        <div className="borrow-modal-content">
+          <div className="borrow-header-row">
+            <div className="borrow-icon-box">
+              <Send size={20} />
             </div>
             <div>
-              <h3 style={{ fontSize: '18px', fontWeight: '800', color: 'var(--sunstone-text-primary)' }}>Submit Book Borrow Request</h3>
-              <p style={{ fontSize: '12px', color: 'var(--sunstone-text-muted)' }}>Sunstone Prayas Lab Library Services</p>
+              <h3 className="borrow-modal-title">Submit Borrow Request</h3>
+              <p className="borrow-modal-sub">Sunstone Prayas Lab Library</p>
             </div>
           </div>
 
           {successMsg ? (
-            <div style={{ textAlign: 'center', padding: '30px 10px', color: 'var(--accent-emerald)' }}>
-              <div style={{ fontSize: '40px', marginBottom: '10px' }}>✓</div>
-              <h4 style={{ fontSize: '18px', fontWeight: '800', marginBottom: '6px' }}>Borrow Request Sent!</h4>
-              <p style={{ fontSize: '13px', color: 'var(--sunstone-text-secondary)' }}>
-                Your message has been sent to the Admin Console. You can track status in your Student Profile.
+            <div className="borrow-success-box">
+              <div className="borrow-success-check">✓</div>
+              <h4 className="borrow-success-title">Borrow Request Sent!</h4>
+              <p className="borrow-success-desc">
+                Your message has been sent to the Admin Console. You can track approval status in your Student Profile.
               </p>
             </div>
           ) : (
-            <form onSubmit={handleSubmit}>
-              <div style={{ background: 'var(--sunstone-bg)', border: '1px solid var(--sunstone-border)', padding: '14px', borderRadius: '10px', marginBottom: '16px', display: 'flex', gap: '12px', alignItems: 'center' }}>
-                <img src={book.coverUrl} alt={book.title} style={{ width: '40px', height: '54px', objectFit: 'cover', borderRadius: '4px' }} />
-                <div>
-                  <h4 style={{ fontSize: '14px', fontWeight: '800', color: 'var(--sunstone-text-primary)' }}>{book.title}</h4>
-                  <span className="status-badge active" style={{ fontSize: '10px' }}>{book.program}</span>
+            <form onSubmit={handleSubmit} className="borrow-form">
+              <div className="borrow-book-preview">
+                <img
+                  src={book.coverUrl}
+                  alt={book.title}
+                  className="borrow-book-cover"
+                  onError={(e) => {
+                    e.target.src = 'https://images.unsplash.com/photo-1544716278-ca5e3f4abd8c?auto=format&fit=crop&w=600&q=80';
+                  }}
+                />
+                <div className="borrow-book-info">
+                  <h4 className="borrow-book-name">{book.title}</h4>
+                  <span className="status-badge active">{book.program}</span>
                 </div>
               </div>
 
@@ -75,18 +85,19 @@ export default function BorrowModal({ book, user, onClose, onSubmitBorrowRequest
                 <textarea
                   className="form-control"
                   rows="3"
-                  placeholder="Explain why you need this book (e.g., preparing for B.Tech CS mid-term exam, MBA case study project, etc.)..."
+                  placeholder="Explain why you need this book (e.g. preparing for exams, lab assignments)..."
                   value={studentMessage}
                   onChange={(e) => setStudentMessage(e.target.value)}
                   required
                 />
-                <span style={{ fontSize: '11px', color: 'var(--sunstone-text-muted)', marginTop: '4px' }}>
-                  This message will appear directly in the Admin Console inbox for review.
+                <span className="form-hint">
+                  This message will appear directly in the Admin Console inbox.
                 </span>
               </div>
 
-              <button type="submit" className="btn-primary" style={{ width: '100%', justifyContent: 'center', padding: '12px', marginTop: '10px' }}>
-                <Send size={16} /> Send Borrow Request to Admin
+              <button type="submit" className="btn-primary borrow-submit-btn">
+                <Send size={16} />
+                <span>Send Borrow Request to Admin</span>
               </button>
             </form>
           )}

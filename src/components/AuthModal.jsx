@@ -43,7 +43,6 @@ export default function AuthModal({ onClose, onLoginSuccess, onRegisterSuccess, 
         status: 'Active'
       });
     } else {
-      // Check if user is logging in as admin through main login form
       if (email.trim().toLowerCase() === SECURE_ADMIN_EMAIL && password === SECURE_ADMIN_PASSWORD) {
         onAdminLoginSuccess({
           id: 'usr_admin',
@@ -82,177 +81,201 @@ export default function AuthModal({ onClose, onLoginSuccess, onRegisterSuccess, 
 
   return (
     <div className="modal-overlay" onClick={onClose}>
-      <div className="modal-card" style={{ maxWidth: '440px' }} onClick={(e) => e.stopPropagation()}>
-        <button className="modal-close-btn" onClick={onClose}>
+      <div className="modal-card bottom-sheet-modal" style={{ maxWidth: '460px' }} onClick={(e) => e.stopPropagation()}>
+        {/* Mobile Drag Handle */}
+        <div className="sheet-drag-handle"></div>
+
+        <button type="button" className="modal-close-btn" onClick={onClose} aria-label="Close modal">
           <X size={18} />
         </button>
 
-        <div style={{ padding: '32px', background: 'var(--sunstone-card-bg)' }}>
-          {/* Header Icon */}
-          <div style={{ textAlign: 'center', marginBottom: '24px' }}>
-            <div style={{
-              width: '52px',
-              height: '52px',
-              borderRadius: '14px',
-              background: isAdminLoginMode ? 'var(--accent-sunstone-red)' : '#ffffff',
-              border: isAdminLoginMode ? 'none' : '1px solid var(--sunstone-border)',
-              boxShadow: 'var(--shadow-card)',
-              color: 'white',
-              display: 'flex',
-              alignItems: 'center',
-              justifyContent: 'center',
-              margin: '0 auto 12px'
-            }}>
+        <div className="auth-modal-content">
+          {/* Header Icon & Brand */}
+          <div className="auth-header-brand">
+            <div className={`auth-brand-badge ${isAdminLoginMode ? 'admin' : ''}`}>
               {isAdminLoginMode ? (
                 <ShieldCheck size={28} />
               ) : (
-                <SunstoneLogo size={32} color="#16203b" />
+                <SunstoneLogo size={28} color="#16203b" />
               )}
             </div>
-            <h2 style={{ fontSize: '22px', fontWeight: '800', color: 'var(--sunstone-text-primary)' }}>
-              {isAdminLoginMode ? 'Prayas Lab Admin Portal' : isRegisterMode ? 'Student Registration' : 'Sunstone Student Login'}
-            </h2>
-            <p style={{ color: 'var(--sunstone-text-secondary)', fontSize: '13px' }}>
-              {isAdminLoginMode ? 'Restricted administrative authentication' : 'Sunstone Prayas Lab Digital Library'}
+            <h3 className="auth-title">
+              {isAdminLoginMode
+                ? 'Prayas Admin Portal'
+                : isRegisterMode
+                ? 'Student Registration'
+                : 'Student Sign In'}
+            </h3>
+            <p className="auth-subtitle">
+              {isAdminLoginMode
+                ? 'Authorized Library Coordinators Only'
+                : 'Sunstone Prayas Lab Knowledge Portal'}
             </p>
           </div>
 
           {errorMsg && (
-            <div style={{ background: 'rgba(239, 68, 68, 0.1)', border: '1px solid rgba(239, 68, 68, 0.3)', color: '#dc2626', padding: '10px', borderRadius: '8px', fontSize: '12px', marginBottom: '16px', fontWeight: '600' }}>
+            <div className="auth-error-banner">
               {errorMsg}
             </div>
           )}
 
           {isAdminLoginMode ? (
-            <form onSubmit={handleAdminSubmit}>
+            /* ADMIN LOGIN FORM */
+            <form onSubmit={handleAdminSubmit} className="auth-form">
               <div className="form-group">
-                <label className="form-label">Admin Email / ID</label>
+                <label className="form-label">
+                  <Key size={13} /> Admin Master Email
+                </label>
                 <input
                   type="email"
                   className="form-control"
                   placeholder="admin@sunstone.in"
                   value={adminId}
-                  onChange={(e) => setAdminId(e.target.value)}
+                  onChange={(e) => {
+                    setAdminId(e.target.value);
+                    setErrorMsg('');
+                  }}
                   required
                 />
               </div>
 
               <div className="form-group">
-                <label className="form-label">Admin Password</label>
+                <label className="form-label">
+                  <Lock size={13} /> Master Security Key
+                </label>
                 <input
                   type="password"
                   className="form-control"
-                  placeholder="••••••••"
+                  placeholder="••••••••••••"
                   value={adminPass}
-                  onChange={(e) => setAdminPass(e.target.value)}
+                  onChange={(e) => {
+                    setAdminPass(e.target.value);
+                    setErrorMsg('');
+                  }}
                   required
                 />
               </div>
 
-              <button type="submit" className="btn-primary" style={{ width: '100%', justifyContent: 'center', padding: '12px', marginTop: '10px', background: 'var(--accent-sunstone-red)' }}>
-                <Key size={16} /> Authenticate Admin Console
+              <button
+                type="submit"
+                className="btn-primary auth-submit-btn admin-theme"
+              >
+                <ShieldCheck size={16} /> Authenticate Admin Access
               </button>
 
-              <div style={{ marginTop: '16px', textAlign: 'center' }}>
+              <div className="auth-mode-toggle">
                 <button
                   type="button"
-                  onClick={() => setIsAdminLoginMode(false)}
-                  style={{ background: 'none', border: 'none', color: 'var(--sunstone-text-secondary)', fontSize: '12px', fontWeight: '700', cursor: 'pointer' }}
+                  onClick={() => {
+                    setIsAdminLoginMode(false);
+                    setErrorMsg('');
+                  }}
+                  className="auth-toggle-link"
                 >
                   ← Back to Student Login
                 </button>
               </div>
             </form>
           ) : (
-            <form onSubmit={handleStudentSubmit}>
+            /* STUDENT LOGIN / REGISTRATION FORM */
+            <form onSubmit={handleStudentSubmit} className="auth-form">
               {isRegisterMode && (
-                <div className="form-group">
-                  <label className="form-label">Full Name</label>
-                  <input
-                    type="text"
-                    className="form-control"
-                    placeholder="e.g. Rahul Verma"
-                    value={name}
-                    onChange={(e) => setName(e.target.value)}
-                    required
-                  />
-                </div>
+                <>
+                  <div className="form-group">
+                    <label className="form-label">
+                      <User size={13} /> Full Name *
+                    </label>
+                    <input
+                      type="text"
+                      className="form-control"
+                      placeholder="e.g. Aryan Sharma"
+                      value={name}
+                      onChange={(e) => setName(e.target.value)}
+                      required
+                    />
+                  </div>
+
+                  <div className="form-group">
+                    <label className="form-label">
+                      <GraduationCap size={13} /> Enrolled Program *
+                    </label>
+                    <select
+                      className="form-control"
+                      value={program}
+                      onChange={(e) => setProgram(e.target.value)}
+                    >
+                      <option value="B.Tech CS">B.Tech CS (Computer Science)</option>
+                      <option value="MBA">MBA (Management & Finance)</option>
+                      <option value="BCA">BCA (Software Development)</option>
+                      <option value="BBA">BBA (Business Administration)</option>
+                    </select>
+                  </div>
+                </>
               )}
 
               <div className="form-group">
-                <label className="form-label">Email Address</label>
+                <label className="form-label">
+                  <Mail size={13} /> Sunstone Student Email *
+                </label>
                 <input
                   type="email"
                   className="form-control"
-                  placeholder="student@sunstone.in"
+                  placeholder="student@sunstone.edu.in"
                   value={email}
-                  onChange={(e) => setEmail(e.target.value)}
+                  onChange={(e) => {
+                    setEmail(e.target.value);
+                    setErrorMsg('');
+                  }}
                   required
                 />
               </div>
 
               <div className="form-group">
-                <label className="form-label">Password</label>
+                <label className="form-label">
+                  <Lock size={13} /> Password *
+                </label>
                 <input
                   type="password"
                   className="form-control"
-                  placeholder="••••••••"
+                  placeholder="••••••••••••"
                   value={password}
                   onChange={(e) => setPassword(e.target.value)}
                   required
                 />
               </div>
 
-              {isRegisterMode && (
-                <div className="form-group">
-                  <label className="form-label">Institute Academic Program</label>
-                  <select
-                    className="form-control"
-                    value={program}
-                    onChange={(e) => setProgram(e.target.value)}
-                  >
-                    <option value="MBA">MBA</option>
-                    <option value="B.Tech CS">B.Tech CS</option>
-                    <option value="BCA">BCA</option>
-                    <option value="BBA">BBA</option>
-                  </select>
-                </div>
-              )}
-
-              <button type="submit" className="btn-primary" style={{ width: '100%', justifyContent: 'center', padding: '12px', marginTop: '10px', background: 'var(--sunstone-navy-dark)' }}>
-                {isRegisterMode ? 'Create Student Account' : 'Sign In'}
+              <button
+                type="submit"
+                className="btn-primary auth-submit-btn"
+              >
+                {isRegisterMode ? 'Complete Registration' : 'Sign In to Sunstone'}
               </button>
 
-              <div style={{ marginTop: '16px', textAlign: 'center', fontSize: '13px', color: 'var(--sunstone-text-muted)' }}>
-                {isRegisterMode ? 'Already registered? ' : 'New to Prayas Library? '}
+              <div className="auth-mode-toggle">
                 <button
                   type="button"
-                  onClick={() => setIsRegisterMode(!isRegisterMode)}
-                  style={{ background: 'none', border: 'none', color: 'var(--accent-sunstone-red)', fontWeight: '800', cursor: 'pointer' }}
+                  onClick={() => {
+                    setIsRegisterMode(!isRegisterMode);
+                    setErrorMsg('');
+                  }}
+                  className="auth-toggle-link"
                 >
-                  {isRegisterMode ? 'Sign In Here' : 'Register Account'}
+                  {isRegisterMode
+                    ? 'Already have an account? Sign In'
+                    : "Don't have an account? Register as Student"}
                 </button>
               </div>
 
-              {/* Discrete Secret Admin Login Link */}
-              <div style={{ marginTop: '28px', paddingTop: '16px', borderTop: '1px solid var(--sunstone-border)', textAlign: 'center' }}>
+              <div className="auth-admin-footer">
                 <button
                   type="button"
-                  onClick={() => setIsAdminLoginMode(true)}
-                  style={{
-                    background: 'none',
-                    border: 'none',
-                    color: 'var(--sunstone-text-muted)',
-                    fontSize: '11px',
-                    fontWeight: '600',
-                    cursor: 'pointer',
-                    display: 'inline-flex',
-                    alignItems: 'center',
-                    gap: '4px'
+                  onClick={() => {
+                    setIsAdminLoginMode(true);
+                    setErrorMsg('');
                   }}
-                  title="Restricted Admin Login"
+                  className="auth-admin-link"
                 >
-                  <ShieldCheck size={12} /> Admin Access
+                  <ShieldCheck size={14} /> Library Coordinator / Admin Portal
                 </button>
               </div>
             </form>

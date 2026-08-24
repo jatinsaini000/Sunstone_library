@@ -50,50 +50,28 @@ export default function BookGrid({
   const IconComponent = currentMeta ? currentMeta.icon : Layers;
 
   return (
-    <div style={{ display: 'flex', flexDirection: 'column', gap: '24px' }}>
+    <div className="book-grid-page">
       {/* Program Banner Header */}
       {currentMeta && (
-        <div style={{
-          background: 'var(--sunstone-card-bg)',
-          border: '1px solid var(--sunstone-border)',
-          borderRadius: 'var(--radius-lg)',
-          boxShadow: 'var(--shadow-card)',
-          padding: '24px 28px',
-          display: 'flex',
-          alignItems: 'center',
-          justifyContent: 'space-between',
-          gap: '20px',
-          flexWrap: 'wrap'
-        }}>
-          <div style={{ display: 'flex', alignItems: 'center', gap: '16px' }}>
-            <div style={{
-              width: '52px',
-              height: '52px',
-              borderRadius: '14px',
-              background: 'var(--sunstone-navy-dark)',
-              color: '#ffffff',
-              display: 'flex',
-              alignItems: 'center',
-              justifyContent: 'center'
-            }}>
-              <IconComponent size={28} />
+        <div className="program-banner-card">
+          <div className="program-banner-main">
+            <div className="program-banner-icon-box">
+              <IconComponent size={26} />
             </div>
             <div>
-              <div style={{ display: 'flex', alignItems: 'center', gap: '10px', marginBottom: '4px' }}>
-                <h2 style={{ fontSize: '20px', fontWeight: '800', color: 'var(--sunstone-text-primary)' }}>
-                  {currentMeta.title}
-                </h2>
-                <span className="status-badge active" style={{ fontSize: '11px' }}>
+              <div className="program-banner-title-row">
+                <h2 className="program-banner-title">{currentMeta.title}</h2>
+                <span className="status-badge active">
                   {books.length} {books.length === 1 ? 'Book' : 'Books'}
                 </span>
               </div>
-              <p style={{ color: 'var(--sunstone-text-secondary)', fontSize: '13px', maxWidth: '650px' }}>
+              <p className="program-banner-desc">
                 {currentMeta.desc}
               </p>
             </div>
           </div>
 
-          <div className="student-badge-pill" style={{ fontSize: '12px', padding: '6px 14px' }}>
+          <div className="program-banner-badge-pill">
             ⚡ Prayas Lab Curriculum Mapped
           </div>
         </div>
@@ -101,30 +79,17 @@ export default function BookGrid({
 
       {/* Grid Container for Cards */}
       {books.length === 0 ? (
-        <div style={{
-          background: 'var(--sunstone-card-bg)',
-          border: '1px solid var(--sunstone-border)',
-          borderRadius: 'var(--radius-lg)',
-          boxShadow: 'var(--shadow-card)',
-          textAlign: 'center',
-          padding: '60px 20px',
-          margin: '20px 0'
-        }}>
-          <BookX size={48} color="var(--sunstone-text-muted)" style={{ marginBottom: '16px' }} />
-          <h3 style={{ fontSize: '18px', fontWeight: '800', marginBottom: '8px', color: 'var(--sunstone-text-primary)' }}>
+        <div className="empty-catalog-card">
+          <BookX size={44} color="var(--sunstone-text-muted)" style={{ marginBottom: '14px' }} />
+          <h3 className="empty-catalog-title">
             No Books Found in {selectedProgram}
           </h3>
-          <p style={{ color: 'var(--sunstone-text-secondary)', fontSize: '14px', maxWidth: '420px', margin: '0 auto' }}>
-            We couldn't find any books matching this program filter. Try selecting another program tab above or reset search.
+          <p className="empty-catalog-desc">
+            We couldn't find any books matching this program filter. Try selecting another program tab above or clear your search.
           </p>
         </div>
       ) : (
-        <div style={{
-          display: 'flex',
-          flexWrap: 'wrap',
-          gap: '24px',
-          paddingTop: '6px'
-        }}>
+        <div className="book-grid-container">
           {books.map((book) => (
             <BookCard
               key={book.id}

@@ -1,6 +1,7 @@
 import React, { useState, useEffect } from 'react';
 import Sidebar from './components/Sidebar.jsx';
 import TopHeader from './components/TopHeader.jsx';
+import MobileNav from './components/MobileNav.jsx';
 import HeroBanner from './components/HeroBanner.jsx';
 import ProgramTabs from './components/ProgramTabs.jsx';
 import NetflixRow from './components/NetflixRow.jsx';
@@ -152,62 +153,189 @@ export default function App() {
 
   useEffect(() => {
     async function loadNotesData() {
-      if (user && user.id) {
-        const fsNotes = await getNotesFromFirestore(user.id);
+      try {
+        const fsNotes = await getNotesFromFirestore();
         if (fsNotes && fsNotes.length > 0) {
           setUserNotes(fsNotes);
-        } else {
-          fetch(`/api/notes/${user.id}`)
-            .then((res) => res.json())
-            .then((data) => {
-              if (Array.isArray(data) && data.length > 0) setUserNotes(data);
-            })
-            .catch(() => {});
         }
-      }
+      } catch (e) {}
     }
     loadNotesData();
-  }, [user]);
+  }, []);
 
-  const handleSwitchUserRole = (roleKey) => {
-    if (roleKey === 'student1') {
-      setUser({ id: 'usr_student1', name: 'Jatin', email: 'jatin@sunstone.in', role: 'student', program: 'B.Tech CS' });
-      setCurrentView('catalog');
-    } else if (roleKey === 'student2') {
-      setUser({ id: 'usr_student2', name: 'Ananya Verma', email: 'ananya@sunstone.in', role: 'student', program: 'MBA' });
-      setCurrentView('catalog');
+  const triggerToast = (text, type = 'success') => {
+    setToastMessage({ text, type });
+    setTimeout(() => {
+      setToastMessage(null);
+    }, 4000);
+  };
+
+  const handleToggleSaveBook = (bookId) => {
+    setSavedBookIds((prev) => {
+      const isSaved = prev.includes(bookId);
+      const next = isSaved ? prev.filter((id) => id !== bookId) : [...prev, bookId];
+      triggerToast(isSaved ? 'Book removed from your shelf' : 'Book saved to your personal shelf!');
+      return next;
+    });
+  };
+
+  const handleAddNote = async (newNote) => {
+    const noteObj = {
+      ...newNote,
+      id: 'n_' + Date.now(),
+      studentId: user ? user.id : 'usr_guest',
+      createdAt: new Date().toISOString()
+    };
+    setUserNotes((prev) => [noteObj, ...prev]);
+    try {
+      await addNoteToFirestore(noteObj);
+    } catch (e) {}
+    triggerToast('Study note saved successfully!');
+  };
+
+  const handleDeleteNote = async (noteId) => {
+    setUserNotes((prev) => prev.filter((n) => n.id !== noteId));
+    try {
+      await deleteNoteFromFirestore(noteId);
+    } catch (e) {}
+    triggerToast('Note deleted from your repository.');
+  };
+
+  const handleSubmitBorrowRequest = async (requestPayload) => {
+    const newReq = {
+      ...requestPayload,
+      id: 'req_' + Date.now(),
+      studentId: user ? user.id : 'usr_guest',
+      studentName: user ? user.name : 'Guest Student',
+      studentEmail: user ? user.email : 'student@sunstone.in',
+      program: user ? user.program : 'B.Tech CS',
+      requestDate: new Date().toISOString(),
+      status: 'Pending',
+      adminNote: ''
+    };
+
+    setBorrowRequests((prev) => [newReq, ...prev]);
+
+    try {
+      await addBorrowRequestToFirestore(newReq);
+    } catch (e) {}
+
+    try {
+      await fetch('/api/borrow-requests', {
+        method: 'POST',
+        headers: { 'Content-Type': 'application/json' },
+        body: JSON.stringify(newReq)
+      });
+    } catch (e) {}
+
+    triggerToast(`Borrow request submitted for "${requestPayload.bookTitle}"!`);
+  };
+
+  const handleUpdateBorrowStatus = async (requestId, status, adminNote) => {
+    setBorrowRequests((prev) =>
+      prev.map((r) => (r.id === requestId ? { ...r, status, adminNote } : r))
+    );
+
+    try {
+      await updateBorrowStatusInFirestore(requestId, status, adminNote);
+    } catch (e) {}
+
+    try {
+      await fetch(`/api/borrow-requests/${requestId}`, {
+        method: 'PATCH',
+        headers: { 'Content-Type': 'application/json' },
+        body: JSON.stringify({ status, adminNote })
+      });
+    } catch (e) {}
+
+    triggerToast(`Request marked as ${status}.`);
+  };
+
+  const handleUploadBook = async (formData) => {
+    try {
+      const res = await fetch('/api/books', {
+        method: 'POST',
+        body: formData
+      });
+      if (res.ok) {
+        const newBook = await res.json();
+        setBooks((prev) => [newBook, ...prev]);
+        try {
+          await addBookToFirestore(newBook);
+        } catch (e) {}
+        triggerToast(`Book "${newBook.title}" added to Sunstone Library!`);
+      }
+    } catch (e) {
+      const newBookFallback = {
+        id: 'bk_' + Date.now(),
+        title: formData.get('title'),
+        author: formData.get('author'),
+        program: formData.get('program'),
+        category: formData.get('category'),
+        coverUrl: 'https://images.unsplash.com/photo-1544716278-ca5e3f4abd8c?auto=format&fit=crop&w=600&q=80',
+        pdfUrl: formData.get('pdfUrl') || '',
+        description: formData.get('description'),
+        pages: 320,
+        rating: 4.9,
+        publishedYear: 2026,
+        isCustom: true
+      };
+      setBooks((prev) => [newBookFallback, ...prev]);
+      try {
+        await addBookToFirestore(newBookFallback);
+      } catch (err) {}
+      triggerToast(`Book published to Sunstone Library!`);
     }
   };
 
-  const filteredBooks = books.filter((b) => {
-    const matchesProgram =
-      selectedProgram === 'All Programs' ||
-      b.program === selectedProgram;
+  const handleDeleteBook = async (bookId) => {
+    setBooks((prev) => prev.filter((b) => b.id !== bookId));
+    try {
+      await deleteBookFromFirestore(bookId);
+    } catch (e) {}
+    try {
+      await fetch(`/api/books/${bookId}`, { method: 'DELETE' });
+    } catch (e) {}
+    triggerToast('Book removed from Sunstone catalog.');
+  };
 
+  const handleToggleStudentStatus = (studentId) => {
+    setStudents((prev) =>
+      prev.map((s) => (s.id === studentId ? { ...s, status: s.status === 'Active' ? 'Suspended' : 'Active' } : s))
+    );
+    triggerToast('Student access permissions updated.');
+  };
+
+  // Filter books based on search query and selected program
+  const filteredBooks = books.filter((b) => {
+    const matchesProgram = selectedProgram === 'All Programs' || b.program === selectedProgram;
     const query = searchQuery.toLowerCase().trim();
+    if (!query) return matchesProgram;
+
     const matchesSearch =
-      !query ||
       b.title.toLowerCase().includes(query) ||
       b.author.toLowerCase().includes(query) ||
-      b.category.toLowerCase().includes(query) ||
       b.program.toLowerCase().includes(query) ||
-      (b.quickSummary?.highlights && b.quickSummary.highlights.some(h => h.toLowerCase().includes(query)));
+      b.category.toLowerCase().includes(query) ||
+      (b.description && b.description.toLowerCase().includes(query));
 
     return matchesProgram && matchesSearch;
   });
 
-  const programCounts = {
-    'All Programs': books.length,
-    'MBA': books.filter((b) => b.program === 'MBA').length,
-    'B.Tech CS': books.filter((b) => b.program === 'B.Tech CS').length,
-    'BCA': books.filter((b) => b.program === 'BCA').length,
-    'BBA': books.filter((b) => b.program === 'BBA').length,
-    'Special Collections': books.filter((b) => b.program === 'Special Collections').length,
-    'Journals': books.filter((b) => b.program === 'Journals').length
-  };
+  // Calculate counts for program categories
+  const programCounts = books.reduce(
+    (acc, b) => {
+      acc['All Programs'] = (acc['All Programs'] || 0) + 1;
+      if (b.program) {
+        acc[b.program] = (acc[b.program] || 0) + 1;
+      }
+      return acc;
+    },
+    { 'All Programs': books.length }
+  );
 
-  const featuredBook = books[0] || null;
-  const trendingBooks = books.slice(0, 5);
+  const featuredBook = books[0] || initialBooks[0];
+  const trendingBooks = books.slice(0, 6);
   const btechBooks = books.filter((b) => b.program === 'B.Tech CS');
   const mbaBooks = books.filter((b) => b.program === 'MBA');
   const bcaBooks = books.filter((b) => b.program === 'BCA');
@@ -215,171 +343,13 @@ export default function App() {
   const specialBooks = books.filter((b) => b.program === 'Special Collections');
   const journalBooks = books.filter((b) => b.program === 'Journals');
 
-  const handleToggleSaveBook = (bookId) => {
-    setSavedBookIds((prev) =>
-      prev.includes(bookId) ? prev.filter((id) => id !== bookId) : [...prev, bookId]
-    );
-  };
-
-  const handleAddNote = (newNoteData) => {
-    const noteObj = {
-      id: 'note_' + Date.now(),
-      studentId: user ? user.id : 'usr_student1',
-      ...newNoteData,
-      createdAt: new Date().toISOString()
-    };
-    setUserNotes((prev) => [noteObj, ...prev]);
-    addNoteToFirestore(noteObj).catch(() => {});
-    fetch('/api/notes', {
-      method: 'POST',
-      headers: { 'Content-Type': 'application/json' },
-      body: JSON.stringify(noteObj)
-    }).catch(() => {});
-  };
-
-  const handleDeleteNote = (noteId) => {
-    setUserNotes((prev) => prev.filter((n) => n.id !== noteId));
-    deleteNoteFromFirestore(noteId).catch(() => {});
-    fetch(`/api/notes/${noteId}`, { method: 'DELETE' }).catch(() => {});
-  };
-
-  const handleUploadBook = async (formData) => {
-    let newBook = null;
-    try {
-      const res = await fetch('/api/books', { method: 'POST', body: formData });
-      if (res.ok) {
-        const data = await res.json();
-        if (data.book) newBook = data.book;
-      }
-    } catch (e) {
-      console.warn('Local API unavailable, falling back to direct Firebase/client sync:', e.message);
-    }
-
-    if (!newBook) {
-      const parseSnippets = (input) => {
-        if (!input) return [];
-        if (Array.isArray(input)) return input;
-        try {
-          const parsed = JSON.parse(input);
-          if (Array.isArray(parsed)) return parsed;
-        } catch(e) {}
-        const blocks = String(input).split(/\n\s*\n/).map(s => s.trim()).filter(Boolean);
-        return blocks.map((block, idx) => {
-          const firstLine = block.split('\n')[0];
-          const rest = block.split('\n').slice(1).join(' ').trim();
-          return {
-            chapterNumber: idx + 1,
-            title: firstLine.startsWith('Chapter') ? firstLine : `Chapter ${idx + 1}: ${firstLine.slice(0, 40)}`,
-            summary: rest || block
-          };
-        });
-      };
-
-      const parseArray = (input) => {
-        if (!input) return [];
-        if (Array.isArray(input)) return input;
-        return String(input).split('\n').map(s => s.trim()).filter(Boolean);
-      };
-
-      const title = formData.get('title') || 'Untitled Book';
-      const author = formData.get('author') || 'Unknown Author';
-      const program = formData.get('program') || 'All Programs';
-      const category = formData.get('category') || 'General Academic';
-      const coverUrl = formData.get('coverUrl') || 'https://images.unsplash.com/photo-1497633762265-9d179a990aa6?auto=format&fit=crop&w=600&q=80';
-      const pdfUrl = formData.get('pdfUrl') || 'https://raw.githubusercontent.com/mozilla/pdf.js/ba2edeae/web/compressed.tracemonkey-pldi-09.pdf';
-      const description = formData.get('description') || 'No description provided.';
-      const highlights = parseArray(formData.get('highlights'));
-      const keyTakeaways = parseArray(formData.get('keyTakeaways'));
-      const chapterSnippets = parseSnippets(formData.get('chapterSnippets'));
-
-      newBook = {
-        id: 'bk_' + Date.now(),
-        title,
-        author,
-        program,
-        category,
-        coverUrl,
-        fileType: 'url',
-        pdfUrl,
-        downloadable: true,
-        isbn: 'ISBN-' + Math.floor(100000000 + Math.random() * 900000000),
-        rating: 4.8,
-        pages: 350,
-        publishedYear: 2026,
-        chapterSnippets,
-        quickSummary: {
-          highlights: highlights.length > 0 ? highlights : ['Comprehensive academic material mapped to Sunstone curriculum.'],
-          keyTakeaways: keyTakeaways.length > 0 ? keyTakeaways : ['Gain key theoretical and practical insights.'],
-          estimatedReadingTime: '6 Hours',
-          difficultyLevel: 'Standard Academic'
-        },
-        description
-      };
-    }
-
-    setBooks((prev) => [newBook, ...prev]);
-    addBookToFirestore(newBook).catch((err) => console.warn('Firebase book sync error:', err));
-  };
-
-  const handleDeleteBook = async (bookId) => {
-    setBooks((prev) => prev.filter((b) => b.id !== bookId));
-    deleteBookFromFirestore(bookId).catch(() => {});
-    fetch(`/api/books/${bookId}`, { method: 'DELETE' }).catch(() => {});
-  };
-
-  const handleSubmitBorrowRequest = (reqData) => {
-    const newReq = {
-      id: 'req_' + Date.now(),
-      studentId: user ? user.id : 'usr_student1',
-      studentName: user ? user.name : 'Jatin',
-      studentEmail: user ? user.email : 'jatin@sunstone.in',
-      studentProgram: user ? user.program : 'B.Tech CS',
-      requestDate: new Date().toISOString(),
-      status: 'Pending',
-      adminNote: '',
-      ...reqData
-    };
-    setBorrowRequests((prev) => [newReq, ...prev]);
-    addBorrowRequestToFirestore(newReq).catch(() => {});
-    fetch('/api/borrow-requests', {
-      method: 'POST',
-      headers: { 'Content-Type': 'application/json' },
-      body: JSON.stringify(newReq)
-    }).catch(() => {});
-
-    setToastMessage({
-      text: `Borrow Request for "${reqData.bookTitle}" submitted!`,
-      actionText: null
-    });
-    setTimeout(() => setToastMessage(null), 5000);
-  };
-
-  const handleUpdateBorrowStatus = (reqId, status, adminNote) => {
-    setBorrowRequests((prev) =>
-      prev.map((r) => (r.id === reqId ? { ...r, status, adminNote } : r))
-    );
-    updateBorrowStatusInFirestore(reqId, status, adminNote).catch(() => {});
-    fetch(`/api/borrow-requests/${reqId}`, {
-      method: 'PUT',
-      headers: { 'Content-Type': 'application/json' },
-      body: JSON.stringify({ status, adminNote })
-    }).catch(() => {});
-  };
-
-  const handleToggleStudentStatus = (studentId, newStatus) => {
-    setStudents((prev) =>
-      prev.map((s) => (s.id === studentId ? { ...s, status: newStatus } : s))
-    );
-    fetch(`/api/students/${studentId}/status`, {
-      method: 'PUT',
-      headers: { 'Content-Type': 'application/json' },
-      body: JSON.stringify({ status: newStatus })
-    }).catch(() => {});
-  };
+  const pendingRequestsCount = borrowRequests.filter(
+    (r) => user && r.studentId === user.id && r.status === 'Pending'
+  ).length;
 
   return (
     <div className="app-layout">
-      {/* Official Sunstone Dark Navy Sidebar */}
+      {/* Official Sunstone Desktop Sidebar */}
       <Sidebar
         user={user}
         currentView={currentView}
@@ -401,38 +371,31 @@ export default function App() {
           onLogout={handleLogout}
           currentView={currentView}
           setCurrentView={setCurrentView}
+          theme={theme}
+          setTheme={setTheme}
         />
 
         {/* Live Toast Banner */}
         {toastMessage && (
-          <div style={{
-            margin: '0 32px 16px',
-            background: 'var(--sunstone-navy-dark)',
-            color: '#ffffff',
-            padding: '12px 20px',
-            borderRadius: 'var(--radius-md)',
-            display: 'flex',
-            alignItems: 'center',
-            justifyContent: 'space-between',
-            boxShadow: '0 4px 20px rgba(0,0,0,0.2)'
-          }}>
-            <div style={{ display: 'flex', alignItems: 'center', gap: '10px', fontSize: '13px', fontWeight: '700' }}>
+          <div className="app-toast-banner">
+            <div className="toast-content">
               <CheckCircle2 size={18} color="var(--accent-emerald)" />
               <span>{toastMessage.text}</span>
             </div>
-
             <button
+              type="button"
+              className="toast-close-btn"
               onClick={() => setToastMessage(null)}
-              style={{ background: 'none', border: 'none', color: '#94a3b8', cursor: 'pointer' }}
+              aria-label="Close message"
             >
               <X size={16} />
             </button>
           </div>
         )}
 
-        {/* VIEW 1: HOME CATALOG VIEW (NETFLIX STYLE) */}
+        {/* VIEW 1: HOME CATALOG VIEW (NETFLIX / SWIGGY STYLE) */}
         {currentView === 'catalog' && (
-          <div>
+          <div className="catalog-view-wrap">
             {/* Netflix Hero Billboard */}
             {!searchQuery && selectedProgram === 'All Programs' && (
               <HeroBanner
@@ -448,7 +411,7 @@ export default function App() {
               />
             )}
 
-            {/* Sunstone Program Filter Cards */}
+            {/* Sunstone Program Filter Category Pills */}
             <ProgramTabs
               selectedProgram={selectedProgram}
               setSelectedProgram={setSelectedProgram}
@@ -457,7 +420,7 @@ export default function App() {
 
             {/* Filtered Grid or Netflix Category Rows */}
             {searchQuery || selectedProgram !== 'All Programs' ? (
-              <main style={{ padding: '0 32px 60px' }}>
+              <main className="catalog-grid-main">
                 <BookGrid
                   selectedProgram={selectedProgram}
                   books={filteredBooks}
@@ -474,7 +437,7 @@ export default function App() {
                 />
               </main>
             ) : (
-              <div style={{ paddingBottom: '60px' }}>
+              <div className="catalog-rows-container">
                 <NetflixRow
                   title="Trending in Sunstone Prayas Lab"
                   icon={Flame}
@@ -572,7 +535,7 @@ export default function App() {
 
         {/* VIEW 2: STUDENT PROFILE & SHELF */}
         {currentView === 'profile' && (
-          <main style={{ padding: '0 32px 60px' }}>
+          <main className="view-content-main">
             <StudentProfile
               user={user}
               allBooks={books}
@@ -594,7 +557,7 @@ export default function App() {
 
         {/* VIEW 3: SECRET ADMIN CONSOLE */}
         {currentView === 'admin' && (
-          <main style={{ padding: '0 32px 60px' }}>
+          <main className="view-content-main">
             <AdminConsole
               user={user}
               onAdminLogin={(adminUser) => handleSetUser(adminUser)}
@@ -609,6 +572,27 @@ export default function App() {
           </main>
         )}
       </div>
+
+      {/* MOBILE BOTTOM NAVIGATION BAR (Swiggy / Zomato style) */}
+      <MobileNav
+        currentView={currentView}
+        setCurrentView={setCurrentView}
+        profileSubTab={profileSubTab}
+        setProfileSubTab={setProfileSubTab}
+        user={user}
+        onOpenAuth={() => setShowAuthModal(true)}
+        savedCount={savedBookIds.length}
+        requestCount={pendingRequestsCount}
+        onSelectCategoryModal={() => {
+          if (currentView !== 'catalog') {
+            setCurrentView('catalog');
+          }
+          setTimeout(() => {
+            const el = document.getElementById('programs-section');
+            if (el) el.scrollIntoView({ behavior: 'smooth' });
+          }, 100);
+        }}
+      />
 
       {/* MODALS */}
       {showAuthModal && (

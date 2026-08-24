@@ -12,13 +12,14 @@ export default function BookCard({
   isBorrowed = false
 }) {
   return (
-    <div className="netflix-card" style={{ width: '250px', flex: '0 0 250px' }}>
+    <div className="netflix-card">
       {/* Poster Image Container */}
-      <div className="poster-box" style={{ height: '220px' }}>
+      <div className="poster-box">
         <img
           src={book.coverUrl}
           alt={book.title}
           className="poster-img"
+          loading="lazy"
           onError={(e) => {
             e.target.src = 'https://images.unsplash.com/photo-1544716278-ca5e3f4abd8c?auto=format&fit=crop&w=600&q=80';
           }}
@@ -26,89 +27,94 @@ export default function BookCard({
         <div className="poster-badge">{book.program}</div>
 
         {/* Borrow Status Badge */}
-        <div
-          style={{
-            position: 'absolute',
-            top: '8px',
-            right: '8px',
-            background: isBorrowed ? '#10b981' : 'rgba(15, 23, 42, 0.85)',
-            color: '#ffffff',
-            fontSize: '10px',
-            fontWeight: '700',
-            padding: '3px 8px',
-            borderRadius: '12px',
-            display: 'flex',
-            alignItems: 'center',
-            gap: '4px',
-            boxShadow: '0 2px 6px rgba(0,0,0,0.3)'
-          }}
-        >
-          {isBorrowed ? <><Unlock size={10} /> Borrowed</> : <><Lock size={10} /> Snippets Only</>}
+        <div className={`poster-borrow-badge ${isBorrowed ? 'unlocked' : 'locked'}`}>
+          {isBorrowed ? (
+            <>
+              <Unlock size={10} />
+              <span>Borrowed</span>
+            </>
+          ) : (
+            <>
+              <Lock size={10} />
+              <span>Snippets</span>
+            </>
+          )}
         </div>
 
         {/* Quick Summary Badge Button */}
-        <div
+        <button
+          type="button"
           className="poster-summary-btn"
           onClick={(e) => {
             e.stopPropagation();
             onOpenQuickSummary(book);
           }}
-          title="Click for Quick Summary & Takeaways"
+          title="Click for Quick Summary & Key Takeaways"
         >
-          <Zap size={11} /> Summary
-        </div>
+          <Zap size={11} />
+          <span>Summary</span>
+        </button>
       </div>
 
       {/* Card Info Content */}
       <div className="netflix-card-body">
-        <div style={{ fontSize: '11px', fontWeight: '700', color: 'var(--sunstone-text-muted)', textTransform: 'uppercase', marginBottom: '2px' }}>
+        <div className="netflix-card-category">
           {book.category}
         </div>
-        <h4 className="netflix-card-title" title={book.title}>{book.title}</h4>
-        <div className="netflix-card-author">By {book.author}</div>
+        <h4 className="netflix-card-title" title={book.title}>
+          {book.title}
+        </h4>
+        <div className="netflix-card-author">
+          By {book.author}
+        </div>
 
-        <div style={{ display: 'flex', alignItems: 'center', justifyContent: 'space-between', fontSize: '11px', color: 'var(--sunstone-text-muted)', marginBottom: '12px' }}>
-          <span style={{ display: 'flex', alignItems: 'center', gap: '3px', color: 'var(--accent-gold)', fontWeight: '700' }}>
-            <Star size={12} fill="var(--accent-gold)" /> {book.rating || 4.8}
+        <div className="netflix-card-meta">
+          <span className="meta-rating">
+            <Star size={12} fill="var(--accent-gold)" />
+            <span>{book.rating || 4.8}</span>
           </span>
-          <span>{book.pages} Pages</span>
+          <span className="meta-pages">{book.pages}p</span>
           <button
+            type="button"
+            className={`meta-save-btn ${isSaved ? 'saved' : ''}`}
             onClick={() => onToggleSave(book.id)}
-            style={{ background: 'none', border: 'none', color: isSaved ? 'var(--accent-sunstone-red)' : 'var(--sunstone-text-muted)', cursor: 'pointer' }}
             title={isSaved ? 'Remove from Shelf' : 'Save to Shelf'}
           >
-            <Bookmark size={14} fill={isSaved ? 'var(--accent-sunstone-red)' : 'none'} />
+            <Bookmark size={15} fill={isSaved ? 'var(--accent-sunstone-red)' : 'none'} />
           </button>
         </div>
 
         {/* Card Action Buttons */}
-        <div className="netflix-card-footer" style={{ display: 'flex', gap: '6px' }}>
+        <div className="netflix-card-footer">
           <button
-            className="btn-primary"
-            style={{ flex: 1, padding: '6px', fontSize: '11px', justifyContent: 'center' }}
+            type="button"
+            className="btn-primary card-action-btn primary"
             onClick={() => onOpenSnippets(book)}
             title="Read Chapter Snippets & Summary"
           >
-            <FileText size={12} /> Read Snippets
+            <FileText size={13} />
+            <span>Snippets</span>
           </button>
 
           {isBorrowed ? (
             <button
-              className="btn-secondary"
-              style={{ padding: '6px 10px', fontSize: '11px', justifyContent: 'center', background: 'rgba(16, 185, 129, 0.15)', color: '#10b981', borderColor: 'rgba(16, 185, 129, 0.4)' }}
+              type="button"
+              className="btn-secondary card-action-btn unlocked"
               onClick={() => onOpenReader(book)}
               title="Read Complete Full Book"
             >
-              <BookOpen size={12} /> Full Book
+              <BookOpen size={13} />
+              <span>Full Book</span>
             </button>
           ) : (
             <button
-              className="btn-secondary"
-              style={{ padding: '6px 10px', fontSize: '11px', justifyContent: 'center' }}
+              type="button"
+              className="btn-secondary card-action-btn borrow"
               onClick={() => onOpenBorrowModal(book)}
               title="Borrow Book to Unlock Full Access"
             >
-              <Send size={12} /> Borrow
+              <Send size={13} />
+              <span>Borrow</span>
             </button>
           )}
         </div>

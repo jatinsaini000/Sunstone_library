@@ -1,5 +1,6 @@
 import React from 'react';
-import { Search, GraduationCap, User, Tag, ShieldCheck, LogOut } from 'lucide-react';
+import { Search, GraduationCap, User, Tag, ShieldCheck, LogOut, Sun, Moon, MapPin, Sparkles, X } from 'lucide-react';
+import SunstoneLogo from './SunstoneLogo.jsx';
 
 export default function TopHeader({
   user,
@@ -8,7 +9,9 @@ export default function TopHeader({
   onOpenAuth,
   onLogout,
   currentView,
-  setCurrentView
+  setCurrentView,
+  theme,
+  setTheme
 }) {
   const userName = user ? user.name.split(' ')[0] : '';
   const userProgram = user ? (user.program === 'All Programs' ? 'Sunstone Admin' : user.program) : '';
@@ -19,118 +22,94 @@ export default function TopHeader({
     { label: 'React & Web', query: 'React' },
     { label: 'Deep Learning', query: 'AI' },
     { label: 'Case Studies', query: 'Case Studies' },
-    { label: 'Research Journals', query: 'Journals' }
+    { label: 'Research Journals', query: 'Journals' },
+    { label: 'Algorithms', query: 'Algorithms' },
+    { label: 'Marketing', query: 'Marketing' }
   ];
 
   return (
-    <header className="top-header" style={{ flexDirection: 'column', alignItems: 'stretch', gap: '12px' }}>
-      <div style={{ display: 'flex', alignItems: 'center', justifyContent: 'space-between', width: '100%', gap: '20px' }}>
-        <div className="greeting-text">
-          <h1>
-            {user ? (
-              <>Hello, {userName} <span style={{ fontSize: '24px' }}>🌟</span></>
-            ) : (
-              <>Sunstone Library <span style={{ fontSize: '24px' }}>📚</span></>
-            )}
-          </h1>
-        </div>
-
-        <div style={{ display: 'flex', alignItems: 'center', gap: '16px', flex: 1, maxWidth: '580px' }}>
-          {/* Global Search Bar */}
-          <div style={{ position: 'relative', width: '100%' }}>
-            <Search size={16} style={{ position: 'absolute', left: '14px', top: '50%', transform: 'translateY(-50%)', color: 'var(--sunstone-text-muted)' }} />
-            <input
-              type="text"
-              className="form-control"
-              placeholder="Search books by title, author, course (MBA, B.Tech CS, BCA) or topic..."
-              value={searchQuery}
-              onChange={(e) => setSearchQuery(e.target.value)}
-              style={{ borderRadius: '30px', paddingLeft: '40px', background: 'var(--sunstone-card-bg)' }}
-            />
-            {searchQuery && (
-              <button
-                onClick={() => setSearchQuery('')}
-                style={{ position: 'absolute', right: '12px', top: '50%', transform: 'translateY(-50%)', background: 'none', border: 'none', color: 'var(--sunstone-text-muted)', cursor: 'pointer', fontSize: '12px', fontWeight: '700' }}
-              >
-                Clear
-              </button>
-            )}
+    <header className="top-header">
+      {/* Top Bar: Brand, Campus Location Pill & Actions */}
+      <div className="header-top-row">
+        {/* Left: Mobile Brand & Location Pill */}
+        <div className="header-brand-wrap" onClick={() => setCurrentView('catalog')}>
+          <div className="mobile-brand-icon">
+            <SunstoneLogo size={24} color="#16203b" />
+          </div>
+          <div className="header-location-box">
+            <div className="location-pill">
+              <MapPin size={12} color="var(--accent-sunstone-red)" />
+              <span>Prayas Lab</span>
+              <span className="live-dot"></span>
+            </div>
+            <h1 className="header-title">
+              {user ? (
+                <>Hey, {userName} <span className="wave-hand">👋</span></>
+              ) : (
+                <>Sunstone Library <span className="wave-hand">📚</span></>
+              )}
+            </h1>
           </div>
         </div>
 
-        {/* Right Header Navigation & User Actions */}
-        <div style={{ display: 'flex', alignItems: 'center', gap: '12px' }}>
-          {/* Admin Portal Button */}
+        {/* Right Header Navigation & Actions */}
+        <div className="header-actions-wrap">
+          {/* Theme Switcher Button */}
+          {setTheme && (
+            <button
+              type="button"
+              className="theme-toggle-btn"
+              onClick={() => setTheme(theme === 'dark' ? 'light' : 'dark')}
+              title={theme === 'dark' ? 'Switch to Light Mode' : 'Switch to Dark Mode'}
+            >
+              {theme === 'dark' ? <Sun size={17} /> : <Moon size={17} />}
+            </button>
+          )}
+
+          {/* Admin Portal Button (Desktop / Tablet) */}
           <button
-            className="btn-secondary"
+            type="button"
+            className="btn-admin-pill"
             style={{
-              padding: '6px 14px',
-              fontSize: '12px',
-              borderRadius: '20px',
               background: currentView === 'admin' ? 'var(--sunstone-navy-dark)' : 'var(--sunstone-card-bg)',
-              color: currentView === 'admin' ? '#ffffff' : 'var(--sunstone-text-primary)',
-              border: '1px solid var(--sunstone-border)',
-              display: 'flex',
-              alignItems: 'center',
-              gap: '6px'
+              color: currentView === 'admin' ? '#ffffff' : 'var(--sunstone-text-primary)'
             }}
             onClick={() => setCurrentView('admin')}
             title="Access Prayas Lab Admin Portal"
           >
             <ShieldCheck size={14} color={currentView === 'admin' ? '#ffffff' : 'var(--accent-blue)'} />
-            <span>Admin Portal</span>
+            <span className="admin-btn-text">Admin</span>
           </button>
 
-          {/* Logged In User State vs Login Button */}
+          {/* User Profile Pill or Login CTA */}
           {user ? (
-            <div style={{ display: 'flex', alignItems: 'center', gap: '10px' }}>
+            <div className="user-header-profile-wrap">
               <div
+                className="user-profile-chip"
                 onClick={() => {
                   if (user.role === 'student') setCurrentView('profile');
                   else setCurrentView('admin');
                 }}
-                style={{
-                  display: 'flex',
-                  alignItems: 'center',
-                  gap: '8px',
-                  background: 'var(--sunstone-card-bg)',
-                  border: '1px solid var(--sunstone-border)',
-                  borderRadius: '25px',
-                  padding: '4px 12px 4px 6px',
-                  cursor: 'pointer'
-                }}
                 title="View Profile & Bookshelf"
               >
                 <div
+                  className="user-avatar-mini"
                   style={{
-                    width: '26px',
-                    height: '26px',
-                    borderRadius: '50%',
-                    background: user.role === 'admin' ? 'var(--accent-sunstone-red)' : 'var(--accent-blue)',
-                    color: '#ffffff',
-                    display: 'flex',
-                    alignItems: 'center',
-                    justifyContent: 'center',
-                    fontSize: '12px',
-                    fontWeight: '800'
+                    background: user.role === 'admin' ? 'var(--accent-sunstone-red)' : 'var(--accent-blue)'
                   }}
                 >
                   {user.name.charAt(0).toUpperCase()}
                 </div>
-                <div style={{ display: 'flex', flexDirection: 'column' }}>
-                  <span style={{ fontSize: '12px', fontWeight: '800', color: 'var(--sunstone-text-primary)', lineHeight: 1.1 }}>
-                    {user.name}
-                  </span>
-                  <span style={{ fontSize: '10px', color: 'var(--sunstone-text-muted)', fontWeight: '600' }}>
-                    {userProgram}
-                  </span>
+                <div className="user-chip-info">
+                  <span className="user-chip-name">{user.name}</span>
+                  <span className="user-chip-sub">{userProgram || user.role}</span>
                 </div>
               </div>
 
               {/* Logout Button */}
               <button
-                className="btn-secondary"
-                style={{ padding: '6px 10px', fontSize: '12px', borderRadius: '20px', color: '#ef4444', borderColor: 'rgba(239, 68, 68, 0.3)' }}
+                type="button"
+                className="header-logout-btn"
                 onClick={onLogout}
                 title="Sign Out"
               >
@@ -139,44 +118,61 @@ export default function TopHeader({
             </div>
           ) : (
             <button
-              className="btn-primary"
-              style={{ padding: '7px 16px', fontSize: '12px', borderRadius: '20px' }}
+              type="button"
+              className="btn-primary header-login-btn"
               onClick={onOpenAuth}
             >
-              <User size={13} /> Login / Register
+              <User size={13} /> <span>Login</span>
             </button>
           )}
         </div>
       </div>
 
-      {/* Popular Clickable Interest Tags */}
-      <div style={{ display: 'flex', alignItems: 'center', gap: '8px', overflowX: 'auto', paddingBottom: '2px' }}>
-        <span style={{ fontSize: '11px', fontWeight: '800', color: 'var(--sunstone-text-muted)', textTransform: 'uppercase', display: 'flex', alignItems: 'center', gap: '4px' }}>
-          <Tag size={12} /> Popular Topics:
-        </span>
-        {popularTags.map((tag) => {
-          const isSelected = searchQuery.toLowerCase() === tag.query.toLowerCase();
-          return (
+      {/* Middle Row: Full-width Swiggy/Zomato Search Bar */}
+      <div className="header-search-container">
+        <div className="search-bar-inner">
+          <Search size={17} className="search-bar-icon" />
+          <input
+            type="text"
+            className="search-input-field"
+            placeholder="Search books, authors, courses (MBA, CS, BCA)..."
+            value={searchQuery}
+            onChange={(e) => setSearchQuery(e.target.value)}
+          />
+          {searchQuery && (
             <button
-              key={tag.label}
-              onClick={() => setSearchQuery(isSelected ? '' : tag.query)}
-              style={{
-                padding: '3px 10px',
-                borderRadius: '12px',
-                border: isSelected ? '1px solid var(--sunstone-navy-dark)' : '1px solid var(--sunstone-border)',
-                background: isSelected ? 'var(--sunstone-navy-dark)' : 'var(--sunstone-card-bg)',
-                color: isSelected ? '#ffffff' : 'var(--sunstone-text-secondary)',
-                fontSize: '11px',
-                fontWeight: '700',
-                cursor: 'pointer',
-                whiteSpace: 'nowrap',
-                transition: 'all 0.2s ease'
-              }}
+              type="button"
+              className="search-clear-btn"
+              onClick={() => setSearchQuery('')}
+              title="Clear search"
             >
-              #{tag.label}
+              <X size={14} />
             </button>
-          );
-        })}
+          )}
+        </div>
+      </div>
+
+      {/* Bottom Row: Swiggy/Zomato Style Horizontal Scrollable Topic Pills */}
+      <div className="popular-topics-scroller">
+        <div className="popular-topics-label">
+          <Tag size={12} />
+          <span>TOPICS</span>
+        </div>
+        <div className="topics-chips-list">
+          {popularTags.map((tag) => {
+            const isSelected = searchQuery.toLowerCase() === tag.query.toLowerCase();
+            return (
+              <button
+                type="button"
+                key={tag.label}
+                onClick={() => setSearchQuery(isSelected ? '' : tag.query)}
+                className={`topic-chip ${isSelected ? 'active' : ''}`}
+              >
+                #{tag.label}
+              </button>
+            );
+          })}
+        </div>
       </div>
     </header>
   );

@@ -20,34 +20,36 @@ export default function NetflixRow({
 
   const handleScroll = (direction) => {
     if (rowRef.current) {
-      const scrollAmount = direction === 'left' ? -400 : 400;
+      const scrollAmount = direction === 'left' ? -320 : 320;
       rowRef.current.scrollBy({ left: scrollAmount, behavior: 'smooth' });
     }
   };
 
   return (
-    <div className="netflix-row">
+    <section className="netflix-row">
       <div className="row-header">
         <h3 className="row-title">
-          {Icon && <Icon size={20} color="var(--accent-sunstone-red)" />}
-          <span>{title}</span>
-          <span style={{ fontSize: '12px', fontWeight: '600', color: 'var(--sunstone-text-muted)', background: 'var(--sunstone-border)', padding: '2px 8px', borderRadius: '10px' }}>
+          {Icon && <Icon size={20} className="row-icon" />}
+          <span className="row-title-text">{title}</span>
+          <span className="row-count-badge">
             {books.length}
           </span>
         </h3>
 
-        <div style={{ display: 'flex', gap: '6px' }}>
+        <div className="row-arrows-wrap">
           <button
+            type="button"
             onClick={() => handleScroll('left')}
-            className="btn-secondary"
-            style={{ width: '32px', height: '32px', padding: 0, justifyContent: 'center', borderRadius: '50%' }}
+            className="row-nav-btn"
+            aria-label="Scroll left"
           >
             <ChevronLeft size={16} />
           </button>
           <button
+            type="button"
             onClick={() => handleScroll('right')}
-            className="btn-secondary"
-            style={{ width: '32px', height: '32px', padding: 0, justifyContent: 'center', borderRadius: '50%' }}
+            className="row-nav-btn"
+            aria-label="Scroll right"
           >
             <ChevronRight size={16} />
           </button>
@@ -69,6 +71,6 @@ export default function NetflixRow({
           />
         ))}
       </div>
-    </div>
+    </section>
   );
 }

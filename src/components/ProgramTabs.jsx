@@ -1,26 +1,24 @@
 import React from 'react';
 import { Layers, GraduationCap, Code, Server, Briefcase, Sparkles, BookOpenCheck } from 'lucide-react';
 
-export default function ProgramTabs({ selectedProgram, setSelectedProgram, counts }) {
+export default function ProgramTabs({ selectedProgram, setSelectedProgram, counts = {} }) {
   const programs = [
-    { id: 'All Programs', label: 'All Programs', icon: Layers },
-    { id: 'MBA', label: 'MBA', icon: GraduationCap },
-    { id: 'B.Tech CS', label: 'B.Tech CS', icon: Code },
-    { id: 'BCA', label: 'BCA', icon: Server },
-    { id: 'BBA', label: 'BBA', icon: Briefcase },
-    { id: 'Special Collections', label: 'Special Collections', icon: Sparkles },
-    { id: 'Journals', label: 'Journals', icon: BookOpenCheck }
+    { id: 'All Programs', label: 'All Programs', icon: Layers, color: '#2563eb' },
+    { id: 'MBA', label: 'MBA', icon: GraduationCap, color: '#f59e0b' },
+    { id: 'B.Tech CS', label: 'B.Tech CS', icon: Code, color: '#10b981' },
+    { id: 'BCA', label: 'BCA', icon: Server, color: '#06b6d4' },
+    { id: 'BBA', label: 'BBA', icon: Briefcase, color: '#8b5cf6' },
+    { id: 'Special Collections', label: 'Prayas AI Lab', icon: Sparkles, color: '#ff4d5a' },
+    { id: 'Journals', label: 'Journals', icon: BookOpenCheck, color: '#ec4899' }
   ];
 
   return (
-    <div style={{ margin: '0 32px 28px' }}>
-      <div style={{
-        display: 'flex',
-        alignItems: 'center',
-        gap: '12px',
-        overflowX: 'auto',
-        padding: '6px 4px 12px'
-      }}>
+    <div id="programs-section" className="programs-scroller-wrap">
+      <div className="programs-header-mobile">
+        <span className="programs-mobile-title">EXPLORE BY PROGRAM</span>
+        <span className="programs-mobile-sub">Curated Sunstone Syllabi</span>
+      </div>
+      <div className="programs-track">
         {programs.map((p) => {
           const Icon = p.icon;
           const isActive = selectedProgram === p.id;
@@ -28,36 +26,22 @@ export default function ProgramTabs({ selectedProgram, setSelectedProgram, count
 
           return (
             <button
+              type="button"
               key={p.id}
               onClick={() => setSelectedProgram(p.id)}
-              style={{
-                display: 'flex',
-                alignItems: 'center',
-                gap: '8px',
-                padding: '10px 20px',
-                borderRadius: '30px',
-                border: isActive ? '2px solid var(--sunstone-navy-dark)' : '1px solid var(--sunstone-border)',
-                background: isActive ? 'var(--sunstone-navy-dark)' : 'var(--sunstone-card-bg)',
-                color: isActive ? '#ffffff' : 'var(--sunstone-text-primary)',
-                fontSize: '13px',
-                fontWeight: '700',
-                cursor: 'pointer',
-                whiteSpace: 'nowrap',
-                boxShadow: isActive ? '0 4px 15px rgba(22, 32, 59, 0.25)' : 'var(--shadow-card)',
-                transition: 'all 0.2s ease'
-              }}
+              className={`program-pill ${isActive ? 'active' : ''}`}
             >
-              <Icon size={16} color={isActive ? '#ffffff' : 'var(--accent-blue)'} />
-              <span>{p.label}</span>
-              <span style={{
-                fontSize: '11px',
-                fontWeight: '800',
-                padding: '2px 8px',
-                borderRadius: '12px',
-                background: isActive ? 'rgba(255, 255, 255, 0.25)' : 'rgba(37, 99, 235, 0.1)',
-                color: isActive ? '#ffffff' : 'var(--accent-blue)',
-                marginLeft: '2px'
-              }}>
+              <div
+                className="program-pill-icon"
+                style={{
+                  background: isActive ? 'rgba(255, 255, 255, 0.2)' : `rgba(37, 99, 235, 0.1)`,
+                  color: isActive ? '#ffffff' : (p.color || 'var(--accent-blue)')
+                }}
+              >
+                <Icon size={16} />
+              </div>
+              <span className="program-pill-label">{p.label}</span>
+              <span className={`program-pill-count ${isActive ? 'active' : ''}`}>
                 {count}
               </span>
             </button>

@@ -25,7 +25,8 @@ export default function HeroBanner({
 
       <div className="billboard-content">
         <div className="billboard-tag">
-          <Sparkles size={13} /> FEATURED IN PRAYAS LAB • {book.program}
+          <Sparkles size={12} />
+          <span>FEATURED IN PRAYAS LAB • {book.program}</span>
         </div>
         <h2 className="billboard-title">{book.title}</h2>
         <p className="billboard-desc">
@@ -33,22 +34,43 @@ export default function HeroBanner({
         </p>
 
         <div className="billboard-actions">
-          <button className="btn-play-netflix" onClick={() => onOpenSnippets(book)}>
-            <FileText size={18} /> Read Chapter Snippets
+          <button
+            type="button"
+            className="btn-play-netflix"
+            onClick={() => onOpenSnippets(book)}
+          >
+            <FileText size={16} />
+            <span>Read Snippets</span>
           </button>
 
           {isBorrowed ? (
-            <button className="btn-info-netflix" style={{ background: 'rgba(16, 185, 129, 0.25)', border: '1px solid #10b981', color: '#ffffff' }} onClick={() => onOpenReader(book)}>
-              <BookOpen size={18} /> Read Full Book
+            <button
+              type="button"
+              className="btn-info-netflix borrowed-btn"
+              onClick={() => onOpenReader(book)}
+            >
+              <BookOpen size={16} />
+              <span>Full Book</span>
             </button>
           ) : (
-            <button className="btn-info-netflix" onClick={() => onOpenBorrowModal(book)}>
-              <Send size={18} color="var(--accent-gold)" /> Borrow to Unlock Full Book
+            <button
+              type="button"
+              className="btn-info-netflix"
+              onClick={() => onOpenBorrowModal(book)}
+            >
+              <Send size={16} color="var(--accent-gold)" />
+              <span>Borrow Book</span>
             </button>
           )}
 
-          <button className="btn-info-netflix" style={{ padding: '10px 16px', background: 'rgba(255,255,255,0.1)' }} onClick={() => onOpenQuickSummary(book)} title="Quick Overview">
-            <Zap size={18} color="var(--accent-gold)" /> Summary
+          <button
+            type="button"
+            className="btn-info-netflix summary-btn"
+            onClick={() => onOpenQuickSummary(book)}
+            title="Quick Overview & Key Takeaways"
+          >
+            <Zap size={16} color="var(--accent-gold)" />
+            <span>Summary</span>
           </button>
         </div>
       </div>

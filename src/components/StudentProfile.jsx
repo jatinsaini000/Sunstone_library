@@ -19,21 +19,12 @@ export default function StudentProfile({
 }) {
   if (!user) {
     return (
-      <div style={{
-        background: 'var(--sunstone-card-bg)',
-        border: '1px solid var(--sunstone-border)',
-        borderRadius: 'var(--radius-lg)',
-        boxShadow: 'var(--shadow-card)',
-        textAlign: 'center',
-        padding: '60px 20px',
-        maxWidth: '500px',
-        margin: '40px auto'
-      }}>
+      <div className="student-profile-auth-prompt">
         <User size={48} color="var(--sunstone-navy-dark)" style={{ marginBottom: '16px' }} />
-        <h3 style={{ fontSize: '20px', fontWeight: '800', marginBottom: '8px', color: 'var(--sunstone-text-primary)' }}>
+        <h3 className="auth-prompt-title">
           Student Authentication Required
         </h3>
-        <p style={{ color: 'var(--sunstone-text-secondary)', fontSize: '14px' }}>
+        <p className="auth-prompt-desc">
           Please log in to your official Sunstone student account to access your personal bookshelf, study notes, and borrow history.
         </p>
       </div>
@@ -45,274 +36,180 @@ export default function StudentProfile({
   const myNotes = userNotes.filter(n => n.studentId === user.id);
 
   return (
-    <div style={{ maxWidth: '1200px', margin: '0 auto', display: 'flex', flexDirection: 'column', gap: '24px' }}>
+    <div className="student-profile-wrap">
       {/* Student Banner Header Card */}
-      <div style={{
-        background: 'var(--sunstone-card-bg)',
-        border: '1px solid var(--sunstone-border)',
-        borderRadius: 'var(--radius-lg)',
-        boxShadow: 'var(--shadow-card)',
-        padding: '28px',
-        display: 'flex',
-        alignItems: 'center',
-        justifyContent: 'space-between',
-        gap: '20px',
-        flexWrap: 'wrap'
-      }}>
-        <div style={{ display: 'flex', alignItems: 'center', gap: '20px' }}>
-          <div className="user-avatar-circle" style={{ width: '64px', height: '64px', fontSize: '26px' }}>
+      <div className="student-banner-card">
+        <div className="student-banner-info">
+          <div className="user-avatar-circle student-avatar-big">
             {user.name ? user.name.charAt(0).toUpperCase() : 'S'}
           </div>
-          <div>
-            <div style={{ display: 'flex', alignItems: 'center', gap: '10px', marginBottom: '4px' }}>
-              <h2 style={{ fontSize: '24px', fontWeight: '800', color: 'var(--sunstone-text-primary)' }}>{user.name}</h2>
-              <span className="student-badge-pill" style={{ padding: '4px 12px', fontSize: '12px' }}>
-                <GraduationCap size={14} color="var(--accent-sunstone-red)" />
-                {user.program || 'B.Tech CS'}
+          <div className="student-details-box">
+            <div className="student-name-row">
+              <h2 className="student-name-heading">{user.name}</h2>
+              <span className="student-badge-pill">
+                <GraduationCap size={13} color="var(--accent-sunstone-red)" />
+                <span>{user.program || 'B.Tech CS'}</span>
               </span>
             </div>
-            <p style={{ color: 'var(--sunstone-text-secondary)', fontSize: '14px' }}>
+            <p className="student-email-tag">
               {user.email} • Sunstone Prayas Lab Scholar
             </p>
           </div>
         </div>
 
         {/* Stats Grid */}
-        <div style={{ display: 'flex', gap: '14px' }}>
-          <div style={{
-            background: 'var(--sunstone-bg)',
-            border: '1px solid var(--sunstone-border)',
-            padding: '12px 20px',
-            borderRadius: 'var(--radius-md)',
-            textAlign: 'center'
-          }}>
-            <div style={{ fontSize: '20px', fontWeight: '800', color: 'var(--accent-sunstone-red)' }}>{savedBooks.length}</div>
-            <div style={{ fontSize: '11px', color: 'var(--sunstone-text-muted)', textTransform: 'uppercase', fontWeight: '700' }}>Saved Books</div>
+        <div className="student-stats-row">
+          <div className="student-stat-pill">
+            <div className="stat-num red">{savedBooks.length}</div>
+            <div className="stat-label">Saved Books</div>
           </div>
 
-          <div style={{
-            background: 'var(--sunstone-bg)',
-            border: '1px solid var(--sunstone-border)',
-            padding: '12px 20px',
-            borderRadius: 'var(--radius-md)',
-            textAlign: 'center'
-          }}>
-            <div style={{ fontSize: '20px', fontWeight: '800', color: 'var(--accent-blue)' }}>{myRequests.length}</div>
-            <div style={{ fontSize: '11px', color: 'var(--sunstone-text-muted)', textTransform: 'uppercase', fontWeight: '700' }}>Borrow Requests</div>
+          <div className="student-stat-pill">
+            <div className="stat-num blue">{myRequests.length}</div>
+            <div className="stat-label">Borrow Requests</div>
           </div>
 
-          <div style={{
-            background: 'var(--sunstone-bg)',
-            border: '1px solid var(--sunstone-border)',
-            padding: '12px 20px',
-            borderRadius: 'var(--radius-md)',
-            textAlign: 'center'
-          }}>
-            <div style={{ fontSize: '20px', fontWeight: '800', color: 'var(--accent-emerald)' }}>{myNotes.length}</div>
-            <div style={{ fontSize: '11px', color: 'var(--sunstone-text-muted)', textTransform: 'uppercase', fontWeight: '700' }}>Study Notes</div>
+          <div className="student-stat-pill">
+            <div className="stat-num green">{myNotes.length}</div>
+            <div className="stat-label">Study Notes</div>
           </div>
         </div>
       </div>
 
-      {/* Sunstone Pill Navigation Tabs */}
-      <div style={{ display: 'flex', gap: '10px' }}>
+      {/* Sunstone Pill Navigation Tabs (Swiggy/Zomato style horizontal scroller) */}
+      <div className="profile-tabs-scroller">
         <button
+          type="button"
           onClick={() => setActiveTab('shelf')}
-          style={{
-            padding: '10px 20px',
-            borderRadius: '30px',
-            border: activeTab === 'shelf' ? '2px solid var(--sunstone-navy-dark)' : '1px solid var(--sunstone-border)',
-            background: activeTab === 'shelf' ? 'var(--sunstone-navy-dark)' : 'var(--sunstone-card-bg)',
-            color: activeTab === 'shelf' ? '#ffffff' : 'var(--sunstone-text-primary)',
-            fontSize: '13px',
-            fontWeight: '700',
-            cursor: 'pointer',
-            display: 'flex',
-            alignItems: 'center',
-            gap: '8px'
-          }}
+          className={`profile-tab-pill ${activeTab === 'shelf' ? 'active' : ''}`}
         >
-          <Bookmark size={15} /> Saved Books Shelf ({savedBooks.length})
+          <Bookmark size={15} />
+          <span>My Shelf ({savedBooks.length})</span>
         </button>
 
         <button
+          type="button"
           onClick={() => setActiveTab('requests')}
-          style={{
-            padding: '10px 20px',
-            borderRadius: '30px',
-            border: activeTab === 'requests' ? '2px solid var(--sunstone-navy-dark)' : '1px solid var(--sunstone-border)',
-            background: activeTab === 'requests' ? 'var(--sunstone-navy-dark)' : 'var(--sunstone-card-bg)',
-            color: activeTab === 'requests' ? '#ffffff' : 'var(--sunstone-text-primary)',
-            fontSize: '13px',
-            fontWeight: '700',
-            cursor: 'pointer',
-            display: 'flex',
-            alignItems: 'center',
-            gap: '8px'
-          }}
+          className={`profile-tab-pill ${activeTab === 'requests' ? 'active' : ''}`}
         >
-          <Send size={15} /> Borrowing Requests ({myRequests.length})
+          <Send size={15} />
+          <span>Borrow Requests ({myRequests.length})</span>
         </button>
 
         <button
+          type="button"
           onClick={() => setActiveTab('notes')}
-          style={{
-            padding: '10px 20px',
-            borderRadius: '30px',
-            border: activeTab === 'notes' ? '2px solid var(--sunstone-navy-dark)' : '1px solid var(--sunstone-border)',
-            background: activeTab === 'notes' ? 'var(--sunstone-navy-dark)' : 'var(--sunstone-card-bg)',
-            color: activeTab === 'notes' ? '#ffffff' : 'var(--sunstone-text-primary)',
-            fontSize: '13px',
-            fontWeight: '700',
-            cursor: 'pointer',
-            display: 'flex',
-            alignItems: 'center',
-            gap: '8px'
-          }}
+          className={`profile-tab-pill ${activeTab === 'notes' ? 'active' : ''}`}
         >
-          <FileText size={15} /> Reading Analytics & Notes ({myNotes.length})
+          <FileText size={15} />
+          <span>Study Notes & Analytics ({myNotes.length})</span>
         </button>
       </div>
 
-      {/* TAB 1: SAVED BOOKS SHELF (REDESIGNED SUNSTONE PORTAL SHELF CARDS) */}
+      {/* TAB 1: SAVED BOOKS SHELF */}
       {activeTab === 'shelf' && (
-        <div style={{ display: 'flex', flexDirection: 'column', gap: '16px' }}>
+        <div className="shelf-tab-content">
           {savedBooks.length === 0 ? (
-            <div style={{
-              background: 'var(--sunstone-card-bg)',
-              border: '1px solid var(--sunstone-border)',
-              borderRadius: 'var(--radius-lg)',
-              padding: '60px 20px',
-              textAlign: 'center',
-              boxShadow: 'var(--shadow-card)'
-            }}>
-              <Bookmark size={48} color="var(--sunstone-text-muted)" style={{ marginBottom: '16px' }} />
-              <h4 style={{ fontSize: '18px', fontWeight: '800', marginBottom: '8px', color: 'var(--sunstone-text-primary)' }}>Your Bookshelf is Empty</h4>
-              <p style={{ color: 'var(--sunstone-text-secondary)', fontSize: '14px', maxWidth: '420px', margin: '0 auto' }}>
-                Explore the Sunstone Prayas Lab catalog and click the bookmark icon on any textbook or journal to save it to your personal shelf.
+            <div className="empty-state-card">
+              <Bookmark size={44} color="var(--sunstone-text-muted)" style={{ marginBottom: '14px' }} />
+              <h4 className="empty-state-title">Your Bookshelf is Empty</h4>
+              <p className="empty-state-desc">
+                Explore the Sunstone Prayas Lab catalog and tap the bookmark icon on any textbook or journal to save it to your personal shelf.
               </p>
             </div>
           ) : (
-            <div style={{ display: 'grid', gridTemplateColumns: 'repeat(auto-fill, minmax(360px, 1fr))', gap: '20px' }}>
+            <div className="shelf-books-grid">
               {savedBooks.map((book, idx) => {
-                // Mock reading progress % for visual realism
                 const progressPercent = Math.min(100, 35 + (idx * 25));
                 const currentSavedPage = Math.round((progressPercent / 100) * book.pages);
 
                 return (
-                  <div key={book.id} style={{
-                    background: 'var(--sunstone-card-bg)',
-                    border: '1px solid var(--sunstone-border)',
-                    borderRadius: 'var(--radius-lg)',
-                    boxShadow: 'var(--shadow-card)',
-                    padding: '20px',
-                    display: 'flex',
-                    flexDirection: 'column',
-                    justifyContent: 'space-between',
-                    transition: 'transform 0.2s ease, box-shadow 0.2s ease'
-                  }}>
+                  <div key={book.id} className="shelf-book-card">
                     {/* Header info */}
                     <div>
-                      <div style={{ display: 'flex', gap: '16px', marginBottom: '16px' }}>
+                      <div className="shelf-book-top">
                         <img
                           src={book.coverUrl}
                           alt={book.title}
-                          style={{
-                            width: '80px',
-                            height: '110px',
-                            objectFit: 'cover',
-                            borderRadius: '8px',
-                            boxShadow: '0 4px 12px rgba(0,0,0,0.15)',
-                            flexShrink: 0
-                          }}
+                          className="shelf-book-thumb"
                           onError={(e) => {
                             e.target.src = 'https://images.unsplash.com/photo-1544716278-ca5e3f4abd8c?auto=format&fit=crop&w=600&q=80';
                           }}
                         />
-                        <div style={{ flex: 1, display: 'flex', flexDirection: 'column' }}>
-                          <div style={{ display: 'flex', gap: '6px', marginBottom: '6px' }}>
-                            <span className="status-badge active" style={{ fontSize: '10px' }}>
+                        <div className="shelf-book-info">
+                          <div className="shelf-badge-row">
+                            <span className="status-badge active">
                               {book.program}
                             </span>
-                            <span style={{
-                              fontSize: '10px',
-                              fontWeight: '700',
-                              padding: '2px 8px',
-                              borderRadius: '12px',
-                              background: 'rgba(37, 99, 235, 0.1)',
-                              color: 'var(--accent-blue)'
-                            }}>
+                            <span className="category-tag-mini">
                               {book.category}
                             </span>
                           </div>
 
-                          <h4 style={{ fontSize: '15px', fontWeight: '800', lineHeight: 1.3, marginBottom: '4px', color: 'var(--sunstone-text-primary)' }}>
+                          <h4 className="shelf-book-title" title={book.title}>
                             {book.title}
                           </h4>
-                          <div style={{ fontSize: '12px', color: 'var(--sunstone-text-secondary)', marginBottom: '8px' }}>
+                          <div className="shelf-book-author">
                             By {book.author}
                           </div>
 
-                          <div style={{ fontSize: '11px', color: 'var(--sunstone-text-muted)', marginTop: 'auto' }}>
+                          <div className="shelf-pages-count">
                             Total Pages: <strong>{book.pages}</strong>
                           </div>
                         </div>
                       </div>
 
                       {/* Reading Progress Indicator */}
-                      <div style={{
-                        background: 'var(--sunstone-bg)',
-                        border: '1px solid var(--sunstone-border)',
-                        padding: '10px 14px',
-                        borderRadius: '10px',
-                        marginBottom: '16px'
-                      }}>
-                        <div style={{ display: 'flex', justifyContent: 'space-between', fontSize: '11px', fontWeight: '700', marginBottom: '6px' }}>
-                          <span style={{ color: 'var(--sunstone-text-primary)', display: 'flex', alignItems: 'center', gap: '4px' }}>
+                      <div className="reading-progress-box">
+                        <div className="progress-header">
+                          <span className="progress-label">
                             <Clock size={12} color="var(--accent-blue)" /> In Progress
                           </span>
-                          <span style={{ color: 'var(--accent-blue)' }}>{progressPercent}% (Page {currentSavedPage})</span>
+                          <span className="progress-value">{progressPercent}% (p. {currentSavedPage})</span>
                         </div>
-                        <div style={{ width: '100%', height: '6px', background: 'var(--sunstone-border)', borderRadius: '4px', overflow: 'hidden' }}>
-                          <div style={{ width: `${progressPercent}%`, height: '100%', background: 'linear-gradient(90deg, var(--accent-blue), var(--accent-sunstone-red))', borderRadius: '4px' }}></div>
+                        <div className="progress-bar-track">
+                          <div className="progress-bar-fill" style={{ width: `${progressPercent}%` }}></div>
                         </div>
                       </div>
                     </div>
 
                     {/* Action controls */}
-                    <div style={{ display: 'flex', gap: '8px', paddingTop: '12px', borderTop: '1px solid var(--sunstone-border)' }}>
+                    <div className="shelf-card-actions">
                       <button
-                        className="btn-primary"
-                        style={{ flex: 1, padding: '8px', fontSize: '12px', justifyContent: 'center' }}
+                        type="button"
+                        className="btn-primary shelf-action-btn"
                         onClick={() => onOpenSnippets(book)}
                         title="Read Chapter Snippets & Summary"
                       >
-                        <FileText size={14} /> Read Snippets
+                        <FileText size={13} />
+                        <span>Snippets</span>
                       </button>
 
                       {borrowedBookIds.includes(book.id) ? (
                         <button
-                          className="btn-secondary"
-                          style={{ padding: '8px 12px', fontSize: '12px', justifyContent: 'center', background: 'rgba(16, 185, 129, 0.15)', color: '#10b981', borderColor: 'rgba(16, 185, 129, 0.4)' }}
+                          type="button"
+                          className="btn-secondary shelf-action-btn unlocked"
                           onClick={() => onOpenReader(book)}
                           title="Read Full Book"
                         >
-                          <BookOpen size={14} /> Full Book
+                          <BookOpen size={13} />
+                          <span>Full Book</span>
                         </button>
                       ) : (
                         <button
-                          className="btn-secondary"
-                          style={{ padding: '8px 10px', fontSize: '12px', justifyContent: 'center' }}
+                          type="button"
+                          className="btn-secondary shelf-action-btn borrow"
                           onClick={() => onOpenBorrowModal(book)}
                           title="Request Borrow Copy"
                         >
-                          <Send size={14} /> Borrow
+                          <Send size={13} />
+                          <span>Borrow</span>
                         </button>
                       )}
 
                       <button
-                        className="btn-secondary"
-                        style={{ padding: '8px 10px', fontSize: '12px', justifyContent: 'center', color: '#ef4444', borderColor: 'rgba(239,68,68,0.2)' }}
+                        type="button"
+                        className="shelf-delete-btn"
                         onClick={() => onToggleSave(book.id)}
                         title="Remove from Shelf"
                       >
@@ -329,58 +226,32 @@ export default function StudentProfile({
 
       {/* TAB 2: BORROWING REQUESTS */}
       {activeTab === 'requests' && (
-        <div style={{
-          background: 'var(--sunstone-card-bg)',
-          border: '1px solid var(--sunstone-border)',
-          borderRadius: 'var(--radius-lg)',
-          boxShadow: 'var(--shadow-card)',
-          padding: '28px'
-        }}>
-          <h3 style={{ fontSize: '18px', fontWeight: '800', marginBottom: '18px', color: 'var(--sunstone-text-primary)' }}>
+        <div className="requests-tab-content">
+          <h3 className="tab-section-heading">
             My Borrowing Requests & Status Tracker
           </h3>
           {myRequests.length === 0 ? (
-            <p style={{ color: 'var(--sunstone-text-secondary)', fontSize: '14px' }}>
+            <p className="empty-subtext">
               You have not submitted any physical or digital book borrow requests yet.
             </p>
           ) : (
-            <div style={{ display: 'flex', flexDirection: 'column', gap: '14px' }}>
+            <div className="requests-cards-list">
               {myRequests.map((req) => (
-                <div key={req.id} style={{
-                  background: 'var(--sunstone-bg)',
-                  border: '1px solid var(--sunstone-border)',
-                  borderRadius: 'var(--radius-md)',
-                  padding: '18px'
-                }}>
-                  <div style={{ display: 'flex', justifyContent: 'space-between', alignItems: 'center', marginBottom: '8px' }}>
-                    <h4 style={{ fontSize: '16px', fontWeight: '800', color: 'var(--sunstone-text-primary)' }}>{req.bookTitle}</h4>
-                    <span className={`status-badge ${req.status.toLowerCase()}`}>
-                      {req.status}
+                <div key={req.id} className="request-status-card">
+                  <div className="request-card-header">
+                    <h4 className="request-book-title">{req.bookTitle}</h4>
+                    <span className={`status-badge ${req.status ? req.status.toLowerCase() : 'pending'}`}>
+                      {req.status || 'Pending'}
                     </span>
                   </div>
-                  <div style={{ fontSize: '12px', color: 'var(--sunstone-text-muted)', marginBottom: '10px' }}>
+                  <div className="request-card-meta">
                     Requested on {new Date(req.requestDate).toLocaleDateString()} • Type: <strong>{req.borrowType}</strong>
                   </div>
-                  <div style={{
-                    background: 'var(--sunstone-card-bg)',
-                    border: '1px solid var(--sunstone-border)',
-                    padding: '12px',
-                    borderRadius: '8px',
-                    fontSize: '13px',
-                    color: 'var(--sunstone-text-secondary)',
-                    marginBottom: '8px'
-                  }}>
+                  <div className="request-card-message">
                     <strong>Your Message to Admin:</strong> "{req.studentMessage}"
                   </div>
                   {req.adminNote && (
-                    <div style={{
-                      background: 'rgba(37, 99, 235, 0.08)',
-                      borderLeft: '3px solid var(--accent-blue)',
-                      padding: '10px 14px',
-                      borderRadius: '4px',
-                      fontSize: '13px',
-                      color: 'var(--sunstone-text-primary)'
-                    }}>
+                    <div className="request-admin-response">
                       <strong>Admin Response:</strong> {req.adminNote}
                     </div>
                   )}
@@ -393,55 +264,32 @@ export default function StudentProfile({
 
       {/* TAB 3: STUDY NOTES & ANALYTICS */}
       {activeTab === 'notes' && (
-        <div style={{
-          background: 'var(--sunstone-card-bg)',
-          border: '1px solid var(--sunstone-border)',
-          borderRadius: 'var(--radius-lg)',
-          boxShadow: 'var(--shadow-card)',
-          padding: '28px'
-        }}>
-          <h3 style={{ fontSize: '18px', fontWeight: '800', marginBottom: '18px', color: 'var(--sunstone-text-primary)' }}>
+        <div className="notes-tab-content">
+          <h3 className="tab-section-heading">
             Saved Personal Study Notes & Reading Analytics
           </h3>
           {myNotes.length === 0 ? (
-            <p style={{ color: 'var(--sunstone-text-secondary)', fontSize: '14px' }}>
+            <p className="empty-subtext">
               No notes saved yet. Open any book in the Online PDF Reader to add highlights and notes for specific page numbers.
             </p>
           ) : (
-            <div style={{ display: 'grid', gridTemplateColumns: 'repeat(auto-fill, minmax(300px, 1fr))', gap: '16px' }}>
+            <div className="notes-cards-grid">
               {myNotes.map((note) => (
-                <div key={note.id} style={{
-                  background: 'var(--sunstone-bg)',
-                  border: '1px solid var(--sunstone-border)',
-                  borderLeft: '4px solid var(--accent-sunstone-red)',
-                  borderRadius: 'var(--radius-md)',
-                  padding: '16px',
-                  display: 'flex',
-                  flexDirection: 'column',
-                  justifyContent: 'space-between'
-                }}>
+                <div key={note.id} className="note-card-item">
                   <div>
-                    <div style={{ fontSize: '12px', color: 'var(--accent-sunstone-red)', fontWeight: '800', marginBottom: '6px' }}>
+                    <div className="note-card-tag">
                       {note.bookTitle} (Page {note.pageNumber})
                     </div>
-                    <p style={{ fontSize: '13px', color: 'var(--sunstone-text-primary)', whiteSpace: 'pre-wrap', lineHeight: '1.5' }}>
+                    <p className="note-card-text">
                       {note.noteText}
                     </p>
                   </div>
-                  <div style={{
-                    display: 'flex',
-                    justifyContent: 'space-between',
-                    alignItems: 'center',
-                    marginTop: '14px',
-                    paddingTop: '10px',
-                    borderTop: '1px solid var(--sunstone-border)',
-                    fontSize: '11px',
-                    color: 'var(--sunstone-text-muted)'
-                  }}>
+                  <div className="note-card-footer">
                     <span>{new Date(note.createdAt).toLocaleDateString()}</span>
                     <button
+                      type="button"
                       onClick={() => onDeleteNote(note.id)}
-                      style={{ background: 'none', border: 'none', color: '#ef4444', cursor: 'pointer', display: 'flex', alignItems: 'center', gap: '4px' }}
+                      className="note-delete-btn"
                     >
                       <Trash2 size={12} /> Delete
                     </button>
