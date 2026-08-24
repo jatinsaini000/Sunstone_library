@@ -1,5 +1,5 @@
 import React, { useState } from 'react';
-import { X, User, Lock, Mail, GraduationCap, ShieldCheck, Key, Loader2 } from 'lucide-react';
+import { X, User, Lock, Mail, GraduationCap, ShieldCheck, Key, Loader2, UserPlus, LogIn } from 'lucide-react';
 import SunstoneLogo from './SunstoneLogo.jsx';
 
 export default function AuthModal({ onClose, onLoginSuccess, onRegisterSuccess, onAdminLoginSuccess }) {
@@ -67,7 +67,7 @@ export default function AuthModal({ onClose, onLoginSuccess, onRegisterSuccess, 
 
         const data = await res.json();
         if (!res.ok) {
-          setErrorMsg(data.error || 'Invalid credentials. Please verify your email and password.');
+          setErrorMsg(data.error || 'Invalid credentials. If you are a new student, please click "Register" above to create an account.');
           setLoading(false);
           return;
         }
@@ -205,6 +205,71 @@ export default function AuthModal({ onClose, onLoginSuccess, onRegisterSuccess, 
             </p>
           </div>
 
+          {/* Clean Segmented Tab Switcher for Student Auth */}
+          {!isAdminLoginMode && (
+            <div style={{
+              display: 'flex',
+              background: 'var(--sunstone-border-light)',
+              padding: '4px',
+              borderRadius: '12px',
+              marginBottom: '18px',
+              gap: '4px'
+            }}>
+              <button
+                type="button"
+                onClick={() => {
+                  setIsRegisterMode(false);
+                  setErrorMsg('');
+                }}
+                style={{
+                  flex: 1,
+                  padding: '10px 14px',
+                  borderRadius: '9px',
+                  border: 'none',
+                  background: !isRegisterMode ? 'var(--sunstone-card-bg)' : 'transparent',
+                  color: !isRegisterMode ? 'var(--sunstone-text-primary)' : 'var(--sunstone-text-secondary)',
+                  fontWeight: !isRegisterMode ? '700' : '500',
+                  fontSize: '13px',
+                  cursor: 'pointer',
+                  display: 'flex',
+                  alignItems: 'center',
+                  justifyContent: 'center',
+                  gap: '6px',
+                  boxShadow: !isRegisterMode ? '0 2px 6px rgba(0,0,0,0.1)' : 'none',
+                  transition: 'all 0.2s ease'
+                }}
+              >
+                <LogIn size={15} /> Sign In
+              </button>
+              <button
+                type="button"
+                onClick={() => {
+                  setIsRegisterMode(true);
+                  setErrorMsg('');
+                }}
+                style={{
+                  flex: 1,
+                  padding: '10px 14px',
+                  borderRadius: '9px',
+                  border: 'none',
+                  background: isRegisterMode ? 'var(--sunstone-card-bg)' : 'transparent',
+                  color: isRegisterMode ? 'var(--sunstone-text-primary)' : 'var(--sunstone-text-secondary)',
+                  fontWeight: isRegisterMode ? '700' : '500',
+                  fontSize: '13px',
+                  cursor: 'pointer',
+                  display: 'flex',
+                  alignItems: 'center',
+                  justifyContent: 'center',
+                  gap: '6px',
+                  boxShadow: isRegisterMode ? '0 2px 6px rgba(0,0,0,0.1)' : 'none',
+                  transition: 'all 0.2s ease'
+                }}
+              >
+                <UserPlus size={15} /> Register
+              </button>
+            </div>
+          )}
+
           {errorMsg && (
             <div className="auth-error-banner">
               {errorMsg}
@@ -266,7 +331,7 @@ export default function AuthModal({ onClose, onLoginSuccess, onRegisterSuccess, 
                   }}
                   className="auth-toggle-link"
                 >
-                  ← Back to Student Login
+                  ← Back to Student Portal
                 </button>
               </div>
             </form>
@@ -344,23 +409,8 @@ export default function AuthModal({ onClose, onLoginSuccess, onRegisterSuccess, 
                 className="btn-primary auth-submit-btn"
               >
                 {loading ? <Loader2 size={16} className="animate-spin" /> : null}
-                <span>{loading ? 'Processing...' : isRegisterMode ? 'Complete Registration' : 'Sign In to Sunstone'}</span>
+                <span>{loading ? 'Processing...' : isRegisterMode ? 'Create Student Account' : 'Sign In to Sunstone'}</span>
               </button>
-
-              <div className="auth-mode-toggle">
-                <button
-                  type="button"
-                  onClick={() => {
-                    setIsRegisterMode(!isRegisterMode);
-                    setErrorMsg('');
-                  }}
-                  className="auth-toggle-link"
-                >
-                  {isRegisterMode
-                    ? 'Already have an account? Sign In'
-                    : "Don't have an account? Register as Student"}
-                </button>
-              </div>
 
               <div className="auth-admin-footer">
                 <button
