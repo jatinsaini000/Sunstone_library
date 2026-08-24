@@ -3,6 +3,22 @@
   publish = "dist"
   functions = "netlify/functions"
 
+# Default Environment Variables configured directly for zero-effort deployment
+[build.environment]
+  NODE_VERSION = "20"
+  ADMIN_EMAIL = "admin@sunstone.in"
+  ADMIN_PASSWORD = "SunstoneAdmin2026!"
+  JWT_SECRET = "sunstone_prayas_library_secure_jwt_secret_key_2026_production"
+  VITE_ADMIN_EMAIL = "admin@sunstone.in"
+  VITE_ADMIN_PASSWORD = "SunstoneAdmin2026!"
+  VITE_FIREBASE_API_KEY = "AIzaSyDemoConfigKeyForSunstoneLibraryProject"
+  VITE_FIREBASE_AUTH_DOMAIN = "sunstone-library-cbf2d.firebaseapp.com"
+  VITE_FIREBASE_DATABASE_URL = "https://sunstone-library-cbf2d-default-rtdb.asia-southeast1.firebasedatabase.app/"
+  VITE_FIREBASE_PROJECT_ID = "sunstone-library-cbf2d"
+  VITE_FIREBASE_STORAGE_BUCKET = "sunstone-library-cbf2d.appspot.com"
+  VITE_FIREBASE_MESSAGING_SENDER_ID = "123456789012"
+  VITE_FIREBASE_APP_ID = "1:123456789012:web:abc123def456789"
+
 # Route all /api calls directly to the Netlify Serverless Function
 [[redirects]]
   from = "/api/*"
