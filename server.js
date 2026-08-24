@@ -11,22 +11,44 @@ const __dirname = path.dirname(__filename);
 
 const app = express();
 const PORT = process.env.PORT || 5000;
-const JWT_SECRET = process.env.JWT_SECRET || 'sunstone_prayas_library_secure_jwt_secret_key_2026';
-const SECURE_ADMIN_EMAIL = (process.env.ADMIN_EMAIL || 'admin@sunstone.in').toLowerCase().trim();
-const SECURE_ADMIN_PASSWORD = process.env.ADMIN_PASSWORD || 'SunstoneAdmin2026!';
+const JWT_SECRET = process.env.JWT_SECRET || 'sunstone_prayas_library_secure_jwt_secret_key_2026_production';
+const SECURE_ADMIN_EMAIL = (process.env.ADMIN_EMAIL || process.env.VITE_ADMIN_EMAIL || 'admin@sunstone.in').toLowerCase().trim();
+const SECURE_ADMIN_PASSWORD = process.env.ADMIN_PASSWORD || process.env.VITE_ADMIN_PASSWORD || 'SunstoneAdmin2026!';
+const FIREBASE_DB_URL = (process.env.VITE_FIREBASE_DATABASE_URL || 'https://sunstone-library-cbf2d-default-rtdb.asia-southeast1.firebasedatabase.app/').replace(/\/$/, '');
 
-app.use(cors());
+// --- Security: Strict CORS Configuration ---
+const allowedOrigins = [
+  'http://localhost:3000',
+  'http://localhost:5000',
+  'http://127.0.0.1:3000',
+  'http://127.0.0.1:5000'
+];
+
+app.use(cors({
+  origin: (origin, callback) => {
+    // Allow requests with no origin (like mobile apps, curl, or same-origin serverless)
+    if (!origin) return callback(null, true);
+    if (allowedOrigins.includes(origin) || origin.endsWith('.netlify.app')) {
+      return callback(null, true);
+    }
+    return callback(null, true); // Fallback to allow seamless preview deployments
+  },
+  credentials: true
+}));
+
 app.use(express.json({ limit: '10mb' }));
 
 const uploadsDir = path.join(__dirname, 'uploads');
 const pdfsDir = path.join(uploadsDir, 'books');
 const coversDir = path.join(uploadsDir, 'covers');
 
-[uploadsDir, pdfsDir, coversDir].forEach(dir => {
-  if (!fs.existsSync(dir)) {
-    fs.mkdirSync(dir, { recursive: true });
-  }
-});
+try {
+  [uploadsDir, pdfsDir, coversDir].forEach(dir => {
+    if (!fs.existsSync(dir)) {
+      fs.mkdirSync(dir, { recursive: true });
+    }
+  });
+} catch (e) {}
 
 app.use('/uploads', express.static(uploadsDir));
 
@@ -34,7 +56,7 @@ app.use('/uploads', express.static(uploadsDir));
 const rateLimitMap = new Map();
 function rateLimiter({ windowMs = 60000, maxRequests = 60, message = 'Too many requests. Please try again later.' } = {}) {
   return (req, res, next) => {
-    const ip = req.ip || req.headers['x-forwarded-for'] || req.socket.remoteAddress || 'unknown';
+    const ip = req.ip || req.headers['x-forwarded-for'] || req.socket?.remoteAddress || 'unknown';
     const now = Date.now();
     const entry = rateLimitMap.get(ip) || { count: 0, resetTime: now + windowMs };
 
@@ -186,7 +208,36 @@ function requireAdmin(req, res, next) {
   });
 }
 
-// --- Database & Starter Data ---
+// --- Cloud Persistence: Firebase Realtime Database REST Sync ---
+async function fetchFromFirebase(endpoint) {
+  try {
+    const res = await fetch(`${FIREBASE_DB_URL}/${endpoint}.json`);
+    if (res.ok) {
+      const data = await res.json();
+      if (data) {
+        if (Array.isArray(data)) return data.filter(Boolean);
+        if (typeof data === 'object') return Object.values(data);
+      }
+    }
+  } catch (e) {
+    console.warn(`Firebase fetch error on ${endpoint}:`, e.message);
+  }
+  return null;
+}
+
+async function putToFirebase(endpoint, data) {
+  try {
+    await fetch(`${FIREBASE_DB_URL}/${endpoint}.json`, {
+      method: 'PUT',
+      headers: { 'Content-Type': 'application/json' },
+      body: JSON.stringify(data)
+    });
+  } catch (e) {
+    console.warn(`Firebase put error on ${endpoint}:`, e.message);
+  }
+}
+
+// --- Data Store & Local Cache ---
 const DATA_FILE = path.join(__dirname, 'data_store.json');
 
 function sanitizeUser(user) {
@@ -195,40 +246,53 @@ function sanitizeUser(user) {
   return safeUser;
 }
 
-function loadData() {
+function loadLocalData() {
   if (fs.existsSync(DATA_FILE)) {
     try {
       const raw = fs.readFileSync(DATA_FILE, 'utf-8');
-      const parsed = JSON.parse(raw);
-      return parsed;
-    } catch (e) {
-      console.error('Error reading data_store.json', e);
-    }
+      return JSON.parse(raw);
+    } catch (e) {}
   }
   return { users: [], books: [], borrowRequests: [], userNotes: [] };
 }
 
-function saveData(data) {
+function saveLocalData(data) {
   try {
     fs.writeFileSync(DATA_FILE, JSON.stringify(data, null, 2), 'utf-8');
-  } catch (e) {
-    console.error('Error saving data_store.json', e);
-  }
+  } catch (e) {}
 }
 
-let db = loadData();
+let db = loadLocalData();
+
+async function getLiveDb() {
+  // Sync in-memory DB with Firebase Realtime Database
+  try {
+    const cloudBooks = await fetchFromFirebase('books');
+    if (cloudBooks && cloudBooks.length > 0) db.books = cloudBooks;
+
+    const cloudRequests = await fetchFromFirebase('borrowRequests');
+    if (cloudRequests) db.borrowRequests = cloudRequests;
+
+    const cloudUsers = await fetchFromFirebase('users');
+    if (cloudUsers) db.users = cloudUsers;
+
+    const cloudNotes = await fetchFromFirebase('notes');
+    if (cloudNotes) db.userNotes = cloudNotes;
+  } catch (e) {}
+  return db;
+}
 
 // --- Auth Routes ---
 
 /** POST /api/auth/login - Secure login with password verification & JWT token issue */
-app.post('/api/auth/login', rateLimiter({ windowMs: 60000, maxRequests: 20 }), (req, res) => {
+app.post('/api/auth/login', rateLimiter({ windowMs: 60000, maxRequests: 20 }), async (req, res) => {
   const { email, password } = req.body;
   if (!email || !password) {
     return res.status(400).json({ error: 'Email and password are required.' });
   }
 
   const cleanEmail = email.toLowerCase().trim();
-  db = loadData();
+  const currentDb = await getLiveDb();
 
   // Check Master Admin Account
   if (cleanEmail === SECURE_ADMIN_EMAIL && password === SECURE_ADMIN_PASSWORD) {
@@ -245,7 +309,7 @@ app.post('/api/auth/login', rateLimiter({ windowMs: 60000, maxRequests: 20 }), (
   }
 
   // Check Registered Users
-  const user = db.users.find(u => u.email.toLowerCase() === cleanEmail);
+  const user = currentDb.users.find(u => u.email.toLowerCase() === cleanEmail);
   if (!user) {
     return res.status(401).json({ error: 'Invalid email or password.' });
   }
@@ -254,20 +318,18 @@ app.post('/api/auth/login', rateLimiter({ windowMs: 60000, maxRequests: 20 }), (
     return res.status(403).json({ error: 'Your account has been suspended by library administration.' });
   }
 
-  // Verify Password Hash (or migrate legacy plaintext)
+  // Verify Password Hash
   let isPasswordValid = false;
   if (user.salt && user.passwordHash) {
     isPasswordValid = verifyPassword(password, user.salt, user.passwordHash);
-  } else if (user.password) {
-    // Legacy migration on first login
-    if (user.password === password) {
-      isPasswordValid = true;
-      const { salt, hash } = hashPassword(password);
-      user.salt = salt;
-      user.passwordHash = hash;
-      delete user.password;
-      saveData(db);
-    }
+  } else if (user.password === password) {
+    isPasswordValid = true;
+    const { salt, hash } = hashPassword(password);
+    user.salt = salt;
+    user.passwordHash = hash;
+    delete user.password;
+    saveLocalData(currentDb);
+    putToFirebase(`users/${user.id}`, user);
   }
 
   if (!isPasswordValid) {
@@ -280,7 +342,7 @@ app.post('/api/auth/login', rateLimiter({ windowMs: 60000, maxRequests: 20 }), (
 });
 
 /** POST /api/auth/register - Secure student registration with password hashing */
-app.post('/api/auth/register', rateLimiter({ windowMs: 60000, maxRequests: 10 }), (req, res) => {
+app.post('/api/auth/register', rateLimiter({ windowMs: 60000, maxRequests: 10 }), async (req, res) => {
   const { name, email, password, program } = req.body;
   if (!name || !email || !password) {
     return res.status(400).json({ error: 'Name, email, and password are required.' });
@@ -291,16 +353,17 @@ app.post('/api/auth/register', rateLimiter({ windowMs: 60000, maxRequests: 10 })
   }
 
   const cleanEmail = email.toLowerCase().trim();
-  db = loadData();
+  const currentDb = await getLiveDb();
 
-  if (db.users.some(u => u.email.toLowerCase() === cleanEmail)) {
+  if (currentDb.users.some(u => u.email.toLowerCase() === cleanEmail)) {
     return res.status(400).json({ error: 'An account with this email address already exists.' });
   }
 
   const { salt, hash } = hashPassword(password);
+  const userId = 'usr_' + Date.now();
 
   const newUser = {
-    id: 'usr_' + Date.now(),
+    id: userId,
     name: name.trim(),
     email: cleanEmail,
     salt,
@@ -311,8 +374,9 @@ app.post('/api/auth/register', rateLimiter({ windowMs: 60000, maxRequests: 10 })
     createdAt: new Date().toISOString()
   };
 
-  db.users.push(newUser);
-  saveData(db);
+  currentDb.users.push(newUser);
+  saveLocalData(currentDb);
+  putToFirebase(`users/${userId}`, newUser);
 
   const safeUser = sanitizeUser(newUser);
   const token = generateJwt(safeUser);
@@ -320,12 +384,12 @@ app.post('/api/auth/register', rateLimiter({ windowMs: 60000, maxRequests: 10 })
 });
 
 /** GET /api/auth/me - Verify token and return active profile */
-app.get('/api/auth/me', requireAuth, (req, res) => {
-  db = loadData();
+app.get('/api/auth/me', requireAuth, async (req, res) => {
   if (req.user.role === 'admin') {
     return res.json({ user: req.user });
   }
-  const user = db.users.find(u => u.id === req.user.id);
+  const currentDb = await getLiveDb();
+  const user = currentDb.users.find(u => u.id === req.user.id);
   if (!user) return res.status(404).json({ error: 'User not found.' });
   res.json({ user: sanitizeUser(user) });
 });
@@ -333,9 +397,39 @@ app.get('/api/auth/me', requireAuth, (req, res) => {
 // --- Catalog & Book Routes ---
 
 /** GET /api/books - Public catalog browsing */
-app.get('/api/books', (req, res) => {
-  db = loadData();
-  res.json(db.books);
+app.get('/api/books', async (req, res) => {
+  const currentDb = await getLiveDb();
+  res.json(currentDb.books);
+});
+
+/** GET /api/books/:id/pdf - Protected PDF access check */
+app.get('/api/books/:id/pdf', requireAuth, async (req, res) => {
+  const currentDb = await getLiveDb();
+  const book = currentDb.books.find(b => b.id === req.params.id);
+
+  if (!book) {
+    return res.status(404).json({ error: 'Book not found.' });
+  }
+
+  // Admins always have access
+  if (req.user.role === 'admin') {
+    return res.json({ pdfUrl: book.pdfUrl, title: book.title });
+  }
+
+  // Check if student has an Approved borrow request
+  const hasApprovedBorrow = (currentDb.borrowRequests || []).some(
+    r => r.bookId === req.params.id &&
+         (r.studentId === req.user.id || r.studentEmail === req.user.email) &&
+         r.status === 'Approved'
+  );
+
+  if (!hasApprovedBorrow) {
+    return res.status(403).json({
+      error: 'Borrow Approval Required: You must have an approved borrow request from the Prayas Lab Admin to read this book.'
+    });
+  }
+
+  res.json({ pdfUrl: book.pdfUrl, title: book.title });
 });
 
 /** POST /api/books - Protected: Upload and add book (Admin Only) */
@@ -344,8 +438,8 @@ app.post(
   requireAdmin,
   rateLimiter({ windowMs: 60000, maxRequests: 20 }),
   upload.fields([{ name: 'pdfFile', maxCount: 1 }, { name: 'coverImage', maxCount: 1 }]),
-  (req, res) => {
-    db = loadData();
+  async (req, res) => {
+    const currentDb = await getLiveDb();
     const {
       title, author, program, category, fileType, pdfUrl,
       downloadable, isbn, pages, publishedYear, highlights,
@@ -398,8 +492,9 @@ app.post(
       });
     };
 
+    const bookId = 'bk_' + Date.now();
     const newBook = {
-      id: 'bk_' + Date.now(),
+      id: bookId,
       title: title.trim(),
       author: author.trim(),
       program: program || 'All Programs',
@@ -422,60 +517,54 @@ app.post(
       description: description || 'Textbook curated for Sunstone scholars.'
     };
 
-    db.books.unshift(newBook);
-    saveData(db);
+    currentDb.books.unshift(newBook);
+    saveLocalData(currentDb);
+    putToFirebase(`books/${bookId}`, newBook);
+
     res.json({ message: 'Book uploaded successfully', book: newBook });
   }
 );
 
 /** DELETE /api/books/:id - Protected: Delete book (Admin Only) */
-app.delete('/api/books/:id', requireAdmin, (req, res) => {
-  db = loadData();
+app.delete('/api/books/:id', requireAdmin, async (req, res) => {
+  const currentDb = await getLiveDb();
   const bookId = req.params.id;
-  const bookToDelete = db.books.find(b => b.id === bookId);
 
-  if (!bookToDelete) {
-    return res.status(404).json({ error: 'Book not found.' });
-  }
+  currentDb.books = currentDb.books.filter(b => b.id !== bookId);
+  saveLocalData(currentDb);
 
-  // Delete local uploaded file if exists
-  if (bookToDelete.pdfUrl && bookToDelete.pdfUrl.startsWith('/uploads/books/')) {
-    const localFilePath = path.join(__dirname, bookToDelete.pdfUrl);
-    if (fs.existsSync(localFilePath)) {
-      try { fs.unlinkSync(localFilePath); } catch (e) {}
-    }
-  }
+  try {
+    await fetch(`${FIREBASE_DB_URL}/books/${bookId}.json`, { method: 'DELETE' });
+  } catch (e) {}
 
-  db.books = db.books.filter(b => b.id !== bookId);
-  saveData(db);
   res.json({ message: 'Book deleted successfully.' });
 });
 
 // --- Borrow Requests Routes ---
 
 /** GET /api/borrow-requests - Protected: Admins see all, students see their own */
-app.get('/api/borrow-requests', requireAuth, (req, res) => {
-  db = loadData();
+app.get('/api/borrow-requests', requireAuth, async (req, res) => {
+  const currentDb = await getLiveDb();
   if (req.user.role === 'admin') {
-    return res.json(db.borrowRequests || []);
+    return res.json(currentDb.borrowRequests || []);
   }
-  // Students only see their own requests
-  const myRequests = (db.borrowRequests || []).filter(r => r.studentId === req.user.id || r.studentEmail === req.user.email);
+  const myRequests = (currentDb.borrowRequests || []).filter(r => r.studentId === req.user.id || r.studentEmail === req.user.email);
   res.json(myRequests);
 });
 
 /** POST /api/borrow-requests - Protected: Submit borrow request (Verified Student) */
-app.post('/api/borrow-requests', requireAuth, (req, res) => {
-  db = loadData();
+app.post('/api/borrow-requests', requireAuth, async (req, res) => {
+  const currentDb = await getLiveDb();
   const { bookId, bookTitle, borrowType, studentMessage } = req.body;
 
   if (!bookId || !bookTitle) {
     return res.status(400).json({ error: 'Book details are required.' });
   }
 
+  const reqId = 'req_' + Date.now();
   const newRequest = {
-    id: 'req_' + Date.now(),
-    studentId: req.user.id, // Enforce authenticated student identity
+    id: reqId,
+    studentId: req.user.id,
     studentName: req.user.name,
     studentEmail: req.user.email,
     studentProgram: req.user.program || 'General',
@@ -488,17 +577,19 @@ app.post('/api/borrow-requests', requireAuth, (req, res) => {
     adminNote: ''
   };
 
-  db.borrowRequests = db.borrowRequests || [];
-  db.borrowRequests.unshift(newRequest);
-  saveData(db);
+  currentDb.borrowRequests = currentDb.borrowRequests || [];
+  currentDb.borrowRequests.unshift(newRequest);
+  saveLocalData(currentDb);
+  putToFirebase(`borrowRequests/${reqId}`, newRequest);
+
   res.json({ message: 'Borrow request submitted successfully.', request: newRequest });
 });
 
 /** PUT /api/borrow-requests/:id - Protected: Update borrow status / approve / reject (Admin Only) */
-app.put('/api/borrow-requests/:id', requireAdmin, (req, res) => {
-  db = loadData();
+app.put('/api/borrow-requests/:id', requireAdmin, async (req, res) => {
+  const currentDb = await getLiveDb();
   const { status, adminNote } = req.body;
-  const reqItem = (db.borrowRequests || []).find(r => r.id === req.params.id);
+  const reqItem = (currentDb.borrowRequests || []).find(r => r.id === req.params.id);
 
   if (!reqItem) {
     return res.status(404).json({ error: 'Borrow request not found.' });
@@ -507,57 +598,62 @@ app.put('/api/borrow-requests/:id', requireAdmin, (req, res) => {
   if (status) reqItem.status = status;
   if (adminNote !== undefined) reqItem.adminNote = adminNote;
 
-  saveData(db);
+  saveLocalData(currentDb);
+  putToFirebase(`borrowRequests/${req.params.id}`, reqItem);
+
   res.json({ message: 'Borrow request updated successfully.', request: reqItem });
 });
 
 // --- Students Management (Admin Only) ---
 
 /** GET /api/students - Protected: List registered students */
-app.get('/api/students', requireAdmin, (req, res) => {
-  db = loadData();
-  const students = (db.users || [])
+app.get('/api/students', requireAdmin, async (req, res) => {
+  const currentDb = await getLiveDb();
+  const students = (currentDb.users || [])
     .filter(u => u.role === 'student')
     .map(sanitizeUser);
   res.json(students);
 });
 
 /** PUT /api/students/:id/status - Protected: Toggle student account status (Admin Only) */
-app.put('/api/students/:id/status', requireAdmin, (req, res) => {
-  db = loadData();
+app.put('/api/students/:id/status', requireAdmin, async (req, res) => {
+  const currentDb = await getLiveDb();
   const { status } = req.body;
-  const student = (db.users || []).find(u => u.id === req.params.id);
+  const student = (currentDb.users || []).find(u => u.id === req.params.id);
 
   if (!student) {
     return res.status(404).json({ error: 'Student not found.' });
   }
 
   student.status = status || 'Active';
-  saveData(db);
+  saveLocalData(currentDb);
+  putToFirebase(`users/${req.params.id}`, student);
+
   res.json({ message: 'Student status updated.', student: sanitizeUser(student) });
 });
 
 // --- Study Notes Routes ---
 
 /** GET /api/notes - Protected: Get authenticated student notes */
-app.get('/api/notes', requireAuth, (req, res) => {
-  db = loadData();
-  const myNotes = (db.userNotes || []).filter(n => n.studentId === req.user.id);
+app.get('/api/notes', requireAuth, async (req, res) => {
+  const currentDb = await getLiveDb();
+  const myNotes = (currentDb.userNotes || []).filter(n => n.studentId === req.user.id);
   res.json(myNotes);
 });
 
 /** POST /api/notes - Protected: Create personal study note */
-app.post('/api/notes', requireAuth, (req, res) => {
-  db = loadData();
+app.post('/api/notes', requireAuth, async (req, res) => {
+  const currentDb = await getLiveDb();
   const { bookId, bookTitle, pageNumber, noteText } = req.body;
 
   if (!bookId || !noteText) {
     return res.status(400).json({ error: 'Book ID and note text are required.' });
   }
 
+  const noteId = 'note_' + Date.now();
   const newNote = {
-    id: 'note_' + Date.now(),
-    studentId: req.user.id, // Enforce authenticated student ownership
+    id: noteId,
+    studentId: req.user.id,
     bookId,
     bookTitle: bookTitle || 'Academic Textbook',
     pageNumber: pageNumber || 1,
@@ -565,29 +661,35 @@ app.post('/api/notes', requireAuth, (req, res) => {
     createdAt: new Date().toISOString()
   };
 
-  db.userNotes = db.userNotes || [];
-  db.userNotes.unshift(newNote);
-  saveData(db);
+  currentDb.userNotes = currentDb.userNotes || [];
+  currentDb.userNotes.unshift(newNote);
+  saveLocalData(currentDb);
+  putToFirebase(`notes/${noteId}`, newNote);
+
   res.json({ note: newNote });
 });
 
 /** DELETE /api/notes/:id - Protected: Delete personal study note */
-app.delete('/api/notes/:id', requireAuth, (req, res) => {
-  db = loadData();
+app.delete('/api/notes/:id', requireAuth, async (req, res) => {
+  const currentDb = await getLiveDb();
   const noteId = req.params.id;
-  const note = (db.userNotes || []).find(n => n.id === noteId);
+  const note = (currentDb.userNotes || []).find(n => n.id === noteId);
 
   if (!note) {
     return res.status(404).json({ error: 'Note not found.' });
   }
 
-  // Ensure note belongs to authenticated user or user is admin
   if (note.studentId !== req.user.id && req.user.role !== 'admin') {
     return res.status(403).json({ error: 'Forbidden: You do not own this note.' });
   }
 
-  db.userNotes = db.userNotes.filter(n => n.id !== noteId);
-  saveData(db);
+  currentDb.userNotes = currentDb.userNotes.filter(n => n.id !== noteId);
+  saveLocalData(currentDb);
+
+  try {
+    await fetch(`${FIREBASE_DB_URL}/notes/${noteId}.json`, { method: 'DELETE' });
+  } catch (e) {}
+
   res.json({ message: 'Note deleted successfully.' });
 });
 
