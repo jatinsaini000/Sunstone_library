@@ -278,12 +278,22 @@ export default function AdminConsole({
         </div>
       </div>
 
-      {/* Sunstone Admin Navigation Pills */}
-      <div style={{ display: 'flex', gap: '10px' }}>
+      {/* Sunstone Admin Navigation Pills - Responsive Scrollable Bar */}
+      <div
+        className="admin-tabs-scroller"
+        style={{
+          display: 'flex',
+          gap: '10px',
+          overflowX: 'auto',
+          paddingBottom: '6px',
+          WebkitOverflowScrolling: 'touch',
+          scrollbarWidth: 'none'
+        }}
+      >
         <button
           onClick={() => setActiveTab('messages')}
           style={{
-            padding: '10px 20px',
+            padding: '10px 18px',
             borderRadius: '30px',
             border: activeTab === 'messages' ? '2px solid var(--sunstone-navy-dark)' : '1px solid var(--sunstone-border)',
             background: activeTab === 'messages' ? 'var(--sunstone-navy-dark)' : 'var(--sunstone-card-bg)',
@@ -293,7 +303,9 @@ export default function AdminConsole({
             cursor: 'pointer',
             display: 'flex',
             alignItems: 'center',
-            gap: '8px'
+            gap: '8px',
+            flexShrink: 0,
+            whiteSpace: 'nowrap'
           }}
         >
           <MessageSquare size={16} /> Borrow Messages ({pendingRequestsCount})
@@ -302,7 +314,7 @@ export default function AdminConsole({
         <button
           onClick={() => setActiveTab('upload')}
           style={{
-            padding: '10px 20px',
+            padding: '10px 18px',
             borderRadius: '30px',
             border: activeTab === 'upload' ? '2px solid var(--sunstone-navy-dark)' : '1px solid var(--sunstone-border)',
             background: activeTab === 'upload' ? 'var(--sunstone-navy-dark)' : 'var(--sunstone-card-bg)',
@@ -312,7 +324,9 @@ export default function AdminConsole({
             cursor: 'pointer',
             display: 'flex',
             alignItems: 'center',
-            gap: '8px'
+            gap: '8px',
+            flexShrink: 0,
+            whiteSpace: 'nowrap'
           }}
         >
           <Plus size={16} /> Upload Book (File / URL)
@@ -321,7 +335,7 @@ export default function AdminConsole({
         <button
           onClick={() => setActiveTab('students')}
           style={{
-            padding: '10px 20px',
+            padding: '10px 18px',
             borderRadius: '30px',
             border: activeTab === 'students' ? '2px solid var(--sunstone-navy-dark)' : '1px solid var(--sunstone-border)',
             background: activeTab === 'students' ? 'var(--sunstone-navy-dark)' : 'var(--sunstone-card-bg)',
@@ -331,7 +345,9 @@ export default function AdminConsole({
             cursor: 'pointer',
             display: 'flex',
             alignItems: 'center',
-            gap: '8px'
+            gap: '8px',
+            flexShrink: 0,
+            whiteSpace: 'nowrap'
           }}
         >
           <Users size={16} /> Student Access ({students.length})
@@ -340,7 +356,7 @@ export default function AdminConsole({
         <button
           onClick={() => setActiveTab('catalog')}
           style={{
-            padding: '10px 20px',
+            padding: '10px 18px',
             borderRadius: '30px',
             border: activeTab === 'catalog' ? '2px solid var(--sunstone-navy-dark)' : '1px solid var(--sunstone-border)',
             background: activeTab === 'catalog' ? 'var(--sunstone-navy-dark)' : 'var(--sunstone-card-bg)',
@@ -350,7 +366,9 @@ export default function AdminConsole({
             cursor: 'pointer',
             display: 'flex',
             alignItems: 'center',
-            gap: '8px'
+            gap: '8px',
+            flexShrink: 0,
+            whiteSpace: 'nowrap'
           }}
         >
           <BookOpen size={16} /> Manage Catalog ({allBooks.length})
@@ -534,7 +552,7 @@ export default function AdminConsole({
               </div>
             </div>
 
-            <div style={{ display: 'grid', gridTemplateColumns: '1fr 1fr', gap: '16px' }}>
+            <div style={{ display: 'grid', gridTemplateColumns: 'repeat(auto-fit, minmax(220px, 1fr))', gap: '16px' }}>
               <div className="form-group">
                 <label className="form-label">Book Title *</label>
                 <input
@@ -560,7 +578,7 @@ export default function AdminConsole({
               </div>
             </div>
 
-            <div style={{ display: 'grid', gridTemplateColumns: '1fr 1fr', gap: '16px' }}>
+            <div style={{ display: 'grid', gridTemplateColumns: 'repeat(auto-fit, minmax(220px, 1fr))', gap: '16px' }}>
               <div className="form-group">
                 <label className="form-label">Sunstone Program Alignment</label>
                 <select

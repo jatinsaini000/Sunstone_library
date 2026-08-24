@@ -11,7 +11,8 @@ export default function TopHeader({
   currentView,
   setCurrentView,
   theme,
-  setTheme
+  setTheme,
+  setSelectedProgram
 }) {
   const userName = user ? user.name.split(' ')[0] : '';
   const userProgram = user ? (user.program === 'All Programs' ? 'Sunstone Admin' : user.program) : '';
@@ -137,7 +138,10 @@ export default function TopHeader({
             className="search-input-field"
             placeholder="Search books, authors, courses (MBA, CS, BCA)..."
             value={searchQuery}
-            onChange={(e) => setSearchQuery(e.target.value)}
+            onChange={(e) => {
+              setSearchQuery(e.target.value);
+              if (currentView !== 'catalog') setCurrentView('catalog');
+            }}
           />
           {searchQuery && (
             <button
@@ -165,7 +169,11 @@ export default function TopHeader({
               <button
                 type="button"
                 key={tag.label}
-                onClick={() => setSearchQuery(isSelected ? '' : tag.query)}
+                onClick={() => {
+                  if (currentView !== 'catalog') setCurrentView('catalog');
+                  if (setSelectedProgram) setSelectedProgram('All Programs');
+                  setSearchQuery(isSelected ? '' : tag.query);
+                }}
                 className={`topic-chip ${isSelected ? 'active' : ''}`}
               >
                 #{tag.label}

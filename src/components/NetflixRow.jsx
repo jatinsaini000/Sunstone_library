@@ -1,4 +1,4 @@
-import React, { useRef } from 'react';
+import React, { useRef, useState } from 'react';
 import { ChevronLeft, ChevronRight } from 'lucide-react';
 import BookCard from './BookCard.jsx';
 
@@ -15,14 +15,38 @@ export default function NetflixRow({
   borrowedBookIds = []
 }) {
   const rowRef = useRef(null);
+  const [isDragging, setIsDragging] = useState(false);
+  const [startX, setStartX] = useState(0);
+  const [scrollLeftState, setScrollLeftState] = useState(0);
 
   if (books.length === 0) return null;
 
   const handleScroll = (direction) => {
     if (rowRef.current) {
-      const scrollAmount = direction === 'left' ? -320 : 320;
+      const scrollAmount = direction === 'left' ? -340 : 340;
       rowRef.current.scrollBy({ left: scrollAmount, behavior: 'smooth' });
     }
+  };
+
+  const handleMouseDown = (e) => {
+    if (!rowRef.current) return;
+    // Don't drag if clicking buttons inside
+    if (e.target.closest('button')) return;
+    setIsDragging(true);
+    setStartX(e.pageX - rowRef.current.offsetLeft);
+    setScrollLeftState(rowRef.current.scrollLeft);
+  };
+
+  const handleMouseLeaveOrUp = () => {
+    setIsDragging(false);
+  };
+
+  const handleMouseMove = (e) => {
+    if (!isDragging || !rowRef.current) return;
+    e.preventDefault();
+    const x = e.pageX - rowRef.current.offsetLeft;
+    const walk = (x - startX) * 1.3;
+    rowRef.current.scrollLeft = scrollLeftState - walk;
   };
 
   return (
@@ -56,7 +80,15 @@ export default function NetflixRow({
         </div>
       </div>
 
-      <div className="row-scroll-container" ref={rowRef}>
+      <div
+        className="row-scroll-container"
+        ref={rowRef}
+        onMouseDown={handleMouseDown}
+        onMouseLeave={handleMouseLeaveOrUp}
+        onMouseUp={handleMouseLeaveOrUp}
+        onMouseMove={handleMouseMove}
+        style={{ cursor: isDragging ? 'grabbing' : 'auto' }}
+      >
         {books.map((book) => (
           <BookCard
             key={book.id}

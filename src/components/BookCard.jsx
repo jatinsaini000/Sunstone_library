@@ -18,7 +18,7 @@ export default function BookCard({
         className="poster-box"
         onClick={() => onOpenReader(book)}
         style={{ cursor: 'pointer' }}
-        title="Click to Open Reader (Pages 1–5 Free Preview)"
+        title={isBorrowed ? 'Click image to read full book' : 'Click image to open free preview (Pages 1–5)'}
       >
         <img
           src={book.coverUrl}
@@ -99,15 +99,17 @@ export default function BookCard({
 
         {/* Card Action Buttons */}
         <div className="netflix-card-footer">
-          <button
-            type="button"
-            className="btn-primary card-action-btn primary"
-            onClick={() => onOpenReader(book)}
-            title="Open In-App PDF Reader"
-          >
-            <BookOpen size={13} />
-            <span>{isBorrowed ? 'Read Book' : 'Preview (1–5p)'}</span>
-          </button>
+          {isBorrowed && (
+            <button
+              type="button"
+              className="btn-primary card-action-btn primary"
+              onClick={() => onOpenReader(book)}
+              title="Open In-App PDF Reader"
+            >
+              <BookOpen size={13} />
+              <span>Read Book</span>
+            </button>
+          )}
 
           <button
             type="button"

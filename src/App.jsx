@@ -485,6 +485,7 @@ export default function App() {
           setCurrentView={setCurrentView}
           theme={theme}
           setTheme={setTheme}
+          setSelectedProgram={setSelectedProgram}
         />
 
         {/* Live Toast Banner */}
@@ -557,7 +558,10 @@ export default function App() {
                   onOpenReader={(b) => setActiveReaderBook(b)}
                   onOpenSnippets={(b) => setActiveSnippetBook(b)}
                   onOpenQuickSummary={(b) => setSelectedQuickSummaryBook(b)}
-                  onOpenBorrowModal={(b) => setActiveBorrowBook(b)}
+                  onOpenBorrowModal={(b) => {
+                    if (!user) setShowAuthModal(true);
+                    else setActiveBorrowBook(b);
+                  }}
                   savedBookIds={savedBookIds}
                   onToggleSave={handleToggleSaveBook}
                   borrowedBookIds={borrowedBookIds}
@@ -570,7 +574,10 @@ export default function App() {
                   onOpenReader={(b) => setActiveReaderBook(b)}
                   onOpenSnippets={(b) => setActiveSnippetBook(b)}
                   onOpenQuickSummary={(b) => setSelectedQuickSummaryBook(b)}
-                  onOpenBorrowModal={(b) => setActiveBorrowBook(b)}
+                  onOpenBorrowModal={(b) => {
+                    if (!user) setShowAuthModal(true);
+                    else setActiveBorrowBook(b);
+                  }}
                   savedBookIds={savedBookIds}
                   onToggleSave={handleToggleSaveBook}
                   borrowedBookIds={borrowedBookIds}
@@ -583,7 +590,10 @@ export default function App() {
                   onOpenReader={(b) => setActiveReaderBook(b)}
                   onOpenSnippets={(b) => setActiveSnippetBook(b)}
                   onOpenQuickSummary={(b) => setSelectedQuickSummaryBook(b)}
-                  onOpenBorrowModal={(b) => setActiveBorrowBook(b)}
+                  onOpenBorrowModal={(b) => {
+                    if (!user) setShowAuthModal(true);
+                    else setActiveBorrowBook(b);
+                  }}
                   savedBookIds={savedBookIds}
                   onToggleSave={handleToggleSaveBook}
                   borrowedBookIds={borrowedBookIds}
@@ -596,7 +606,10 @@ export default function App() {
                   onOpenReader={(b) => setActiveReaderBook(b)}
                   onOpenSnippets={(b) => setActiveSnippetBook(b)}
                   onOpenQuickSummary={(b) => setSelectedQuickSummaryBook(b)}
-                  onOpenBorrowModal={(b) => setActiveBorrowBook(b)}
+                  onOpenBorrowModal={(b) => {
+                    if (!user) setShowAuthModal(true);
+                    else setActiveBorrowBook(b);
+                  }}
                   savedBookIds={savedBookIds}
                   onToggleSave={handleToggleSaveBook}
                   borrowedBookIds={borrowedBookIds}
@@ -609,7 +622,10 @@ export default function App() {
                   onOpenReader={(b) => setActiveReaderBook(b)}
                   onOpenSnippets={(b) => setActiveSnippetBook(b)}
                   onOpenQuickSummary={(b) => setSelectedQuickSummaryBook(b)}
-                  onOpenBorrowModal={(b) => setActiveBorrowBook(b)}
+                  onOpenBorrowModal={(b) => {
+                    if (!user) setShowAuthModal(true);
+                    else setActiveBorrowBook(b);
+                  }}
                   savedBookIds={savedBookIds}
                   onToggleSave={handleToggleSaveBook}
                   borrowedBookIds={borrowedBookIds}
@@ -622,7 +638,10 @@ export default function App() {
                   onOpenReader={(b) => setActiveReaderBook(b)}
                   onOpenSnippets={(b) => setActiveSnippetBook(b)}
                   onOpenQuickSummary={(b) => setSelectedQuickSummaryBook(b)}
-                  onOpenBorrowModal={(b) => setActiveBorrowBook(b)}
+                  onOpenBorrowModal={(b) => {
+                    if (!user) setShowAuthModal(true);
+                    else setActiveBorrowBook(b);
+                  }}
                   savedBookIds={savedBookIds}
                   onToggleSave={handleToggleSaveBook}
                   borrowedBookIds={borrowedBookIds}
@@ -635,7 +654,10 @@ export default function App() {
                   onOpenReader={(b) => setActiveReaderBook(b)}
                   onOpenSnippets={(b) => setActiveSnippetBook(b)}
                   onOpenQuickSummary={(b) => setSelectedQuickSummaryBook(b)}
-                  onOpenBorrowModal={(b) => setActiveBorrowBook(b)}
+                  onOpenBorrowModal={(b) => {
+                    if (!user) setShowAuthModal(true);
+                    else setActiveBorrowBook(b);
+                  }}
                   savedBookIds={savedBookIds}
                   onToggleSave={handleToggleSaveBook}
                   borrowedBookIds={borrowedBookIds}
@@ -656,7 +678,10 @@ export default function App() {
               onOpenReader={(b) => setActiveReaderBook(b)}
               onOpenSnippets={(b) => setActiveSnippetBook(b)}
               onOpenQuickSummary={(b) => setSelectedQuickSummaryBook(b)}
-              onOpenBorrowModal={(b) => setActiveBorrowBook(b)}
+              onOpenBorrowModal={(b) => {
+                if (!user) setShowAuthModal(true);
+                else setActiveBorrowBook(b);
+              }}
               borrowRequests={borrowRequests}
               userNotes={userNotes}
               onDeleteNote={handleDeleteNote}
@@ -762,6 +787,9 @@ export default function App() {
           onAddNote={handleAddNote}
           onDeleteNote={handleDeleteNote}
           isBorrowed={borrowedBookIds.includes(activeReaderBook.id)}
+          hasPendingBorrowRequest={borrowRequests.some(
+            (r) => user && (r.studentId === user.id || r.studentEmail === user.email) && r.bookId === activeReaderBook.id && r.status === 'Pending'
+          )}
           onOpenSnippets={(b) => setActiveSnippetBook(b)}
           onOpenBorrowModal={(b) => {
             if (!user) setShowAuthModal(true);
