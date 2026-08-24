@@ -927,7 +927,14 @@ const handleDeleteBook = async (bookId) => {
             setShowAuthModal(false);
           }}
           onRegisterSuccess={(usr, usrToken) => {
-            handleRegisterSuccess(usr, usrToken);
+            handleSetUser(usr, usrToken);
+            setStudents(prev => {
+              const newStudents = [...prev, usr];
+              try { localStorage.setItem('sunstone_students', JSON.stringify(newStudents)); } catch(e){}
+              return newStudents;
+            });
+            addStudentToFirestore(usr).catch(e => console.error(e));
+            setShowAuthModal(false);
           }}
           onAdminLoginSuccess={(adminUsr, adminToken) => {
             handleSetUser(adminUsr, adminToken);

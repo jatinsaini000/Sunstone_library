@@ -11,7 +11,7 @@ export default function AuthModal({ onClose, onLoginSuccess, onRegisterSuccess, 
   const [email, setEmail] = useState('');
   const [password, setPassword] = useState('');
   const [name, setName] = useState('');
-  const [program, setProgram] = useState('B.Tech CS');
+  const [program, setProgram] = useState('B.Tech & BCA');
 
   // Admin Specific Fields
   const [adminId, setAdminId] = useState('');
@@ -95,7 +95,7 @@ export default function AuthModal({ onClose, onLoginSuccess, onRegisterSuccess, 
           name: email.split('@')[0],
           email: email.trim().toLowerCase(),
           role: 'student',
-          program: 'B.Tech CS',
+          program: 'B.Tech & BCA',
           status: 'Active'
         }, 'offline_jwt_token_' + Date.now());
       }
@@ -363,9 +363,8 @@ export default function AuthModal({ onClose, onLoginSuccess, onRegisterSuccess, 
                       value={program}
                       onChange={(e) => setProgram(e.target.value)}
                     >
-                      <option value="B.Tech CS">B.Tech CS (Computer Science)</option>
+                      <option value="B.Tech & BCA">B.Tech & BCA (Tech & Engineering)</option>
                       <option value="MBA">MBA (Management & Finance)</option>
-                      <option value="BCA">BCA (Software Development)</option>
                       <option value="BBA">BBA (Business Administration)</option>
                     </select>
                   </div>
