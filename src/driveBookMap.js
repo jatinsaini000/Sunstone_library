@@ -40,7 +40,17 @@ export const DRIVE_FILE_IDS = {
   'mobile.devops.playbook.pdf': '1eeWvARqaaRG9cCXFuLHwzzZgpFXx1gfK',
   'serverless_applications_with_node.pdf': '1JmG3Sz4VHIRTthvczL7fVmmoTgcc1WM4',
   'serverless_architecture_on_aws_peter.pdf': '1q07OnOaK0K5Uk81_PW9SZRIRnt1FSB4g',
-  'serverless_architectures_on_aws_peter_sbarski,_yan_cui,_ajay_nair.pdf': '19s4DpoNoMeOxYyDs5A_Yl3uxaJOwW0iA'
+  'serverless_architectures_on_aws_peter_sbarski,_yan_cui,_ajay_nair.pdf': '19s4DpoNoMeOxYyDs5A_Yl3uxaJOwW0iA',
+  'the pyramid web framework (en).pdf': '1cfamwDqe-yPO_HCTe_naTjjUqGX25Dgs',
+  'python machine learning case studies (en).pdf': '1c4e8uE_RABOCf5TeYQrO0l7_MgGhGAuK',
+  'python web scraping (en).pdf': '1r04KyfNEiZk9vFAUQrnYGxEj3ZbkIcZ0',
+  'programming for computations – python (en).pdf': '1ifA5bmadhu6pGhlUE4VdTqlbDVkJiUwc',
+  '[seppe_vanden_broucke,_bart_baesens]_practical_web.pdf': '1IS_9_-o9vZWaocCnubBRtInHkHMKT36H',
+  'learning python network programming (en).pdf': '1cJtHGNjPUCMATg_DYFPMPKtuh1JArNzV',
+  'pro python (en).pdf': '1uVR_NOw7NVzHNZVfRmEbr053nty4GFw9',
+  'basic to advance python hand written notes.pdf': '1uAKyBjLAPWVT7YF3-YARkBm46i74-Ee5',
+  'mastering python networking (en).pdf': '1ptr5SlYfuekJe2Ysws8bwDdGMkE2OzZS',
+  'quick-python-book-3rd.pdf': '1jKAOReJ-rljz5QKhtWsA74fg7cNXNilk'
 };
 
 export function normalizeBookFilename(name) {
