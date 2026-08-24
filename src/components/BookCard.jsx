@@ -1,5 +1,5 @@
 import React from 'react';
-import { BookOpen, Zap, Bookmark, Star, Send, FileText, Lock, Unlock } from 'lucide-react';
+import { BookOpen, Zap, Bookmark, Star, Send, FileText, Lock, Unlock, Eye } from 'lucide-react';
 
 export default function BookCard({
   book,
@@ -13,8 +13,13 @@ export default function BookCard({
 }) {
   return (
     <div className="netflix-card">
-      {/* Poster Image Container */}
-      <div className="poster-box">
+      {/* Poster Image Container - Clicking directly opens Reader */}
+      <div
+        className="poster-box"
+        onClick={() => onOpenReader(book)}
+        style={{ cursor: 'pointer' }}
+        title="Click to Open Reader (Pages 1–5 Free Preview)"
+      >
         <img
           src={book.coverUrl}
           alt={book.title}
@@ -26,17 +31,17 @@ export default function BookCard({
         />
         <div className="poster-badge">{book.program}</div>
 
-        {/* Borrow Status Badge */}
+        {/* Borrow Status / Free Preview Badge */}
         <div className={`poster-borrow-badge ${isBorrowed ? 'unlocked' : 'locked'}`}>
           {isBorrowed ? (
             <>
               <Unlock size={10} />
-              <span>Borrowed</span>
+              <span>Full Book</span>
             </>
           ) : (
             <>
-              <Lock size={10} />
-              <span>Snippets</span>
+              <Eye size={10} />
+              <span>1–5p Preview</span>
             </>
           )}
         </div>
@@ -61,7 +66,12 @@ export default function BookCard({
         <div className="netflix-card-category">
           {book.category}
         </div>
-        <h4 className="netflix-card-title" title={book.title}>
+        <h4
+          className="netflix-card-title"
+          title={book.title}
+          onClick={() => onOpenReader(book)}
+          style={{ cursor: 'pointer' }}
+        >
           {book.title}
         </h4>
         <div className="netflix-card-author">
@@ -77,7 +87,10 @@ export default function BookCard({
           <button
             type="button"
             className={`meta-save-btn ${isSaved ? 'saved' : ''}`}
-            onClick={() => onToggleSave(book.id)}
+            onClick={(e) => {
+              e.stopPropagation();
+              onToggleSave(book.id);
+            }}
             title={isSaved ? 'Remove from Shelf' : 'Save to Shelf'}
           >
             <Bookmark size={15} fill={isSaved ? 'var(--accent-sunstone-red)' : 'none'} />
@@ -89,6 +102,16 @@ export default function BookCard({
           <button
             type="button"
             className="btn-primary card-action-btn primary"
+            onClick={() => onOpenReader(book)}
+            title="Open In-App PDF Reader"
+          >
+            <BookOpen size={13} />
+            <span>{isBorrowed ? 'Read Book' : 'Preview (1–5p)'}</span>
+          </button>
+
+          <button
+            type="button"
+            className="btn-secondary card-action-btn secondary"
             onClick={() => onOpenSnippets(book)}
             title="Read Chapter Snippets & Summary"
           >
@@ -96,24 +119,14 @@ export default function BookCard({
             <span>Snippets</span>
           </button>
 
-          {isBorrowed ? (
-            <button
-              type="button"
-              className="btn-secondary card-action-btn unlocked"
-              onClick={() => onOpenReader(book)}
-              title="Read Complete Full Book"
-            >
-              <BookOpen size={13} />
-              <span>Full Book</span>
-            </button>
-          ) : (
+          {!isBorrowed && (
             <button
               type="button"
               className="btn-secondary card-action-btn borrow"
               onClick={() => onOpenBorrowModal(book)}
-              title="Borrow Book to Unlock Full Access"
+              title="Borrow Physical or Digital Copy"
             >
-              <Send size={13} />
+              <Send size={12} />
               <span>Borrow</span>
             </button>
           )}
