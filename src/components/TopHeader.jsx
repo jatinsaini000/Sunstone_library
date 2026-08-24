@@ -67,20 +67,7 @@ export default function TopHeader({
             </button>
           )}
 
-          {/* Admin Portal Button (Desktop / Tablet) */}
-          <button
-            type="button"
-            className="btn-admin-pill"
-            style={{
-              background: currentView === 'admin' ? 'var(--sunstone-navy-dark)' : 'var(--sunstone-card-bg)',
-              color: currentView === 'admin' ? '#ffffff' : 'var(--sunstone-text-primary)'
-            }}
-            onClick={() => setCurrentView('admin')}
-            title="Access Prayas Lab Admin Portal"
-          >
-            <ShieldCheck size={14} color={currentView === 'admin' ? '#ffffff' : 'var(--accent-blue)'} />
-            <span className="admin-btn-text">Admin</span>
-          </button>
+
 
           {/* User Profile Pill or Login CTA */}
           {user ? (
