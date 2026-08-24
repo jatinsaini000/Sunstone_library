@@ -47,9 +47,9 @@ export default function AuthModal({ onClose, onLoginSuccess, onRegisterSuccess, 
           })
         });
 
-        const data = await res.json();
+        const data = await res.json().catch(() => ({}));
         if (!res.ok) {
-          setErrorMsg(data.error || 'Registration failed. Please check your details.');
+          setErrorMsg(data.error || data.message || 'Registration failed. Please check your details.');
           setLoading(false);
           return;
         }
@@ -65,9 +65,9 @@ export default function AuthModal({ onClose, onLoginSuccess, onRegisterSuccess, 
           })
         });
 
-        const data = await res.json();
+        const data = await res.json().catch(() => ({}));
         if (!res.ok) {
-          setErrorMsg(data.error || 'Invalid credentials. If you are a new student, please click "Register" above to create an account.');
+          setErrorMsg(data.error || data.message || 'Invalid email or password.');
           setLoading(false);
           return;
         }

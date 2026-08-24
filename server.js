@@ -264,6 +264,12 @@ async function getLiveDb() {
     const cloudNotes = await fetchFromFirebase('notes');
     if (cloudNotes) db.userNotes = cloudNotes;
   } catch (e) {}
+  
+  db.books = db.books || [];
+  db.users = db.users || [];
+  db.borrowRequests = db.borrowRequests || [];
+  db.userNotes = db.userNotes || [];
+  
   return db;
 }
 
