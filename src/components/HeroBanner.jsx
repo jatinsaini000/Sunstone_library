@@ -48,7 +48,7 @@ export default function HeroBanner({
             onClick={() => onOpenReader(book)}
           >
             <BookOpen size={16} />
-            <span>{isBorrowed ? 'Read Full Book' : 'Read Free Preview (1–5p)'}</span>
+            <span>Read Book</span>
           </button>
 
           <button
@@ -60,16 +60,7 @@ export default function HeroBanner({
             <span>Chapter Snippets</span>
           </button>
 
-          {!isBorrowed && (
-            <button
-              type="button"
-              className="btn-info-netflix"
-              onClick={() => onOpenBorrowModal(book)}
-            >
-              <Send size={16} />
-              <span>Borrow Copy</span>
-            </button>
-          )}
+
         </div>
       </div>
     </div>

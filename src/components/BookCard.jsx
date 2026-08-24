@@ -28,7 +28,7 @@ export default function BookCard({
         className="poster-box"
         onClick={() => onOpenReader(book)}
         style={{ cursor: 'pointer' }}
-        title={isBorrowed ? 'Click image to read full book' : 'Click image to open free preview (Pages 1–5)'}
+        title="Click image to read full book"
       >
         <img
           src={finalCoverUrl}
@@ -41,20 +41,7 @@ export default function BookCard({
         />
         <div className="poster-badge">{book.program}</div>
 
-        {/* Borrow Status / Free Preview Badge */}
-        <div className={`poster-borrow-badge ${isBorrowed ? 'unlocked' : 'locked'}`}>
-          {isBorrowed ? (
-            <>
-              <Unlock size={10} />
-              <span>Full Book</span>
-            </>
-          ) : (
-            <>
-              <Eye size={10} />
-              <span>1–5p Preview</span>
-            </>
-          )}
-        </div>
+
 
         {/* Quick Summary Badge Button */}
         <button
@@ -109,17 +96,15 @@ export default function BookCard({
 
         {/* Card Action Buttons */}
         <div className="netflix-card-footer">
-          {isBorrowed && (
-            <button
-              type="button"
-              className="btn-primary card-action-btn primary"
-              onClick={() => onOpenReader(book)}
-              title="Open In-App PDF Reader"
-            >
-              <BookOpen size={13} />
-              <span>Read Book</span>
-            </button>
-          )}
+          <button
+            type="button"
+            className="btn-primary card-action-btn primary"
+            onClick={() => onOpenReader(book)}
+            title="Open In-App PDF Reader"
+          >
+            <BookOpen size={13} />
+            <span>Read Book</span>
+          </button>
 
           <button
             type="button"
@@ -131,17 +116,7 @@ export default function BookCard({
             <span>Snippets</span>
           </button>
 
-          {!isBorrowed && (
-            <button
-              type="button"
-              className="btn-secondary card-action-btn borrow"
-              onClick={() => onOpenBorrowModal(book)}
-              title="Borrow Physical or Digital Copy"
-            >
-              <Send size={12} />
-              <span>Borrow</span>
-            </button>
-          )}
+
         </div>
       </div>
     </div>
