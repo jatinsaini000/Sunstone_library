@@ -47,6 +47,10 @@ export default function AuthModal({ onClose, onLoginSuccess, onRegisterSuccess, 
           })
         });
 
+        if (res.status === 404 || res.status === 502 || res.status === 504) {
+          throw new Error('Backend is unreachable, falling back to offline mode');
+        }
+
         const data = await res.json().catch(() => ({}));
         if (!res.ok) {
           setErrorMsg(data.error || data.message || 'Registration failed. Please check your details.');
@@ -64,6 +68,10 @@ export default function AuthModal({ onClose, onLoginSuccess, onRegisterSuccess, 
             password
           })
         });
+
+        if (res.status === 404 || res.status === 502 || res.status === 504) {
+          throw new Error('Backend is unreachable, falling back to offline mode');
+        }
 
         const data = await res.json().catch(() => ({}));
         if (!res.ok) {
