@@ -36,544 +36,1338 @@
   ],
   "books": [
     {
-      "id": "bk_cs_1",
-      "title": "Data Structures and Algorithms in Python",
-      "author": "Michael T. Goodrich & Roberto Tamassia",
-      "program": "B.Tech CS",
-      "category": "Computer Science",
-      "coverUrl": "https://images.unsplash.com/photo-1515879218367-8466d910aaa4?auto=format&fit=crop&w=600&q=80",
-      "fileType": "url",
-      "pdfUrl": "https://raw.githubusercontent.com/mozilla/pdf.js/ba2edeae/web/compressed.tracemonkey-pldi-09.pdf",
+      "id": "bk_tech_1787577980614_1",
+      "title": "Automating.DevOps.with.GitLab.CI.CD.Pipelines",
+      "author": "Unknown Author",
+      "program": "All Programs",
+      "category": "Technical",
+      "coverUrl": "https://images.unsplash.com/photo-1516116216624-53e697fedbea?auto=format&fit=crop&w=600&q=80",
+      "fileType": "file",
+      "pdfUrl": "/uploads/books/Automating.DevOps.with.GitLab.CI.CD.Pipelines.pdf",
       "downloadable": true,
-      "isbn": "978-1118290279",
+      "isbn": "ISBN-838987075",
       "rating": 4.8,
-      "pages": 748,
-      "publishedYear": 2025,
-      "quickSummary": {
-        "highlights": [
-          "Comprehensive breakdown of Stacks, Queues, Trees, Graphs, and Hash Tables.",
-          "Object-oriented design patterns applied in modern Python 3 syntax.",
-          "Asymptotic analysis (Big-O notation) with practical real-world benchmarks."
-        ],
-        "keyTakeaways": [
-          "Master algorithmic efficiency and memory optimization strategies.",
-          "Implement core graph algorithms like Dijkstra and A* search.",
-          "Prepare for technical coding interviews at top tech firms."
-        ],
-        "estimatedReadingTime": "14 Hours",
-        "difficultyLevel": "Intermediate to Advanced"
-      },
-      "description": "An essential textbook for B.Tech CS students covering foundational data structures, algorithmic complexity, and efficient coding techniques in Python."
-    },
-    {
-      "id": "bk_cs_2",
-      "title": "Artificial Intelligence & Deep Learning Architecture",
-      "author": "Ian Goodfellow & Yoshua Bengio",
-      "program": "B.Tech CS",
-      "category": "Artificial Intelligence",
-      "coverUrl": "https://images.unsplash.com/photo-1618005182384-a83a8bd57fbe?auto=format&fit=crop&w=600&q=80",
-      "fileType": "url",
-      "pdfUrl": "https://raw.githubusercontent.com/mozilla/pdf.js/ba2edeae/web/compressed.tracemonkey-pldi-09.pdf",
-      "downloadable": true,
-      "isbn": "978-0262035613",
-      "rating": 4.9,
-      "pages": 800,
-      "publishedYear": 2026,
-      "quickSummary": {
-        "highlights": [
-          "Mathematical foundations of Neural Networks, Backpropagation, and Loss Functions.",
-          "Convolutional Networks (CNNs) for Computer Vision and Transformers for LLMs.",
-          "Hands-on PyTorch and TensorFlow implementation guides for lab assignments."
-        ],
-        "keyTakeaways": [
-          "Design deep neural network models from scratch.",
-          "Train and fine-tune large language models and vision transformers.",
-          "Deploy production-ready AI models to cloud endpoints."
-        ],
-        "estimatedReadingTime": "16 Hours",
-        "difficultyLevel": "Advanced"
-      },
-      "description": "The definitive textbook for B.Tech CS students specializing in Artificial Intelligence, Machine Learning, and Neural Network architectures."
-    },
-    {
-      "id": "bk_cs_3",
-      "title": "Operating System Concepts & Distributed Computing",
-      "author": "Abraham Silberschatz & Peter B. Galvin",
-      "program": "B.Tech CS",
-      "category": "Systems Engineering",
-      "coverUrl": "https://images.unsplash.com/photo-1526374965328-7f61d4dc18c5?auto=format&fit=crop&w=600&q=80",
-      "fileType": "url",
-      "pdfUrl": "https://raw.githubusercontent.com/mozilla/pdf.js/ba2edeae/web/compressed.tracemonkey-pldi-09.pdf",
-      "downloadable": true,
-      "isbn": "978-1119456339",
-      "rating": 4.7,
-      "pages": 976,
+      "pages": 350,
       "publishedYear": 2024,
       "quickSummary": {
         "highlights": [
-          "Process management, multi-threading, CPU scheduling, and deadlock avoidance.",
-          "Virtual memory management, page replacement algorithms, and file systems.",
-          "Distributed systems concurrency, RPC protocols, and cloud virtualization."
+          "Comprehensive technical material.",
+          "Practical examples and case studies.",
+          "Industry standard practices."
         ],
         "keyTakeaways": [
-          "Understand low-level kernel architecture and memory management.",
-          "Solve concurrency synchronization problems using semaphores & mutexes.",
-          "Master cloud virtual machine containerization principles."
-        ],
-        "estimatedReadingTime": "15 Hours",
-        "difficultyLevel": "Intermediate"
-      },
-      "description": "Fundamental reference book for B.Tech CS scholars covering modern operating system design, kernel architecture, and distributed computing."
-    },
-    {
-      "id": "bk_cs_4",
-      "title": "Database System Concepts & High-Performance SQL",
-      "author": "Henry F. Korth & S. Sudarshan",
-      "program": "B.Tech CS",
-      "category": "Data Engineering",
-      "coverUrl": "https://images.unsplash.com/photo-1544383835-bda2bc66a55d?auto=format&fit=crop&w=600&q=80",
-      "fileType": "url",
-      "pdfUrl": "https://raw.githubusercontent.com/mozilla/pdf.js/ba2edeae/web/compressed.tracemonkey-pldi-09.pdf",
-      "downloadable": true,
-      "isbn": "978-0078022159",
-      "rating": 4.8,
-      "pages": 1376,
-      "publishedYear": 2025,
-      "quickSummary": {
-        "highlights": [
-          "Relational data model, ER diagrams, Normalization (BCNF, 3NF), and SQL queries.",
-          "ACID transaction processing, B-Tree indexing, and query optimization.",
-          "Distributed databases, NoSQL stores (MongoDB), and Big Data pipelines."
-        ],
-        "keyTakeaways": [
-          "Architect normalized enterprise database schemas.",
-          "Write high-performance SQL queries with optimized index strategies.",
-          "Manage concurrent database transactions without data corruption."
-        ],
-        "estimatedReadingTime": "18 Hours",
-        "difficultyLevel": "Intermediate to Advanced"
-      },
-      "description": "Comprehensive data engineering textbook covering SQL relational systems, indexing performance tuning, and modern NoSQL architectures."
-    },
-    {
-      "id": "bk_mba_1",
-      "title": "Corporate Finance: Strategy and Principles",
-      "author": "Stephen A. Ross & Randolph W. Westerfield",
-      "program": "MBA",
-      "category": "Finance",
-      "coverUrl": "https://images.unsplash.com/photo-1554224155-8d04cb21cd6c?auto=format&fit=crop&w=600&q=80",
-      "fileType": "url",
-      "pdfUrl": "https://raw.githubusercontent.com/mozilla/pdf.js/ba2edeae/web/compressed.tracemonkey-pldi-09.pdf",
-      "downloadable": true,
-      "isbn": "978-1259918940",
-      "rating": 4.9,
-      "pages": 620,
-      "publishedYear": 2025,
-      "quickSummary": {
-        "highlights": [
-          "Capital budgeting, Net Present Value (NPV), and Internal Rate of Return (IRR).",
-          "Risk management, portfolio theory, and Capital Asset Pricing Model (CAPM).",
-          "Mergers & acquisitions valuation techniques used by investment bankers."
-        ],
-        "keyTakeaways": [
-          "Evaluate corporate investment opportunities using quantitative financial models.",
-          "Optimize capital structure decisions to minimize weighted average cost of capital (WACC).",
-          "Master cash flow forecasting and valuation techniques."
+          "Master core technical concepts.",
+          "Apply learning to real-world projects."
         ],
         "estimatedReadingTime": "12 Hours",
-        "difficultyLevel": "Advanced"
-      },
-      "description": "Core textbook for Sunstone MBA students. Provides deep insight into managerial finance, capital structure, and strategic corporate decision making."
-    },
-    {
-      "id": "bk_mba_2",
-      "title": "Strategic Marketing Management & Consumer Analytics",
-      "author": "Philip Kotler & Kevin Lane Keller",
-      "program": "MBA",
-      "category": "Marketing Strategy",
-      "coverUrl": "https://images.unsplash.com/photo-1507679799987-c73779587ccf?auto=format&fit=crop&w=600&q=80",
-      "fileType": "url",
-      "pdfUrl": "https://raw.githubusercontent.com/mozilla/pdf.js/ba2edeae/web/compressed.tracemonkey-pldi-09.pdf",
-      "downloadable": true,
-      "isbn": "978-0133856460",
-      "rating": 4.8,
-      "pages": 720,
-      "publishedYear": 2026,
-      "quickSummary": {
-        "highlights": [
-          "Strategic brand positioning, Customer Relationship Management (CRM), and growth channels.",
-          "Consumer behavior psychology, market segmentation, and digital campaign metrics.",
-          "Omnichannel retail strategy and price elasticity modeling."
-        ],
-        "keyTakeaways": [
-          "Build end-to-end strategic marketing plans for product launches.",
-          "Analyze customer acquisition cost (CAC) and customer lifetime value (LTV).",
-          "Lead global brand positioning campaigns."
-        ],
-        "estimatedReadingTime": "11 Hours",
         "difficultyLevel": "Intermediate to Advanced"
       },
-      "description": "Essential reading for Sunstone MBA scholars specializing in Marketing, Product Growth, and Digital Consumer Analytics."
+      "description": "A comprehensive technical guide: Automating.DevOps.with.GitLab.CI.CD.Pipelines. Perfect for enhancing your skills and knowledge."
     },
     {
-      "id": "bk_mba_3",
-      "title": "Business Analytics & Predictive Modeling",
-      "author": "James R. Evans",
-      "program": "MBA",
-      "category": "Business Analytics",
-      "coverUrl": "https://images.unsplash.com/photo-1460925895917-afdab827c52f?auto=format&fit=crop&w=600&q=80",
-      "fileType": "url",
-      "pdfUrl": "https://raw.githubusercontent.com/mozilla/pdf.js/ba2edeae/web/compressed.tracemonkey-pldi-09.pdf",
+      "id": "bk_tech_1787577980615_2",
+      "title": "AWS interview",
+      "author": "Unknown Author",
+      "program": "All Programs",
+      "category": "Technical",
+      "coverUrl": "https://images.unsplash.com/photo-1516116216624-53e697fedbea?auto=format&fit=crop&w=600&q=80",
+      "fileType": "file",
+      "pdfUrl": "/uploads/books/AWS interview.pdf",
       "downloadable": true,
-      "isbn": "978-0135231678",
-      "rating": 4.7,
-      "pages": 650,
-      "publishedYear": 2025,
-      "quickSummary": {
-        "highlights": [
-          "Descriptive, predictive, and prescriptive analytics for executive leaders.",
-          "Regression analysis, time series sales forecasting, and Monte Carlo simulations.",
-          "Data visualization storytelling with Tableau and Power BI."
-        ],
-        "keyTakeaways": [
-          "Transform raw enterprise data into strategic executive dashboards.",
-          "Build predictive revenue and demand forecasting models.",
-          "Apply data-driven decision frameworks to complex business problems."
-        ],
-        "estimatedReadingTime": "10 Hours",
-        "difficultyLevel": "Intermediate"
-      },
-      "description": "Hands-on guide for MBA students combining statistical modeling, business intelligence tools, and predictive decision frameworks."
-    },
-    {
-      "id": "bk_bca_1",
-      "title": "Full Stack Web Development with React & Node",
-      "author": "Robin Wieruch",
-      "program": "BCA",
-      "category": "Web Engineering",
-      "coverUrl": "https://images.unsplash.com/photo-1555066931-4365d14bab8c?auto=format&fit=crop&w=600&q=80",
-      "fileType": "url",
-      "pdfUrl": "https://raw.githubusercontent.com/mozilla/pdf.js/ba2edeae/web/compressed.tracemonkey-pldi-09.pdf",
-      "downloadable": true,
-      "isbn": "978-1789341230",
-      "rating": 4.7,
-      "pages": 450,
-      "publishedYear": 2026,
-      "quickSummary": {
-        "highlights": [
-          "Building RESTful APIs with Node.js, Express, and MongoDB/SQL.",
-          "Modern React hooks, state management, and component architecture.",
-          "Deployment pipelines with Docker, Vercel, and Cloud infrastructure."
-        ],
-        "keyTakeaways": [
-          "Develop end-to-end scalable web applications from design to production.",
-          "Master modern JavaScript ES6+ features and async programming patterns.",
-          "Implement secure user authentication (JWT/OAuth) and data persistence."
-        ],
-        "estimatedReadingTime": "9 Hours",
-        "difficultyLevel": "Beginner to Intermediate"
-      },
-      "description": "Practical guide tailored for BCA students to master modern client-side and server-side web engineering."
-    },
-    {
-      "id": "bk_bca_2",
-      "title": "Java Programming & Enterprise Application Development",
-      "author": "Herbert Schildt",
-      "program": "BCA",
-      "category": "Software Development",
-      "coverUrl": "https://images.unsplash.com/photo-1517694712202-14dd9538aa97?auto=format&fit=crop&w=600&q=80",
-      "fileType": "url",
-      "pdfUrl": "https://raw.githubusercontent.com/mozilla/pdf.js/ba2edeae/web/compressed.tracemonkey-pldi-09.pdf",
-      "downloadable": true,
-      "isbn": "978-1260440232",
+      "isbn": "ISBN-652011288",
       "rating": 4.8,
-      "pages": 1248,
-      "publishedYear": 2025,
-      "quickSummary": {
-        "highlights": [
-          "Object-Oriented Programming (OOP) principles: Inheritance, Encapsulation, Polymorphism.",
-          "Java Collections Framework, Stream API, and Concurrency Multithreading.",
-          "Spring Boot microservices, JPA/Hibernate, and enterprise REST APIs."
-        ],
-        "keyTakeaways": [
-          "Write robust multi-threaded Java applications.",
-          "Build enterprise backends with Spring Boot and relational databases.",
-          "Apply design patterns like Singleton, Factory, and MVC."
-        ],
-        "estimatedReadingTime": "14 Hours",
-        "difficultyLevel": "Intermediate"
-      },
-      "description": "Standard Java reference manual for BCA students covering core syntax, OOP paradigms, and Spring Boot enterprise development."
-    },
-    {
-      "id": "bk_bca_3",
-      "title": "Computer Networks & Cybersecurity Protocols",
-      "author": "Andrew S. Tanenbaum & David J. Wetherall",
-      "program": "BCA",
-      "category": "Networking & Security",
-      "coverUrl": "https://images.unsplash.com/photo-1558494949-ef010cbdcc31?auto=format&fit=crop&w=600&q=80",
-      "fileType": "url",
-      "pdfUrl": "https://raw.githubusercontent.com/mozilla/pdf.js/ba2edeae/web/compressed.tracemonkey-pldi-09.pdf",
-      "downloadable": true,
-      "isbn": "978-0132126953",
-      "rating": 4.7,
-      "pages": 960,
+      "pages": 350,
       "publishedYear": 2024,
       "quickSummary": {
         "highlights": [
-          "OSI 7-Layer model, TCP/IP stack, IP routing protocols, and DNS infrastructure.",
-          "Wireless network protocols (Wi-Fi 6, 5G), network security, and TLS encryption.",
-          "Ethical hacking fundamentals, firewalls, and network intrusion detection systems (IDS)."
+          "Comprehensive technical material.",
+          "Practical examples and case studies.",
+          "Industry standard practices."
         ],
         "keyTakeaways": [
-          "Analyze network packet captures using Wireshark.",
-          "Configure secure network topologies and subnet masks.",
-          "Understand modern cryptographic protocols (RSA, AES, SSL/TLS)."
+          "Master core technical concepts.",
+          "Apply learning to real-world projects."
         ],
         "estimatedReadingTime": "12 Hours",
-        "difficultyLevel": "Intermediate"
+        "difficultyLevel": "Intermediate to Advanced"
       },
-      "description": "Comprehensive networking guide covering physical layer transmission, TCP/IP protocols, and cybersecurity defense mechanics."
+      "description": "A comprehensive technical guide: AWS interview. Perfect for enhancing your skills and knowledge."
     },
     {
-      "id": "bk_bba_1",
-      "title": "Principles of Modern Marketing & Consumer Analytics",
-      "author": "Philip Kotler & Gary Armstrong",
-      "program": "BBA",
-      "category": "Marketing",
-      "coverUrl": "https://images.unsplash.com/photo-1507679799987-c73779587ccf?auto=format&fit=crop&w=600&q=80",
-      "fileType": "url",
-      "pdfUrl": "https://raw.githubusercontent.com/mozilla/pdf.js/ba2edeae/web/compressed.tracemonkey-pldi-09.pdf",
+      "id": "bk_tech_1787577980615_3",
+      "title": "AWS Learning Roadmap",
+      "author": "Unknown Author",
+      "program": "All Programs",
+      "category": "Technical",
+      "coverUrl": "https://images.unsplash.com/photo-1516116216624-53e697fedbea?auto=format&fit=crop&w=600&q=80",
+      "fileType": "file",
+      "pdfUrl": "/uploads/books/AWS Learning Roadmap.pdf",
       "downloadable": true,
-      "isbn": "978-0134492452",
-      "rating": 4.6,
-      "pages": 580,
+      "isbn": "ISBN-874896361",
+      "rating": 4.8,
+      "pages": 350,
       "publishedYear": 2024,
       "quickSummary": {
         "highlights": [
-          "The 4 Ps of marketing integrated with digital social strategy.",
-          "Consumer buyer behavior analysis and target market segmentation.",
-          "Brand positioning, equity management, and omnichannel campaigns."
+          "Comprehensive technical material.",
+          "Practical examples and case studies.",
+          "Industry standard practices."
         ],
         "keyTakeaways": [
-          "Craft data-backed marketing strategies for product launches.",
-          "Understand customer lifetime value (CLV) and churn analytics.",
-          "Leverage modern digital platforms for customer acquisition."
+          "Master core technical concepts.",
+          "Apply learning to real-world projects."
         ],
-        "estimatedReadingTime": "10 Hours",
-        "difficultyLevel": "Intermediate"
+        "estimatedReadingTime": "12 Hours",
+        "difficultyLevel": "Intermediate to Advanced"
       },
-      "description": "The standard reference book for BBA students introducing essential marketing fundamentals and contemporary digital strategy."
+      "description": "A comprehensive technical guide: AWS Learning Roadmap. Perfect for enhancing your skills and knowledge."
     },
     {
-      "id": "bk_bba_2",
-      "title": "Financial Accounting & Business Economics",
-      "author": "Robert N. Anthony & David F. Hawkins",
-      "program": "BBA",
-      "category": "Accounting & Economics",
-      "coverUrl": "https://images.unsplash.com/photo-1454165804606-c3d57bc86b40?auto=format&fit=crop&w=600&q=80",
-      "fileType": "url",
-      "pdfUrl": "https://raw.githubusercontent.com/mozilla/pdf.js/ba2edeae/web/compressed.tracemonkey-pldi-09.pdf",
+      "id": "bk_tech_1787577980615_4",
+      "title": "AWS Basic Interview Questions CloudDost Telegram",
+      "author": "Unknown Author",
+      "program": "All Programs",
+      "category": "Technical",
+      "coverUrl": "https://images.unsplash.com/photo-1516116216624-53e697fedbea?auto=format&fit=crop&w=600&q=80",
+      "fileType": "file",
+      "pdfUrl": "/uploads/books/AWS_Basic_Interview_Questions_CloudDost_Telegram.pdf",
       "downloadable": true,
-      "isbn": "978-0073379609",
-      "rating": 4.7,
-      "pages": 720,
-      "publishedYear": 2025,
-      "quickSummary": {
-        "highlights": [
-          "Balance sheets, income statements, and cash flow analysis.",
-          "Microeconomics supply/demand principles and market structure dynamics.",
-          "Managerial cost accounting and break-even financial analysis."
-        ],
-        "keyTakeaways": [
-          "Read and interpret corporate financial statements.",
-          "Analyze cost behavior to determine optimal product pricing.",
-          "Understand macroeconomic indicators affecting business growth."
-        ],
-        "estimatedReadingTime": "11 Hours",
-        "difficultyLevel": "Intermediate"
-      },
-      "description": "Foundational accounting and business economics textbook tailored for Sunstone BBA undergraduate scholars."
-    },
-    {
-      "id": "bk_bba_3",
-      "title": "Entrepreneurship & Indian Startup Ecosystem",
-      "author": "Dr. V. K. Sharma & Sunstone Innovation Board",
-      "program": "BBA",
-      "category": "Entrepreneurship",
-      "coverUrl": "https://images.unsplash.com/photo-1519389950473-47ba0277781c?auto=format&fit=crop&w=600&q=80",
-      "fileType": "url",
-      "pdfUrl": "https://raw.githubusercontent.com/mozilla/pdf.js/ba2edeae/web/compressed.tracemonkey-pldi-09.pdf",
-      "downloadable": true,
-      "isbn": "978-9352864120",
-      "rating": 4.9,
-      "pages": 420,
-      "publishedYear": 2026,
-      "quickSummary": {
-        "highlights": [
-          "Business model canvas design, lean startup methodology, and MVP testing.",
-          "Venture capital fundraising, pitch deck creation, and valuation formulas.",
-          "Case studies of successful unicorns in the Indian startup ecosystem."
-        ],
-        "keyTakeaways": [
-          "Formulate viable business plans from initial product ideation.",
-          "Pitch venture ideas effectively to angel investors and lab mentors.",
-          "Navigate legal entity registration and compliance in India."
-        ],
-        "estimatedReadingTime": "8 Hours",
-        "difficultyLevel": "Practical / Applied"
-      },
-      "description": "Inspiring handbook for BBA students introducing startup incubation, pitch deck design, and Indian venture financing."
-    },
-    {
-      "id": "bk_spec_1",
-      "title": "Prayas Lab Special Edition: Artificial Intelligence in Industry 5.0",
-      "author": "Dr. R. K. Sunstone & Prayas Research Group",
-      "program": "Special Collections",
-      "category": "AI & Future Tech",
-      "coverUrl": "https://images.unsplash.com/photo-1618005182384-a83a8bd57fbe?auto=format&fit=crop&w=600&q=80",
-      "fileType": "url",
-      "pdfUrl": "https://raw.githubusercontent.com/mozilla/pdf.js/ba2edeae/web/compressed.tracemonkey-pldi-09.pdf",
-      "downloadable": true,
-      "isbn": "PRAYAS-SPEC-2026-01",
-      "rating": 5,
-      "pages": 310,
-      "publishedYear": 2026,
-      "quickSummary": {
-        "highlights": [
-          "Exclusive Prayas Lab case studies on Generative AI in Indian Tech Startups.",
-          "Human-AI collaborative frameworks and ethical AI deployment.",
-          "Hands-on lab experiments with Neural Networks and LLM Agentic workflows."
-        ],
-        "keyTakeaways": [
-          "Explore cutting-edge innovation frameworks developed at Prayas Lab.",
-          "Gain practical skills in building domain-adapted AI agents.",
-          "Understand regulatory, ethical, and governance standards in AI."
-        ],
-        "estimatedReadingTime": "7 Hours",
-        "difficultyLevel": "Advanced"
-      },
-      "description": "Exclusive research collection published by Prayas Lab detailing real-world industry AI integrations, automation blueprints, and student projects."
-    },
-    {
-      "id": "bk_spec_2",
-      "title": "Prayas Innovation Lab: FinTech & AgriTech Industry Case Studies",
-      "author": "Sunstone Industry Mentorship Cell",
-      "program": "Special Collections",
-      "category": "Industry Case Studies",
-      "coverUrl": "https://images.unsplash.com/photo-1454165804606-c3d57bc86b40?auto=format&fit=crop&w=600&q=80",
-      "fileType": "url",
-      "pdfUrl": "https://raw.githubusercontent.com/mozilla/pdf.js/ba2edeae/web/compressed.tracemonkey-pldi-09.pdf",
-      "downloadable": true,
-      "isbn": "PRAYAS-CASE-2026-02",
-      "rating": 4.9,
-      "pages": 280,
-      "publishedYear": 2026,
-      "quickSummary": {
-        "highlights": [
-          "Real business problem statements solved by Sunstone Prayas Lab scholars.",
-          "UPI payments scaling, micro-lending algorithms, and Agri-supply chains.",
-          "Empirical field data and execution methodologies."
-        ],
-        "keyTakeaways": [
-          "Analyze multi-dimensional business challenges with real company data.",
-          "Formulate practical Go-To-Market and technological solution blueprints.",
-          "Prepare for high-impact campus placement interviews."
-        ],
-        "estimatedReadingTime": "6 Hours",
-        "difficultyLevel": "Practical / Case Study"
-      },
-      "description": "Curated collection of live industry case studies solved by Sunstone students during Prayas Lab hackathons and corporate residencies."
-    },
-    {
-      "id": "bk_spec_3",
-      "title": "Startup & Entrepreneurship Playbook: From Idea to Scale",
-      "author": "Sunstone Prayas Incubation Cell",
-      "program": "Special Collections",
-      "category": "Entrepreneurship",
-      "coverUrl": "https://images.unsplash.com/photo-1559136555-9303baea8ebd?auto=format&fit=crop&w=600&q=80",
-      "fileType": "url",
-      "pdfUrl": "https://raw.githubusercontent.com/mozilla/pdf.js/ba2edeae/web/compressed.tracemonkey-pldi-09.pdf",
-      "downloadable": true,
-      "isbn": "978-8194821034",
-      "rating": 4.9,
-      "pages": 260,
-      "publishedYear": 2026,
-      "quickSummary": {
-        "highlights": [
-          "Lean startup validation, MVP design, and rapid market discovery.",
-          "Fundraising term sheets, venture capital economics, and angel rounds.",
-          "Go-to-market execution, viral loops, and sustainable unit economics."
-        ],
-        "keyTakeaways": [
-          "Validate startup ideas with minimal capital and fast user feedback.",
-          "Structure investor pitch decks and financial projections.",
-          "Scale from seed stage to Series A with strong product-market fit."
-        ],
-        "estimatedReadingTime": "6 Hours",
-        "difficultyLevel": "Practical / Industry"
-      },
-      "description": "Comprehensive practical playbook crafted by Prayas Lab startup mentors and founders for students building tech and venture-backed startups."
-    },
-    {
-      "id": "bk_jrnl_1",
-      "title": "Journal of Indian Management & Applied Computing (Vol. 14)",
-      "author": "Sunstone Academic Review Board",
-      "program": "Journals",
-      "category": "Research Papers",
-      "coverUrl": "https://images.unsplash.com/photo-1457369804613-52c61a468e7d?auto=format&fit=crop&w=600&q=80",
-      "fileType": "url",
-      "pdfUrl": "https://raw.githubusercontent.com/mozilla/pdf.js/ba2edeae/web/compressed.tracemonkey-pldi-09.pdf",
-      "downloadable": true,
-      "isbn": "ISSN-2455-8912",
-      "rating": 4.9,
-      "pages": 180,
-      "publishedYear": 2026,
-      "quickSummary": {
-        "highlights": [
-          "Peer-reviewed articles on FinTech growth in emerging economies.",
-          "Empirical study on Agile software delivery models in Indian IT firms.",
-          "Supply chain resilience strategies post-digital transformation."
-        ],
-        "keyTakeaways": [
-          "Synthesize peer-reviewed research for thesis and project work.",
-          "Learn quantitative and qualitative research methodologies.",
-          "Discover current trends across technology management."
-        ],
-        "estimatedReadingTime": "4 Hours",
-        "difficultyLevel": "Academic / Research"
-      },
-      "description": "Official academic research journal published bi-annually, showcasing high-impact research papers from faculty and postgraduate scholars."
-    },
-    {
-      "id": "bk_jrnl_2",
-      "title": "International Review of Artificial Intelligence & Computer Engineering",
-      "author": "Global Tech Research Consortium",
-      "program": "Journals",
-      "category": "Peer Review",
-      "coverUrl": "https://images.unsplash.com/photo-1507842217343-583bb7270b66?auto=format&fit=crop&w=600&q=80",
-      "fileType": "url",
-      "pdfUrl": "https://raw.githubusercontent.com/mozilla/pdf.js/ba2edeae/web/compressed.tracemonkey-pldi-09.pdf",
-      "downloadable": true,
-      "isbn": "ISSN-1943-2011",
+      "isbn": "ISBN-188048912",
       "rating": 4.8,
-      "pages": 210,
-      "publishedYear": 2026,
+      "pages": 350,
+      "publishedYear": 2024,
       "quickSummary": {
         "highlights": [
-          "High-impact papers on Autonomous Agents, Quantum Computing, and NLP.",
-          "Benchmark analysis of state-of-the-art transformer architectures.",
-          "Ethical implications of AI automation in modern labor markets."
+          "Comprehensive technical material.",
+          "Practical examples and case studies.",
+          "Industry standard practices."
         ],
         "keyTakeaways": [
-          "Stay ahead of global breakthroughs in artificial intelligence research.",
-          "Understand rigorous scientific evaluation metrics.",
-          "Cite authoritative research papers in capstone projects."
+          "Master core technical concepts.",
+          "Apply learning to real-world projects."
         ],
-        "estimatedReadingTime": "5 Hours",
-        "difficultyLevel": "Academic / High Impact"
+        "estimatedReadingTime": "12 Hours",
+        "difficultyLevel": "Intermediate to Advanced"
       },
-      "description": "Peer-reviewed international research journal indexed for academic scholars, covering state-of-the-art developments in computer science and AI."
+      "description": "A comprehensive technical guide: AWS Basic Interview Questions CloudDost Telegram. Perfect for enhancing your skills and knowledge."
+    },
+    {
+      "id": "bk_tech_1787577980615_5",
+      "title": "AWS Cerified Cloud Practitioner",
+      "author": "Unknown Author",
+      "program": "All Programs",
+      "category": "Technical",
+      "coverUrl": "https://images.unsplash.com/photo-1516116216624-53e697fedbea?auto=format&fit=crop&w=600&q=80",
+      "fileType": "file",
+      "pdfUrl": "/uploads/books/AWS_Cerified_Cloud_Practitioner.pdf",
+      "downloadable": true,
+      "isbn": "ISBN-239605533",
+      "rating": 4.8,
+      "pages": 350,
+      "publishedYear": 2024,
+      "quickSummary": {
+        "highlights": [
+          "Comprehensive technical material.",
+          "Practical examples and case studies.",
+          "Industry standard practices."
+        ],
+        "keyTakeaways": [
+          "Master core technical concepts.",
+          "Apply learning to real-world projects."
+        ],
+        "estimatedReadingTime": "12 Hours",
+        "difficultyLevel": "Intermediate to Advanced"
+      },
+      "description": "A comprehensive technical guide: AWS Cerified Cloud Practitioner. Perfect for enhancing your skills and knowledge."
+    },
+    {
+      "id": "bk_tech_1787577980615_6",
+      "title": "aws certified solutions architect",
+      "author": "Unknown Author",
+      "program": "All Programs",
+      "category": "Technical",
+      "coverUrl": "https://images.unsplash.com/photo-1516116216624-53e697fedbea?auto=format&fit=crop&w=600&q=80",
+      "fileType": "file",
+      "pdfUrl": "/uploads/books/aws_certified_solutions_architect.pdf",
+      "downloadable": true,
+      "isbn": "ISBN-769957822",
+      "rating": 4.8,
+      "pages": 350,
+      "publishedYear": 2024,
+      "quickSummary": {
+        "highlights": [
+          "Comprehensive technical material.",
+          "Practical examples and case studies.",
+          "Industry standard practices."
+        ],
+        "keyTakeaways": [
+          "Master core technical concepts.",
+          "Apply learning to real-world projects."
+        ],
+        "estimatedReadingTime": "12 Hours",
+        "difficultyLevel": "Intermediate to Advanced"
+      },
+      "description": "A comprehensive technical guide: aws certified solutions architect. Perfect for enhancing your skills and knowledge."
+    },
+    {
+      "id": "bk_tech_1787577980615_7",
+      "title": "AWS Cookbook Recipes for Success on AWS John Culkin, Mike Zazon",
+      "author": "Unknown Author",
+      "program": "All Programs",
+      "category": "Technical",
+      "coverUrl": "https://images.unsplash.com/photo-1516116216624-53e697fedbea?auto=format&fit=crop&w=600&q=80",
+      "fileType": "file",
+      "pdfUrl": "/uploads/books/AWS_Cookbook_Recipes_for_Success_on_AWS_John_Culkin,_Mike_Zazon.pdf",
+      "downloadable": true,
+      "isbn": "ISBN-246750595",
+      "rating": 4.8,
+      "pages": 350,
+      "publishedYear": 2024,
+      "quickSummary": {
+        "highlights": [
+          "Comprehensive technical material.",
+          "Practical examples and case studies.",
+          "Industry standard practices."
+        ],
+        "keyTakeaways": [
+          "Master core technical concepts.",
+          "Apply learning to real-world projects."
+        ],
+        "estimatedReadingTime": "12 Hours",
+        "difficultyLevel": "Intermediate to Advanced"
+      },
+      "description": "A comprehensive technical guide: AWS Cookbook Recipes for Success on AWS John Culkin, Mike Zazon. Perfect for enhancing your skills and knowledge."
+    },
+    {
+      "id": "bk_tech_1787577980615_8",
+      "title": "AWS vs Azure vs Google vs IBM vs Oracle vs Alibaba A detailed comparison",
+      "author": "Unknown Author",
+      "program": "All Programs",
+      "category": "Technical",
+      "coverUrl": "https://images.unsplash.com/photo-1516116216624-53e697fedbea?auto=format&fit=crop&w=600&q=80",
+      "fileType": "file",
+      "pdfUrl": "/uploads/books/AWS_vs_Azure_vs_Google_vs_IBM_vs_Oracle_vs_Alibaba_A_detailed_comparison.pdf",
+      "downloadable": true,
+      "isbn": "ISBN-253272552",
+      "rating": 4.8,
+      "pages": 350,
+      "publishedYear": 2024,
+      "quickSummary": {
+        "highlights": [
+          "Comprehensive technical material.",
+          "Practical examples and case studies.",
+          "Industry standard practices."
+        ],
+        "keyTakeaways": [
+          "Master core technical concepts.",
+          "Apply learning to real-world projects."
+        ],
+        "estimatedReadingTime": "12 Hours",
+        "difficultyLevel": "Intermediate to Advanced"
+      },
+      "description": "A comprehensive technical guide: AWS vs Azure vs Google vs IBM vs Oracle vs Alibaba A detailed comparison. Perfect for enhancing your skills and knowledge."
+    },
+    {
+      "id": "bk_tech_1787577980615_9",
+      "title": "Azure DevOps Engineer",
+      "author": "Unknown Author",
+      "program": "All Programs",
+      "category": "Technical",
+      "coverUrl": "https://images.unsplash.com/photo-1516116216624-53e697fedbea?auto=format&fit=crop&w=600&q=80",
+      "fileType": "file",
+      "pdfUrl": "/uploads/books/Azure DevOps Engineer.pdf",
+      "downloadable": true,
+      "isbn": "ISBN-110963476",
+      "rating": 4.8,
+      "pages": 350,
+      "publishedYear": 2024,
+      "quickSummary": {
+        "highlights": [
+          "Comprehensive technical material.",
+          "Practical examples and case studies.",
+          "Industry standard practices."
+        ],
+        "keyTakeaways": [
+          "Master core technical concepts.",
+          "Apply learning to real-world projects."
+        ],
+        "estimatedReadingTime": "12 Hours",
+        "difficultyLevel": "Intermediate to Advanced"
+      },
+      "description": "A comprehensive technical guide: Azure DevOps Engineer. Perfect for enhancing your skills and knowledge."
+    },
+    {
+      "id": "bk_tech_1787577980615_10",
+      "title": "AZURE Full Course",
+      "author": "Unknown Author",
+      "program": "All Programs",
+      "category": "Technical",
+      "coverUrl": "https://images.unsplash.com/photo-1516116216624-53e697fedbea?auto=format&fit=crop&w=600&q=80",
+      "fileType": "file",
+      "pdfUrl": "/uploads/books/AZURE Full Course.pdf",
+      "downloadable": true,
+      "isbn": "ISBN-127170260",
+      "rating": 4.8,
+      "pages": 350,
+      "publishedYear": 2024,
+      "quickSummary": {
+        "highlights": [
+          "Comprehensive technical material.",
+          "Practical examples and case studies.",
+          "Industry standard practices."
+        ],
+        "keyTakeaways": [
+          "Master core technical concepts.",
+          "Apply learning to real-world projects."
+        ],
+        "estimatedReadingTime": "12 Hours",
+        "difficultyLevel": "Intermediate to Advanced"
+      },
+      "description": "A comprehensive technical guide: AZURE Full Course. Perfect for enhancing your skills and knowledge."
+    },
+    {
+      "id": "bk_tech_1787577980615_11",
+      "title": "Azure&AWS CLoudServiceMap",
+      "author": "Unknown Author",
+      "program": "All Programs",
+      "category": "Technical",
+      "coverUrl": "https://images.unsplash.com/photo-1516116216624-53e697fedbea?auto=format&fit=crop&w=600&q=80",
+      "fileType": "file",
+      "pdfUrl": "/uploads/books/Azure&AWS_CLoudServiceMap.pdf",
+      "downloadable": true,
+      "isbn": "ISBN-473373840",
+      "rating": 4.8,
+      "pages": 350,
+      "publishedYear": 2024,
+      "quickSummary": {
+        "highlights": [
+          "Comprehensive technical material.",
+          "Practical examples and case studies.",
+          "Industry standard practices."
+        ],
+        "keyTakeaways": [
+          "Master core technical concepts.",
+          "Apply learning to real-world projects."
+        ],
+        "estimatedReadingTime": "12 Hours",
+        "difficultyLevel": "Intermediate to Advanced"
+      },
+      "description": "A comprehensive technical guide: Azure&AWS CLoudServiceMap. Perfect for enhancing your skills and knowledge."
+    },
+    {
+      "id": "bk_tech_1787577980615_12",
+      "title": "AzureCertPath",
+      "author": "Unknown Author",
+      "program": "All Programs",
+      "category": "Technical",
+      "coverUrl": "https://images.unsplash.com/photo-1516116216624-53e697fedbea?auto=format&fit=crop&w=600&q=80",
+      "fileType": "file",
+      "pdfUrl": "/uploads/books/AzureCertPath.pdf",
+      "downloadable": true,
+      "isbn": "ISBN-379257991",
+      "rating": 4.8,
+      "pages": 350,
+      "publishedYear": 2024,
+      "quickSummary": {
+        "highlights": [
+          "Comprehensive technical material.",
+          "Practical examples and case studies.",
+          "Industry standard practices."
+        ],
+        "keyTakeaways": [
+          "Master core technical concepts.",
+          "Apply learning to real-world projects."
+        ],
+        "estimatedReadingTime": "12 Hours",
+        "difficultyLevel": "Intermediate to Advanced"
+      },
+      "description": "A comprehensive technical guide: AzureCertPath. Perfect for enhancing your skills and knowledge."
+    },
+    {
+      "id": "bk_tech_1787577980615_13",
+      "title": "AzureDevOps",
+      "author": "Unknown Author",
+      "program": "All Programs",
+      "category": "Technical",
+      "coverUrl": "https://images.unsplash.com/photo-1516116216624-53e697fedbea?auto=format&fit=crop&w=600&q=80",
+      "fileType": "file",
+      "pdfUrl": "/uploads/books/AzureDevOps.pdf",
+      "downloadable": true,
+      "isbn": "ISBN-759222991",
+      "rating": 4.8,
+      "pages": 350,
+      "publishedYear": 2024,
+      "quickSummary": {
+        "highlights": [
+          "Comprehensive technical material.",
+          "Practical examples and case studies.",
+          "Industry standard practices."
+        ],
+        "keyTakeaways": [
+          "Master core technical concepts.",
+          "Apply learning to real-world projects."
+        ],
+        "estimatedReadingTime": "12 Hours",
+        "difficultyLevel": "Intermediate to Advanced"
+      },
+      "description": "A comprehensive technical guide: AzureDevOps. Perfect for enhancing your skills and knowledge."
+    },
+    {
+      "id": "bk_tech_1787577980615_14",
+      "title": "A Practical Guide to Azure DevOps Learn by doing",
+      "author": "Unknown Author",
+      "program": "All Programs",
+      "category": "Technical",
+      "coverUrl": "https://images.unsplash.com/photo-1516116216624-53e697fedbea?auto=format&fit=crop&w=600&q=80",
+      "fileType": "file",
+      "pdfUrl": "/uploads/books/A_Practical_Guide_to_Azure_DevOps_Learn_by_doing.pdf",
+      "downloadable": true,
+      "isbn": "ISBN-661679181",
+      "rating": 4.8,
+      "pages": 350,
+      "publishedYear": 2024,
+      "quickSummary": {
+        "highlights": [
+          "Comprehensive technical material.",
+          "Practical examples and case studies.",
+          "Industry standard practices."
+        ],
+        "keyTakeaways": [
+          "Master core technical concepts.",
+          "Apply learning to real-world projects."
+        ],
+        "estimatedReadingTime": "12 Hours",
+        "difficultyLevel": "Intermediate to Advanced"
+      },
+      "description": "A comprehensive technical guide: A Practical Guide to Azure DevOps Learn by doing. Perfect for enhancing your skills and knowledge."
+    },
+    {
+      "id": "bk_tech_1787577980615_15",
+      "title": "A Practical Introduction to Python Programming Heinold",
+      "author": "Unknown Author",
+      "program": "All Programs",
+      "category": "Technical",
+      "coverUrl": "https://images.unsplash.com/photo-1516116216624-53e697fedbea?auto=format&fit=crop&w=600&q=80",
+      "fileType": "file",
+      "pdfUrl": "/uploads/books/A_Practical_Introduction_to_Python_Programming_Heinold.pdf",
+      "downloadable": true,
+      "isbn": "ISBN-981836602",
+      "rating": 4.8,
+      "pages": 350,
+      "publishedYear": 2024,
+      "quickSummary": {
+        "highlights": [
+          "Comprehensive technical material.",
+          "Practical examples and case studies.",
+          "Industry standard practices."
+        ],
+        "keyTakeaways": [
+          "Master core technical concepts.",
+          "Apply learning to real-world projects."
+        ],
+        "estimatedReadingTime": "12 Hours",
+        "difficultyLevel": "Intermediate to Advanced"
+      },
+      "description": "A comprehensive technical guide: A Practical Introduction to Python Programming Heinold. Perfect for enhancing your skills and knowledge."
+    },
+    {
+      "id": "bk_tech_1787577980615_16",
+      "title": "Basic to Advance Python hand written notes",
+      "author": "Unknown Author",
+      "program": "All Programs",
+      "category": "Technical",
+      "coverUrl": "https://images.unsplash.com/photo-1516116216624-53e697fedbea?auto=format&fit=crop&w=600&q=80",
+      "fileType": "file",
+      "pdfUrl": "/uploads/books/Basic to Advance Python hand written notes.pdf",
+      "downloadable": true,
+      "isbn": "ISBN-932795057",
+      "rating": 4.8,
+      "pages": 350,
+      "publishedYear": 2024,
+      "quickSummary": {
+        "highlights": [
+          "Comprehensive technical material.",
+          "Practical examples and case studies.",
+          "Industry standard practices."
+        ],
+        "keyTakeaways": [
+          "Master core technical concepts.",
+          "Apply learning to real-world projects."
+        ],
+        "estimatedReadingTime": "12 Hours",
+        "difficultyLevel": "Intermediate to Advanced"
+      },
+      "description": "A comprehensive technical guide: Basic to Advance Python hand written notes. Perfect for enhancing your skills and knowledge."
+    },
+    {
+      "id": "bk_tech_1787577980615_17",
+      "title": "Beginning Django CMS (en)",
+      "author": "Unknown Author",
+      "program": "All Programs",
+      "category": "Technical",
+      "coverUrl": "https://images.unsplash.com/photo-1516116216624-53e697fedbea?auto=format&fit=crop&w=600&q=80",
+      "fileType": "file",
+      "pdfUrl": "/uploads/books/Beginning Django CMS (en).pdf",
+      "downloadable": true,
+      "isbn": "ISBN-786707717",
+      "rating": 4.8,
+      "pages": 350,
+      "publishedYear": 2024,
+      "quickSummary": {
+        "highlights": [
+          "Comprehensive technical material.",
+          "Practical examples and case studies.",
+          "Industry standard practices."
+        ],
+        "keyTakeaways": [
+          "Master core technical concepts.",
+          "Apply learning to real-world projects."
+        ],
+        "estimatedReadingTime": "12 Hours",
+        "difficultyLevel": "Intermediate to Advanced"
+      },
+      "description": "A comprehensive technical guide: Beginning Django CMS (en). Perfect for enhancing your skills and knowledge."
+    },
+    {
+      "id": "bk_tech_1787577980615_18",
+      "title": "Complex Network Analysis in Python",
+      "author": "Unknown Author",
+      "program": "All Programs",
+      "category": "Technical",
+      "coverUrl": "https://images.unsplash.com/photo-1516116216624-53e697fedbea?auto=format&fit=crop&w=600&q=80",
+      "fileType": "file",
+      "pdfUrl": "/uploads/books/Complex Network Analysis in Python.pdf",
+      "downloadable": true,
+      "isbn": "ISBN-867623003",
+      "rating": 4.8,
+      "pages": 350,
+      "publishedYear": 2024,
+      "quickSummary": {
+        "highlights": [
+          "Comprehensive technical material.",
+          "Practical examples and case studies.",
+          "Industry standard practices."
+        ],
+        "keyTakeaways": [
+          "Master core technical concepts.",
+          "Apply learning to real-world projects."
+        ],
+        "estimatedReadingTime": "12 Hours",
+        "difficultyLevel": "Intermediate to Advanced"
+      },
+      "description": "A comprehensive technical guide: Complex Network Analysis in Python. Perfect for enhancing your skills and knowledge."
+    },
+    {
+      "id": "bk_tech_1787577980615_19",
+      "title": "Devops For Dummies",
+      "author": "Unknown Author",
+      "program": "All Programs",
+      "category": "Technical",
+      "coverUrl": "https://images.unsplash.com/photo-1516116216624-53e697fedbea?auto=format&fit=crop&w=600&q=80",
+      "fileType": "file",
+      "pdfUrl": "/uploads/books/Devops For Dummies.pdf",
+      "downloadable": true,
+      "isbn": "ISBN-553805367",
+      "rating": 4.8,
+      "pages": 350,
+      "publishedYear": 2024,
+      "quickSummary": {
+        "highlights": [
+          "Comprehensive technical material.",
+          "Practical examples and case studies.",
+          "Industry standard practices."
+        ],
+        "keyTakeaways": [
+          "Master core technical concepts.",
+          "Apply learning to real-world projects."
+        ],
+        "estimatedReadingTime": "12 Hours",
+        "difficultyLevel": "Intermediate to Advanced"
+      },
+      "description": "A comprehensive technical guide: Devops For Dummies. Perfect for enhancing your skills and knowledge."
+    },
+    {
+      "id": "bk_tech_1787577980615_20",
+      "title": "DevOps 1695290060",
+      "author": "Unknown Author",
+      "program": "All Programs",
+      "category": "Technical",
+      "coverUrl": "https://images.unsplash.com/photo-1516116216624-53e697fedbea?auto=format&fit=crop&w=600&q=80",
+      "fileType": "file",
+      "pdfUrl": "/uploads/books/DevOps_1695290060.pdf",
+      "downloadable": true,
+      "isbn": "ISBN-511857827",
+      "rating": 4.8,
+      "pages": 350,
+      "publishedYear": 2024,
+      "quickSummary": {
+        "highlights": [
+          "Comprehensive technical material.",
+          "Practical examples and case studies.",
+          "Industry standard practices."
+        ],
+        "keyTakeaways": [
+          "Master core technical concepts.",
+          "Apply learning to real-world projects."
+        ],
+        "estimatedReadingTime": "12 Hours",
+        "difficultyLevel": "Intermediate to Advanced"
+      },
+      "description": "A comprehensive technical guide: DevOps 1695290060. Perfect for enhancing your skills and knowledge."
+    },
+    {
+      "id": "bk_tech_1787577980615_21",
+      "title": "DevOps 1695548180",
+      "author": "Unknown Author",
+      "program": "All Programs",
+      "category": "Technical",
+      "coverUrl": "https://images.unsplash.com/photo-1516116216624-53e697fedbea?auto=format&fit=crop&w=600&q=80",
+      "fileType": "file",
+      "pdfUrl": "/uploads/books/DevOps_1695548180.pdf",
+      "downloadable": true,
+      "isbn": "ISBN-154352174",
+      "rating": 4.8,
+      "pages": 350,
+      "publishedYear": 2024,
+      "quickSummary": {
+        "highlights": [
+          "Comprehensive technical material.",
+          "Practical examples and case studies.",
+          "Industry standard practices."
+        ],
+        "keyTakeaways": [
+          "Master core technical concepts.",
+          "Apply learning to real-world projects."
+        ],
+        "estimatedReadingTime": "12 Hours",
+        "difficultyLevel": "Intermediate to Advanced"
+      },
+      "description": "A comprehensive technical guide: DevOps 1695548180. Perfect for enhancing your skills and knowledge."
+    },
+    {
+      "id": "bk_tech_1787577980615_22",
+      "title": "DevOps 1696088085",
+      "author": "Unknown Author",
+      "program": "All Programs",
+      "category": "Technical",
+      "coverUrl": "https://images.unsplash.com/photo-1516116216624-53e697fedbea?auto=format&fit=crop&w=600&q=80",
+      "fileType": "file",
+      "pdfUrl": "/uploads/books/DevOps_1696088085.pdf",
+      "downloadable": true,
+      "isbn": "ISBN-255995166",
+      "rating": 4.8,
+      "pages": 350,
+      "publishedYear": 2024,
+      "quickSummary": {
+        "highlights": [
+          "Comprehensive technical material.",
+          "Practical examples and case studies.",
+          "Industry standard practices."
+        ],
+        "keyTakeaways": [
+          "Master core technical concepts.",
+          "Apply learning to real-world projects."
+        ],
+        "estimatedReadingTime": "12 Hours",
+        "difficultyLevel": "Intermediate to Advanced"
+      },
+      "description": "A comprehensive technical guide: DevOps 1696088085. Perfect for enhancing your skills and knowledge."
+    },
+    {
+      "id": "bk_tech_1787577980615_23",
+      "title": "DevOps 1696443361",
+      "author": "Unknown Author",
+      "program": "All Programs",
+      "category": "Technical",
+      "coverUrl": "https://images.unsplash.com/photo-1516116216624-53e697fedbea?auto=format&fit=crop&w=600&q=80",
+      "fileType": "file",
+      "pdfUrl": "/uploads/books/DevOps_1696443361.pdf",
+      "downloadable": true,
+      "isbn": "ISBN-144880243",
+      "rating": 4.8,
+      "pages": 350,
+      "publishedYear": 2024,
+      "quickSummary": {
+        "highlights": [
+          "Comprehensive technical material.",
+          "Practical examples and case studies.",
+          "Industry standard practices."
+        ],
+        "keyTakeaways": [
+          "Master core technical concepts.",
+          "Apply learning to real-world projects."
+        ],
+        "estimatedReadingTime": "12 Hours",
+        "difficultyLevel": "Intermediate to Advanced"
+      },
+      "description": "A comprehensive technical guide: DevOps 1696443361. Perfect for enhancing your skills and knowledge."
+    },
+    {
+      "id": "bk_tech_1787577980615_24",
+      "title": "DevOps 200 Interview questions 1692564411",
+      "author": "Unknown Author",
+      "program": "All Programs",
+      "category": "Technical",
+      "coverUrl": "https://images.unsplash.com/photo-1516116216624-53e697fedbea?auto=format&fit=crop&w=600&q=80",
+      "fileType": "file",
+      "pdfUrl": "/uploads/books/DevOps_200_Interview_questions_1692564411.pdf",
+      "downloadable": true,
+      "isbn": "ISBN-820967261",
+      "rating": 4.8,
+      "pages": 350,
+      "publishedYear": 2024,
+      "quickSummary": {
+        "highlights": [
+          "Comprehensive technical material.",
+          "Practical examples and case studies.",
+          "Industry standard practices."
+        ],
+        "keyTakeaways": [
+          "Master core technical concepts.",
+          "Apply learning to real-world projects."
+        ],
+        "estimatedReadingTime": "12 Hours",
+        "difficultyLevel": "Intermediate to Advanced"
+      },
+      "description": "A comprehensive technical guide: DevOps 200 Interview questions 1692564411. Perfect for enhancing your skills and knowledge."
+    },
+    {
+      "id": "bk_tech_1787577980615_25",
+      "title": "DevOps Culture and Practice with OpenShift Deliver continuous business",
+      "author": "Unknown Author",
+      "program": "All Programs",
+      "category": "Technical",
+      "coverUrl": "https://images.unsplash.com/photo-1516116216624-53e697fedbea?auto=format&fit=crop&w=600&q=80",
+      "fileType": "file",
+      "pdfUrl": "/uploads/books/DevOps_Culture_and_Practice_with_OpenShift_Deliver_continuous_business.pdf",
+      "downloadable": true,
+      "isbn": "ISBN-694299026",
+      "rating": 4.8,
+      "pages": 350,
+      "publishedYear": 2024,
+      "quickSummary": {
+        "highlights": [
+          "Comprehensive technical material.",
+          "Practical examples and case studies.",
+          "Industry standard practices."
+        ],
+        "keyTakeaways": [
+          "Master core technical concepts.",
+          "Apply learning to real-world projects."
+        ],
+        "estimatedReadingTime": "12 Hours",
+        "difficultyLevel": "Intermediate to Advanced"
+      },
+      "description": "A comprehensive technical guide: DevOps Culture and Practice with OpenShift Deliver continuous business. Perfect for enhancing your skills and knowledge."
+    },
+    {
+      "id": "bk_tech_1787577980615_26",
+      "title": "DevOps Interview Questions Answers 1695746349",
+      "author": "Unknown Author",
+      "program": "All Programs",
+      "category": "Technical",
+      "coverUrl": "https://images.unsplash.com/photo-1516116216624-53e697fedbea?auto=format&fit=crop&w=600&q=80",
+      "fileType": "file",
+      "pdfUrl": "/uploads/books/DevOps_Interview_Questions_Answers_1695746349.pdf",
+      "downloadable": true,
+      "isbn": "ISBN-662046597",
+      "rating": 4.8,
+      "pages": 350,
+      "publishedYear": 2024,
+      "quickSummary": {
+        "highlights": [
+          "Comprehensive technical material.",
+          "Practical examples and case studies.",
+          "Industry standard practices."
+        ],
+        "keyTakeaways": [
+          "Master core technical concepts.",
+          "Apply learning to real-world projects."
+        ],
+        "estimatedReadingTime": "12 Hours",
+        "difficultyLevel": "Intermediate to Advanced"
+      },
+      "description": "A comprehensive technical guide: DevOps Interview Questions Answers 1695746349. Perfect for enhancing your skills and knowledge."
+    },
+    {
+      "id": "bk_tech_1787577980615_27",
+      "title": "Learning Python Network Programming (en)",
+      "author": "Unknown Author",
+      "program": "All Programs",
+      "category": "Technical",
+      "coverUrl": "https://images.unsplash.com/photo-1516116216624-53e697fedbea?auto=format&fit=crop&w=600&q=80",
+      "fileType": "file",
+      "pdfUrl": "/uploads/books/Learning Python Network Programming (en).pdf",
+      "downloadable": true,
+      "isbn": "ISBN-527379355",
+      "rating": 4.8,
+      "pages": 350,
+      "publishedYear": 2024,
+      "quickSummary": {
+        "highlights": [
+          "Comprehensive technical material.",
+          "Practical examples and case studies.",
+          "Industry standard practices."
+        ],
+        "keyTakeaways": [
+          "Master core technical concepts.",
+          "Apply learning to real-world projects."
+        ],
+        "estimatedReadingTime": "12 Hours",
+        "difficultyLevel": "Intermediate to Advanced"
+      },
+      "description": "A comprehensive technical guide: Learning Python Network Programming (en). Perfect for enhancing your skills and knowledge."
+    },
+    {
+      "id": "bk_tech_1787577980615_28",
+      "title": "Mastering Python Networking (en)",
+      "author": "Unknown Author",
+      "program": "All Programs",
+      "category": "Technical",
+      "coverUrl": "https://images.unsplash.com/photo-1516116216624-53e697fedbea?auto=format&fit=crop&w=600&q=80",
+      "fileType": "file",
+      "pdfUrl": "/uploads/books/Mastering Python Networking (en).pdf",
+      "downloadable": true,
+      "isbn": "ISBN-863320877",
+      "rating": 4.8,
+      "pages": 350,
+      "publishedYear": 2024,
+      "quickSummary": {
+        "highlights": [
+          "Comprehensive technical material.",
+          "Practical examples and case studies.",
+          "Industry standard practices."
+        ],
+        "keyTakeaways": [
+          "Master core technical concepts.",
+          "Apply learning to real-world projects."
+        ],
+        "estimatedReadingTime": "12 Hours",
+        "difficultyLevel": "Intermediate to Advanced"
+      },
+      "description": "A comprehensive technical guide: Mastering Python Networking (en). Perfect for enhancing your skills and knowledge."
+    },
+    {
+      "id": "bk_tech_1787577980615_29",
+      "title": "Math Adventures with Python (en)",
+      "author": "Unknown Author",
+      "program": "All Programs",
+      "category": "Technical",
+      "coverUrl": "https://images.unsplash.com/photo-1516116216624-53e697fedbea?auto=format&fit=crop&w=600&q=80",
+      "fileType": "file",
+      "pdfUrl": "/uploads/books/Math Adventures with Python (en).pdf",
+      "downloadable": true,
+      "isbn": "ISBN-953214477",
+      "rating": 4.8,
+      "pages": 350,
+      "publishedYear": 2024,
+      "quickSummary": {
+        "highlights": [
+          "Comprehensive technical material.",
+          "Practical examples and case studies.",
+          "Industry standard practices."
+        ],
+        "keyTakeaways": [
+          "Master core technical concepts.",
+          "Apply learning to real-world projects."
+        ],
+        "estimatedReadingTime": "12 Hours",
+        "difficultyLevel": "Intermediate to Advanced"
+      },
+      "description": "A comprehensive technical guide: Math Adventures with Python (en). Perfect for enhancing your skills and knowledge."
+    },
+    {
+      "id": "bk_tech_1787577980615_30",
+      "title": "Migrating to AWS A Manager's Guide How to Foster Agility, Reduce",
+      "author": "Unknown Author",
+      "program": "All Programs",
+      "category": "Technical",
+      "coverUrl": "https://images.unsplash.com/photo-1516116216624-53e697fedbea?auto=format&fit=crop&w=600&q=80",
+      "fileType": "file",
+      "pdfUrl": "/uploads/books/Migrating_to_AWS_A_Manager's_Guide_How_to_Foster_Agility,_Reduce.pdf",
+      "downloadable": true,
+      "isbn": "ISBN-536901415",
+      "rating": 4.8,
+      "pages": 350,
+      "publishedYear": 2024,
+      "quickSummary": {
+        "highlights": [
+          "Comprehensive technical material.",
+          "Practical examples and case studies.",
+          "Industry standard practices."
+        ],
+        "keyTakeaways": [
+          "Master core technical concepts.",
+          "Apply learning to real-world projects."
+        ],
+        "estimatedReadingTime": "12 Hours",
+        "difficultyLevel": "Intermediate to Advanced"
+      },
+      "description": "A comprehensive technical guide: Migrating to AWS A Manager's Guide How to Foster Agility, Reduce. Perfect for enhancing your skills and knowledge."
+    },
+    {
+      "id": "bk_tech_1787577980615_31",
+      "title": "Mobile.DevOps.Playbook",
+      "author": "Unknown Author",
+      "program": "All Programs",
+      "category": "Technical",
+      "coverUrl": "https://images.unsplash.com/photo-1516116216624-53e697fedbea?auto=format&fit=crop&w=600&q=80",
+      "fileType": "file",
+      "pdfUrl": "/uploads/books/Mobile.DevOps.Playbook.pdf",
+      "downloadable": true,
+      "isbn": "ISBN-114867650",
+      "rating": 4.8,
+      "pages": 350,
+      "publishedYear": 2024,
+      "quickSummary": {
+        "highlights": [
+          "Comprehensive technical material.",
+          "Practical examples and case studies.",
+          "Industry standard practices."
+        ],
+        "keyTakeaways": [
+          "Master core technical concepts.",
+          "Apply learning to real-world projects."
+        ],
+        "estimatedReadingTime": "12 Hours",
+        "difficultyLevel": "Intermediate to Advanced"
+      },
+      "description": "A comprehensive technical guide: Mobile.DevOps.Playbook. Perfect for enhancing your skills and knowledge."
+    },
+    {
+      "id": "bk_tech_1787577980615_32",
+      "title": "Natural Language Processing with Python (en)",
+      "author": "Unknown Author",
+      "program": "All Programs",
+      "category": "Technical",
+      "coverUrl": "https://images.unsplash.com/photo-1516116216624-53e697fedbea?auto=format&fit=crop&w=600&q=80",
+      "fileType": "file",
+      "pdfUrl": "/uploads/books/Natural Language Processing with Python (en).pdf",
+      "downloadable": true,
+      "isbn": "ISBN-985164971",
+      "rating": 4.8,
+      "pages": 350,
+      "publishedYear": 2024,
+      "quickSummary": {
+        "highlights": [
+          "Comprehensive technical material.",
+          "Practical examples and case studies.",
+          "Industry standard practices."
+        ],
+        "keyTakeaways": [
+          "Master core technical concepts.",
+          "Apply learning to real-world projects."
+        ],
+        "estimatedReadingTime": "12 Hours",
+        "difficultyLevel": "Intermediate to Advanced"
+      },
+      "description": "A comprehensive technical guide: Natural Language Processing with Python (en). Perfect for enhancing your skills and knowledge."
+    },
+    {
+      "id": "bk_tech_1787577980615_33",
+      "title": "Pro Python (en)",
+      "author": "Unknown Author",
+      "program": "All Programs",
+      "category": "Technical",
+      "coverUrl": "https://images.unsplash.com/photo-1516116216624-53e697fedbea?auto=format&fit=crop&w=600&q=80",
+      "fileType": "file",
+      "pdfUrl": "/uploads/books/Pro Python (en).pdf",
+      "downloadable": true,
+      "isbn": "ISBN-828411170",
+      "rating": 4.8,
+      "pages": 350,
+      "publishedYear": 2024,
+      "quickSummary": {
+        "highlights": [
+          "Comprehensive technical material.",
+          "Practical examples and case studies.",
+          "Industry standard practices."
+        ],
+        "keyTakeaways": [
+          "Master core technical concepts.",
+          "Apply learning to real-world projects."
+        ],
+        "estimatedReadingTime": "12 Hours",
+        "difficultyLevel": "Intermediate to Advanced"
+      },
+      "description": "A comprehensive technical guide: Pro Python (en). Perfect for enhancing your skills and knowledge."
+    },
+    {
+      "id": "bk_tech_1787577980616_34",
+      "title": "Programming for Computations – Python (en)",
+      "author": "Unknown Author",
+      "program": "All Programs",
+      "category": "Technical",
+      "coverUrl": "https://images.unsplash.com/photo-1516116216624-53e697fedbea?auto=format&fit=crop&w=600&q=80",
+      "fileType": "file",
+      "pdfUrl": "/uploads/books/Programming for Computations – Python (en).pdf",
+      "downloadable": true,
+      "isbn": "ISBN-521816019",
+      "rating": 4.8,
+      "pages": 350,
+      "publishedYear": 2024,
+      "quickSummary": {
+        "highlights": [
+          "Comprehensive technical material.",
+          "Practical examples and case studies.",
+          "Industry standard practices."
+        ],
+        "keyTakeaways": [
+          "Master core technical concepts.",
+          "Apply learning to real-world projects."
+        ],
+        "estimatedReadingTime": "12 Hours",
+        "difficultyLevel": "Intermediate to Advanced"
+      },
+      "description": "A comprehensive technical guide: Programming for Computations – Python (en). Perfect for enhancing your skills and knowledge."
+    },
+    {
+      "id": "bk_tech_1787577980616_35",
+      "title": "Python for Computational Science and Engineering (en)",
+      "author": "Unknown Author",
+      "program": "All Programs",
+      "category": "Technical",
+      "coverUrl": "https://images.unsplash.com/photo-1516116216624-53e697fedbea?auto=format&fit=crop&w=600&q=80",
+      "fileType": "file",
+      "pdfUrl": "/uploads/books/Python for Computational Science and Engineering (en).pdf",
+      "downloadable": true,
+      "isbn": "ISBN-405969338",
+      "rating": 4.8,
+      "pages": 350,
+      "publishedYear": 2024,
+      "quickSummary": {
+        "highlights": [
+          "Comprehensive technical material.",
+          "Practical examples and case studies.",
+          "Industry standard practices."
+        ],
+        "keyTakeaways": [
+          "Master core technical concepts.",
+          "Apply learning to real-world projects."
+        ],
+        "estimatedReadingTime": "12 Hours",
+        "difficultyLevel": "Intermediate to Advanced"
+      },
+      "description": "A comprehensive technical guide: Python for Computational Science and Engineering (en). Perfect for enhancing your skills and knowledge."
+    },
+    {
+      "id": "bk_tech_1787577980616_36",
+      "title": "Python for Scientists (en)",
+      "author": "Unknown Author",
+      "program": "All Programs",
+      "category": "Technical",
+      "coverUrl": "https://images.unsplash.com/photo-1516116216624-53e697fedbea?auto=format&fit=crop&w=600&q=80",
+      "fileType": "file",
+      "pdfUrl": "/uploads/books/Python for Scientists (en).pdf",
+      "downloadable": true,
+      "isbn": "ISBN-445665101",
+      "rating": 4.8,
+      "pages": 350,
+      "publishedYear": 2024,
+      "quickSummary": {
+        "highlights": [
+          "Comprehensive technical material.",
+          "Practical examples and case studies.",
+          "Industry standard practices."
+        ],
+        "keyTakeaways": [
+          "Master core technical concepts.",
+          "Apply learning to real-world projects."
+        ],
+        "estimatedReadingTime": "12 Hours",
+        "difficultyLevel": "Intermediate to Advanced"
+      },
+      "description": "A comprehensive technical guide: Python for Scientists (en). Perfect for enhancing your skills and knowledge."
+    },
+    {
+      "id": "bk_tech_1787577980616_37",
+      "title": "Python Machine Learning Case  Studies (en)",
+      "author": "Unknown Author",
+      "program": "All Programs",
+      "category": "Technical",
+      "coverUrl": "https://images.unsplash.com/photo-1516116216624-53e697fedbea?auto=format&fit=crop&w=600&q=80",
+      "fileType": "file",
+      "pdfUrl": "/uploads/books/Python Machine Learning Case  Studies (en).pdf",
+      "downloadable": true,
+      "isbn": "ISBN-382911188",
+      "rating": 4.8,
+      "pages": 350,
+      "publishedYear": 2024,
+      "quickSummary": {
+        "highlights": [
+          "Comprehensive technical material.",
+          "Practical examples and case studies.",
+          "Industry standard practices."
+        ],
+        "keyTakeaways": [
+          "Master core technical concepts.",
+          "Apply learning to real-world projects."
+        ],
+        "estimatedReadingTime": "12 Hours",
+        "difficultyLevel": "Intermediate to Advanced"
+      },
+      "description": "A comprehensive technical guide: Python Machine Learning Case  Studies (en). Perfect for enhancing your skills and knowledge."
+    },
+    {
+      "id": "bk_tech_1787577980616_38",
+      "title": "Python Web Scraping (en)",
+      "author": "Unknown Author",
+      "program": "All Programs",
+      "category": "Technical",
+      "coverUrl": "https://images.unsplash.com/photo-1516116216624-53e697fedbea?auto=format&fit=crop&w=600&q=80",
+      "fileType": "file",
+      "pdfUrl": "/uploads/books/Python Web Scraping (en).pdf",
+      "downloadable": true,
+      "isbn": "ISBN-520820706",
+      "rating": 4.8,
+      "pages": 350,
+      "publishedYear": 2024,
+      "quickSummary": {
+        "highlights": [
+          "Comprehensive technical material.",
+          "Practical examples and case studies.",
+          "Industry standard practices."
+        ],
+        "keyTakeaways": [
+          "Master core technical concepts.",
+          "Apply learning to real-world projects."
+        ],
+        "estimatedReadingTime": "12 Hours",
+        "difficultyLevel": "Intermediate to Advanced"
+      },
+      "description": "A comprehensive technical guide: Python Web Scraping (en). Perfect for enhancing your skills and knowledge."
+    },
+    {
+      "id": "bk_tech_1787577980616_39",
+      "title": "Python",
+      "author": "Unknown Author",
+      "program": "All Programs",
+      "category": "Technical",
+      "coverUrl": "https://images.unsplash.com/photo-1516116216624-53e697fedbea?auto=format&fit=crop&w=600&q=80",
+      "fileType": "file",
+      "pdfUrl": "/uploads/books/Python.pdf",
+      "downloadable": true,
+      "isbn": "ISBN-146769910",
+      "rating": 4.8,
+      "pages": 350,
+      "publishedYear": 2024,
+      "quickSummary": {
+        "highlights": [
+          "Comprehensive technical material.",
+          "Practical examples and case studies.",
+          "Industry standard practices."
+        ],
+        "keyTakeaways": [
+          "Master core technical concepts.",
+          "Apply learning to real-world projects."
+        ],
+        "estimatedReadingTime": "12 Hours",
+        "difficultyLevel": "Intermediate to Advanced"
+      },
+      "description": "A comprehensive technical guide: Python. Perfect for enhancing your skills and knowledge."
+    },
+    {
+      "id": "bk_tech_1787577980616_40",
+      "title": "quick-python-book-3rd",
+      "author": "Unknown Author",
+      "program": "All Programs",
+      "category": "Technical",
+      "coverUrl": "https://images.unsplash.com/photo-1516116216624-53e697fedbea?auto=format&fit=crop&w=600&q=80",
+      "fileType": "file",
+      "pdfUrl": "/uploads/books/quick-python-book-3rd.pdf",
+      "downloadable": true,
+      "isbn": "ISBN-202814908",
+      "rating": 4.8,
+      "pages": 350,
+      "publishedYear": 2024,
+      "quickSummary": {
+        "highlights": [
+          "Comprehensive technical material.",
+          "Practical examples and case studies.",
+          "Industry standard practices."
+        ],
+        "keyTakeaways": [
+          "Master core technical concepts.",
+          "Apply learning to real-world projects."
+        ],
+        "estimatedReadingTime": "12 Hours",
+        "difficultyLevel": "Intermediate to Advanced"
+      },
+      "description": "A comprehensive technical guide: quick-python-book-3rd. Perfect for enhancing your skills and knowledge."
+    },
+    {
+      "id": "bk_tech_1787577980616_41",
+      "title": "Serverless Applications with Node",
+      "author": "Unknown Author",
+      "program": "All Programs",
+      "category": "Technical",
+      "coverUrl": "https://images.unsplash.com/photo-1516116216624-53e697fedbea?auto=format&fit=crop&w=600&q=80",
+      "fileType": "file",
+      "pdfUrl": "/uploads/books/Serverless_Applications_with_Node.pdf",
+      "downloadable": true,
+      "isbn": "ISBN-551003313",
+      "rating": 4.8,
+      "pages": 350,
+      "publishedYear": 2024,
+      "quickSummary": {
+        "highlights": [
+          "Comprehensive technical material.",
+          "Practical examples and case studies.",
+          "Industry standard practices."
+        ],
+        "keyTakeaways": [
+          "Master core technical concepts.",
+          "Apply learning to real-world projects."
+        ],
+        "estimatedReadingTime": "12 Hours",
+        "difficultyLevel": "Intermediate to Advanced"
+      },
+      "description": "A comprehensive technical guide: Serverless Applications with Node. Perfect for enhancing your skills and knowledge."
+    },
+    {
+      "id": "bk_tech_1787577980616_42",
+      "title": "Serverless Architectures on AWS Peter Sbarski, Yan Cui, Ajay Nair",
+      "author": "Unknown Author",
+      "program": "All Programs",
+      "category": "Technical",
+      "coverUrl": "https://images.unsplash.com/photo-1516116216624-53e697fedbea?auto=format&fit=crop&w=600&q=80",
+      "fileType": "file",
+      "pdfUrl": "/uploads/books/Serverless_Architectures_on_AWS_Peter_Sbarski,_Yan_Cui,_Ajay_Nair.pdf",
+      "downloadable": true,
+      "isbn": "ISBN-231427245",
+      "rating": 4.8,
+      "pages": 350,
+      "publishedYear": 2024,
+      "quickSummary": {
+        "highlights": [
+          "Comprehensive technical material.",
+          "Practical examples and case studies.",
+          "Industry standard practices."
+        ],
+        "keyTakeaways": [
+          "Master core technical concepts.",
+          "Apply learning to real-world projects."
+        ],
+        "estimatedReadingTime": "12 Hours",
+        "difficultyLevel": "Intermediate to Advanced"
+      },
+      "description": "A comprehensive technical guide: Serverless Architectures on AWS Peter Sbarski, Yan Cui, Ajay Nair. Perfect for enhancing your skills and knowledge."
+    },
+    {
+      "id": "bk_tech_1787577980616_43",
+      "title": "Serverless Architecture on AWS Peter",
+      "author": "Unknown Author",
+      "program": "All Programs",
+      "category": "Technical",
+      "coverUrl": "https://images.unsplash.com/photo-1516116216624-53e697fedbea?auto=format&fit=crop&w=600&q=80",
+      "fileType": "file",
+      "pdfUrl": "/uploads/books/Serverless_Architecture_on_AWS_Peter.pdf",
+      "downloadable": true,
+      "isbn": "ISBN-334211446",
+      "rating": 4.8,
+      "pages": 350,
+      "publishedYear": 2024,
+      "quickSummary": {
+        "highlights": [
+          "Comprehensive technical material.",
+          "Practical examples and case studies.",
+          "Industry standard practices."
+        ],
+        "keyTakeaways": [
+          "Master core technical concepts.",
+          "Apply learning to real-world projects."
+        ],
+        "estimatedReadingTime": "12 Hours",
+        "difficultyLevel": "Intermediate to Advanced"
+      },
+      "description": "A comprehensive technical guide: Serverless Architecture on AWS Peter. Perfect for enhancing your skills and knowledge."
+    },
+    {
+      "id": "bk_tech_1787577980616_44",
+      "title": "Step by Step Guide to Python (en)",
+      "author": "Unknown Author",
+      "program": "All Programs",
+      "category": "Technical",
+      "coverUrl": "https://images.unsplash.com/photo-1516116216624-53e697fedbea?auto=format&fit=crop&w=600&q=80",
+      "fileType": "file",
+      "pdfUrl": "/uploads/books/Step by Step Guide to Python (en).pdf",
+      "downloadable": true,
+      "isbn": "ISBN-438033762",
+      "rating": 4.8,
+      "pages": 350,
+      "publishedYear": 2024,
+      "quickSummary": {
+        "highlights": [
+          "Comprehensive technical material.",
+          "Practical examples and case studies.",
+          "Industry standard practices."
+        ],
+        "keyTakeaways": [
+          "Master core technical concepts.",
+          "Apply learning to real-world projects."
+        ],
+        "estimatedReadingTime": "12 Hours",
+        "difficultyLevel": "Intermediate to Advanced"
+      },
+      "description": "A comprehensive technical guide: Step by Step Guide to Python (en). Perfect for enhancing your skills and knowledge."
+    },
+    {
+      "id": "bk_tech_1787577980616_45",
+      "title": "The Pyramid Web Framework (en)",
+      "author": "Unknown Author",
+      "program": "All Programs",
+      "category": "Technical",
+      "coverUrl": "https://images.unsplash.com/photo-1516116216624-53e697fedbea?auto=format&fit=crop&w=600&q=80",
+      "fileType": "file",
+      "pdfUrl": "/uploads/books/The Pyramid Web Framework (en).pdf",
+      "downloadable": true,
+      "isbn": "ISBN-286067423",
+      "rating": 4.8,
+      "pages": 350,
+      "publishedYear": 2024,
+      "quickSummary": {
+        "highlights": [
+          "Comprehensive technical material.",
+          "Practical examples and case studies.",
+          "Industry standard practices."
+        ],
+        "keyTakeaways": [
+          "Master core technical concepts.",
+          "Apply learning to real-world projects."
+        ],
+        "estimatedReadingTime": "12 Hours",
+        "difficultyLevel": "Intermediate to Advanced"
+      },
+      "description": "A comprehensive technical guide: The Pyramid Web Framework (en). Perfect for enhancing your skills and knowledge."
+    },
+    {
+      "id": "bk_tech_1787577980616_46",
+      "title": "[Seppe vanden Broucke, Bart Baesens] Practical Web",
+      "author": "Unknown Author",
+      "program": "All Programs",
+      "category": "Technical",
+      "coverUrl": "https://images.unsplash.com/photo-1516116216624-53e697fedbea?auto=format&fit=crop&w=600&q=80",
+      "fileType": "file",
+      "pdfUrl": "/uploads/books/[Seppe_vanden_Broucke,_Bart_Baesens]_Practical_Web.pdf",
+      "downloadable": true,
+      "isbn": "ISBN-730647517",
+      "rating": 4.8,
+      "pages": 350,
+      "publishedYear": 2024,
+      "quickSummary": {
+        "highlights": [
+          "Comprehensive technical material.",
+          "Practical examples and case studies.",
+          "Industry standard practices."
+        ],
+        "keyTakeaways": [
+          "Master core technical concepts.",
+          "Apply learning to real-world projects."
+        ],
+        "estimatedReadingTime": "12 Hours",
+        "difficultyLevel": "Intermediate to Advanced"
+      },
+      "description": "A comprehensive technical guide: [Seppe vanden Broucke, Bart Baesens] Practical Web. Perfect for enhancing your skills and knowledge."
     }
   ],
   "borrowRequests": [

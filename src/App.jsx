@@ -529,32 +529,33 @@ export default function App() {
   };
 
   // Admin Deletes Book from Catalog
-  const handleDeleteBook = async (bookId) => {
-    setBooks((prev) => {
-      const nextBooks = prev.filter((b) => b.id !== bookId);
-      try {
-        localStorage.setItem('sunstone_books', JSON.stringify(nextBooks));
-      } catch (e) {}
-      return nextBooks;
-    });
-
+const handleDeleteBook = async (bookId) => {
+  setBooks((prev) => {
+    const nextBooks = prev.filter((b) => b.id !== bookId);
     try {
-      await deleteBookFromFirestore(bookId);
+      localStorage.setItem('sunstone_books', JSON.stringify(nextBooks));
     } catch (e) {}
+    return nextBooks;
+  });
 
+  try {
+    await deleteBookFromFirestore(bookId);
+  } catch (e) {}
+
+  // Only call backend if JWT token present (contains three parts)
+  if (token && token.split('.').length === 3) {
     try {
-      if (token) {
-        await fetch(`/api/books/${bookId}`, {
-          method: 'DELETE',
-          headers: { Authorization: `Bearer ${token}` }
-        });
-      }
+      await fetch(`/api/books/${bookId}`, {
+        method: 'DELETE',
+        headers: { Authorization: `Bearer ${token}` }
+      });
     } catch (e) {}
+  }
 
-    triggerToast('Book removed from Sunstone catalog.');
-  };
+  triggerToast('Book removed from Sunstone catalog.');
+};
 
-  // Admin Suspends or Activates Student Account
+// Admin Suspends or Activates Student Account
   const handleToggleStudentStatus = async (studentId, forcedStatus = null) => {
     const student = students.find((s) => s.id === studentId);
     const newStatus = forcedStatus || (student && student.status === 'Active' ? 'Suspended' : 'Active');
