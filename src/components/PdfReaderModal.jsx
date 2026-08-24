@@ -551,9 +551,9 @@ export default function PdfReaderModal({
                     Could not load the PDF inline. Open it directly in Google Drive or try the local copy.
                   </p>
                   <div style={{ display: 'flex', gap: '10px', justifyContent: 'center', flexWrap: 'wrap' }}>
-                    {finalPdfUrl.includes('drive.google.com') && (
+                    {embedPdfUrl?.includes('drive.google.com') && (
                       <a
-                        href={book.pdfUrl || finalPdfUrl.replace('/preview', '/view')}
+                        href={book.pdfUrl || embedPdfUrl.replace('/preview', '/view')}
                         target="_blank"
                         rel="noopener noreferrer"
                         className="btn-primary"
@@ -577,7 +577,7 @@ export default function PdfReaderModal({
                 </div>
               ) : (
                 <iframe
-                  src={finalPdfUrl}
+                  src={embedPdfUrl}
                   title={book.title}
                   onLoad={() => setPdfLoading(false)}
                   onError={() => { setPdfLoading(false); setPdfLoadError(true); }}
