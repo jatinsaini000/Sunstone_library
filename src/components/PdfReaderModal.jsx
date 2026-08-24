@@ -12,6 +12,10 @@ export default function PdfReaderModal({
   userNotes = [],
   onAddNote,
   onDeleteNote,
+  isBorrowed = false,
+  hasPendingBorrowRequest = false,
+  onOpenSnippets,
+  onOpenBorrowModal
 }) {
   const [showNotesDrawer, setShowNotesDrawer] = useState(() => {
     return typeof window !== 'undefined' ? window.innerWidth > 900 : false;
@@ -90,13 +94,13 @@ export default function PdfReaderModal({
                 <span style={{
                   fontSize: '10px',
                   fontWeight: '700',
-                  background: 'rgba(16, 185, 129, 0.2)',
-                  color: '#10b981',
+                  background: isBorrowed ? 'rgba(16, 185, 129, 0.2)' : 'rgba(239, 68, 68, 0.2)',
+                  color: isBorrowed ? '#10b981' : '#ef4444',
                   padding: '2px 7px',
                   borderRadius: '10px',
                   whiteSpace: 'nowrap'
                 }}>
-                  Full Book Unlocked
+                  {isBorrowed ? 'Full Book Unlocked' : 'Preview Locked'}
                 </span>
               </div>
             </div>
@@ -191,7 +195,41 @@ export default function PdfReaderModal({
       <div className="pdf-reader-workspace">
         {/* CENTER: PDF CANVAS VIEWER */}
         <div className="pdf-reader-canvas-container">
-          {embedPdfUrl ? (
+          {!isBorrowed ? (
+            <div style={{
+              width: '100%', height: '100%', display: 'flex', alignItems: 'center', justifyContent: 'center',
+              background: '#0f172a'
+            }}>
+              <div style={{
+                maxWidth: '480px', margin: 'auto', textAlign: 'center', padding: '32px',
+                background: 'var(--sunstone-card-bg)', borderRadius: '16px', border: '1px solid var(--sunstone-border)'
+              }}>
+                <Lock size={48} color="#ef4444" style={{ marginBottom: '16px' }} />
+                <h2 style={{ fontSize: '24px', fontWeight: '800', color: '#ffffff', marginBottom: '12px' }}>
+                  Book Locked
+                </h2>
+                <p style={{ color: '#94a3b8', fontSize: '15px', lineHeight: 1.6, marginBottom: '24px' }}>
+                  You need to borrow this book to access the full PDF online. 
+                  Currently, you are in preview mode.
+                </p>
+                
+                <div style={{ display: 'flex', flexDirection: 'column', gap: '12px' }}>
+                  {hasPendingBorrowRequest ? (
+                    <button className="btn-secondary" disabled style={{ opacity: 0.7, cursor: 'not-allowed' }}>
+                      Borrow Request Pending...
+                    </button>
+                  ) : (
+                    <button className="btn-primary" onClick={() => onOpenBorrowModal(book)}>
+                      Request to Borrow
+                    </button>
+                  )}
+                  <button className="btn-secondary" onClick={() => onOpenSnippets(book)}>
+                    Read Chapter Snippets Instead
+                  </button>
+                </div>
+              </div>
+            </div>
+          ) : embedPdfUrl ? (
             <div style={{ width: '100%', height: '100%', display: 'flex', flexDirection: 'column', position: 'relative' }}>
               {pdfLoading && !pdfLoadError && (
                 <div style={{
