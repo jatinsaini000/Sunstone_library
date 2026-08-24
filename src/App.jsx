@@ -361,7 +361,7 @@ export default function App() {
     const studentId = user ? user.id : ('usr_' + Date.now());
     const studentName = user ? user.name : 'Student Scholar';
     const studentEmail = user ? user.email : 'student@sunstone.in';
-    const studentProgram = user ? user.program : 'B.Tech CS';
+    const studentProgram = user ? user.program : 'B.Tech & BCA';
 
     const reqId = 'req_' + Date.now();
     const newReq = {
@@ -652,9 +652,8 @@ const handleDeleteBook = async (bookId) => {
 
   const featuredBook = books[0] || initialBooks[0];
   const trendingBooks = books.slice(0, 6);
-  const btechBooks = books.filter((b) => b.program === 'B.Tech CS');
+  const btechBooks = books.filter((b) => b.program === 'B.Tech & BCA');
   const mbaBooks = books.filter((b) => b.program === 'MBA');
-  const bcaBooks = books.filter((b) => b.program === 'BCA');
   const bbaBooks = books.filter((b) => b.program === 'BBA');
   const specialBooks = books.filter((b) => b.program === 'Special Collections');
   const journalBooks = books.filter((b) => b.program === 'Journals');
@@ -772,7 +771,7 @@ const handleDeleteBook = async (bookId) => {
                 />
 
                 <NetflixRow
-                  title="B.Tech CS • Core Engineering & Computer Science"
+                  title="B.Tech & BCA • Core Engineering & Computer Science"
                   icon={Code}
                   books={btechBooks}
                   onOpenReader={(b) => setActiveReaderBook(b)}
@@ -791,22 +790,6 @@ const handleDeleteBook = async (bookId) => {
                   title="MBA • Corporate Finance, Strategy & Management"
                   icon={GraduationCap}
                   books={mbaBooks}
-                  onOpenReader={(b) => setActiveReaderBook(b)}
-                  onOpenSnippets={(b) => setActiveSnippetBook(b)}
-                  onOpenQuickSummary={(b) => setSelectedQuickSummaryBook(b)}
-                  onOpenBorrowModal={(b) => {
-                    if (!user) setShowAuthModal(true);
-                    else setActiveBorrowBook(b);
-                  }}
-                  savedBookIds={savedBookIds}
-                  onToggleSave={handleToggleSaveBook}
-                  borrowedBookIds={borrowedBookIds}
-                />
-
-                <NetflixRow
-                  title="BCA • Web Engineering & Software Development"
-                  icon={Server}
-                  books={bcaBooks}
                   onOpenReader={(b) => setActiveReaderBook(b)}
                   onOpenSnippets={(b) => setActiveSnippetBook(b)}
                   onOpenQuickSummary={(b) => setSelectedQuickSummaryBook(b)}
