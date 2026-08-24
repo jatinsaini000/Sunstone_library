@@ -21,7 +21,7 @@ export default function PdfReaderModal({
   const [currentPage, setCurrentPage] = useState(1);
   const [zoomLevel, setZoomLevel] = useState(100);
   const [readingMode, setReadingMode] = useState('dark'); // 'dark', 'light', 'sepia'
-  const [viewerType, setViewerType] = useState('interactive'); // 'interactive' or 'livePdf'
+  const [viewerType, setViewerType] = useState('livePdf'); // Default to actual PDF
   const [showNotesDrawer, setShowNotesDrawer] = useState(() => {
     return typeof window !== 'undefined' ? window.innerWidth > 900 : false;
   });
