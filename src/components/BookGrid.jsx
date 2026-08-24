@@ -19,15 +19,10 @@ export default function BookGrid({
       desc: 'Curated corporate finance, strategic management, consumer analytics, and leadership case studies.',
       icon: GraduationCap
     },
-    'B.Tech CS': {
-      title: 'B.Tech CS • Computer Science & Engineering',
+    'B.Tech & BCA': {
+      title: 'B.Tech & BCA • Computer Science & Engineering',
       desc: 'Algorithms, data structures, artificial intelligence, operating systems, and system design textbooks.',
       icon: Code
-    },
-    'BCA': {
-      title: 'BCA • Bachelor of Computer Applications',
-      desc: 'Full-stack web engineering, database systems, networking, and modern software development.',
-      icon: Server
     },
     'BBA': {
       title: 'BBA • Business Administration',

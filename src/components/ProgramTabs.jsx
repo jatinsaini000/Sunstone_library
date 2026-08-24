@@ -5,8 +5,7 @@ export default function ProgramTabs({ selectedProgram, setSelectedProgram, count
   const programs = [
     { id: 'All Programs', label: 'All Programs', icon: Layers, color: '#2563eb' },
     { id: 'MBA', label: 'MBA', icon: GraduationCap, color: '#f59e0b' },
-    { id: 'B.Tech CS', label: 'B.Tech CS', icon: Code, color: '#10b981' },
-    { id: 'BCA', label: 'BCA', icon: Server, color: '#06b6d4' },
+    { id: 'B.Tech & BCA', label: 'B.Tech & BCA', icon: Code, color: '#10b981' },
     { id: 'BBA', label: 'BBA', icon: Briefcase, color: '#8b5cf6' },
     { id: 'Special Collections', label: 'Prayas AI Lab', icon: Sparkles, color: '#ff4d5a' },
     { id: 'Journals', label: 'Journals', icon: BookOpenCheck, color: '#ec4899' }
