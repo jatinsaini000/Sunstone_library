@@ -45,7 +45,7 @@ export default function App() {
   const [searchQuery, setSearchQuery] = useState('');
   const [toastMessage, setToastMessage] = useState(null);
 
-  // Active user session (persisted in localStorage or null for guest visitors)
+  // Active user session and cryptographic JWT token
   const [user, setUser] = useState(() => {
     try {
       const savedUser = localStorage.getItem('sunstone_user');
@@ -55,17 +55,29 @@ export default function App() {
     }
   });
 
-  const handleSetUser = (userData) => {
+  const [token, setToken] = useState(() => {
+    try {
+      return localStorage.getItem('sunstone_token') || null;
+    } catch (e) {
+      return null;
+    }
+  });
+
+  const handleSetUser = (userData, userToken = null) => {
     if (userData) {
       try {
         localStorage.setItem('sunstone_user', JSON.stringify(userData));
+        if (userToken) localStorage.setItem('sunstone_token', userToken);
       } catch (e) {}
       setUser(userData);
+      if (userToken) setToken(userToken);
     } else {
       try {
         localStorage.removeItem('sunstone_user');
+        localStorage.removeItem('sunstone_token');
       } catch (e) {}
       setUser(null);
+      setToken(null);
     }
   };
 
@@ -100,12 +112,37 @@ export default function App() {
   const [activeBorrowBook, setActiveBorrowBook] = useState(null);
 
   const borrowedBookIds = borrowRequests
-    .filter((r) => user && r.studentId === user.id && r.status === 'Approved')
+    .filter((r) => user && (r.studentId === user.id || r.studentEmail === user.email) && r.status === 'Approved')
     .map((r) => r.bookId);
 
   useEffect(() => {
     document.documentElement.setAttribute('data-theme', theme);
   }, [theme]);
+
+  // Server-Side Session Verification on App Startup (Prevents localStorage tampering)
+  useEffect(() => {
+    async function verifySession() {
+      if (!token) return;
+      try {
+        const res = await fetch('/api/auth/me', {
+          headers: { Authorization: `Bearer ${token}` }
+        });
+        if (res.ok) {
+          const data = await res.json();
+          if (data.user) {
+            setUser(data.user);
+            try {
+              localStorage.setItem('sunstone_user', JSON.stringify(data.user));
+            } catch (e) {}
+          }
+        } else if (res.status === 401 || res.status === 403) {
+          // Token invalid or tampered with
+          handleSetUser(null);
+        }
+      } catch (e) {}
+    }
+    verifySession();
+  }, [token]);
 
   useEffect(() => {
     async function loadBooksData() {
@@ -140,7 +177,8 @@ export default function App() {
       } catch (e) {}
 
       try {
-        const res = await fetch('/api/borrow-requests');
+        const headers = token ? { Authorization: `Bearer ${token}` } : {};
+        const res = await fetch('/api/borrow-requests', { headers });
         const contentType = res.headers.get('content-type');
         if (res.ok && contentType && contentType.includes('application/json')) {
           const data = await res.json();
@@ -149,7 +187,7 @@ export default function App() {
       } catch (e) {}
     }
     loadRequestsData();
-  }, []);
+  }, [token]);
 
   useEffect(() => {
     async function loadNotesData() {
@@ -157,11 +195,23 @@ export default function App() {
         const fsNotes = await getNotesFromFirestore();
         if (fsNotes && fsNotes.length > 0) {
           setUserNotes(fsNotes);
+          return;
+        }
+      } catch (e) {}
+
+      try {
+        if (!token) return;
+        const res = await fetch('/api/notes', {
+          headers: { Authorization: `Bearer ${token}` }
+        });
+        if (res.ok) {
+          const data = await res.json();
+          if (Array.isArray(data) && data.length > 0) setUserNotes(data);
         }
       } catch (e) {}
     }
     loadNotesData();
-  }, []);
+  }, [token]);
 
   const triggerToast = (text, type = 'success') => {
     setToastMessage({ text, type });
@@ -187,6 +237,20 @@ export default function App() {
       createdAt: new Date().toISOString()
     };
     setUserNotes((prev) => [noteObj, ...prev]);
+
+    try {
+      if (token) {
+        await fetch('/api/notes', {
+          method: 'POST',
+          headers: {
+            'Content-Type': 'application/json',
+            Authorization: `Bearer ${token}`
+          },
+          body: JSON.stringify(newNote)
+        });
+      }
+    } catch (e) {}
+
     try {
       await addNoteToFirestore(noteObj);
     } catch (e) {}
@@ -195,6 +259,15 @@ export default function App() {
 
   const handleDeleteNote = async (noteId) => {
     setUserNotes((prev) => prev.filter((n) => n.id !== noteId));
+    try {
+      if (token) {
+        await fetch(`/api/notes/${noteId}`, {
+          method: 'DELETE',
+          headers: { Authorization: `Bearer ${token}` }
+        });
+      }
+    } catch (e) {}
+
     try {
       await deleteNoteFromFirestore(noteId);
     } catch (e) {}
@@ -217,15 +290,20 @@ export default function App() {
     setBorrowRequests((prev) => [newReq, ...prev]);
 
     try {
-      await addBorrowRequestToFirestore(newReq);
+      if (token) {
+        await fetch('/api/borrow-requests', {
+          method: 'POST',
+          headers: {
+            'Content-Type': 'application/json',
+            Authorization: `Bearer ${token}`
+          },
+          body: JSON.stringify(requestPayload)
+        });
+      }
     } catch (e) {}
 
     try {
-      await fetch('/api/borrow-requests', {
-        method: 'POST',
-        headers: { 'Content-Type': 'application/json' },
-        body: JSON.stringify(newReq)
-      });
+      await addBorrowRequestToFirestore(newReq);
     } catch (e) {}
 
     triggerToast(`Borrow request submitted for "${requestPayload.bookTitle}"!`);
@@ -237,15 +315,20 @@ export default function App() {
     );
 
     try {
-      await updateBorrowStatusInFirestore(requestId, status, adminNote);
+      if (token) {
+        await fetch(`/api/borrow-requests/${requestId}`, {
+          method: 'PUT',
+          headers: {
+            'Content-Type': 'application/json',
+            Authorization: `Bearer ${token}`
+          },
+          body: JSON.stringify({ status, adminNote })
+        });
+      }
     } catch (e) {}
 
     try {
-      await fetch(`/api/borrow-requests/${requestId}`, {
-        method: 'PATCH',
-        headers: { 'Content-Type': 'application/json' },
-        body: JSON.stringify({ status, adminNote })
-      });
+      await updateBorrowStatusInFirestore(requestId, status, adminNote);
     } catch (e) {}
 
     triggerToast(`Request marked as ${status}.`);
@@ -253,17 +336,23 @@ export default function App() {
 
   const handleUploadBook = async (formData) => {
     try {
+      const headers = token ? { Authorization: `Bearer ${token}` } : {};
       const res = await fetch('/api/books', {
         method: 'POST',
+        headers,
         body: formData
       });
       if (res.ok) {
-        const newBook = await res.json();
+        const data = await res.json();
+        const newBook = data.book || data;
         setBooks((prev) => [newBook, ...prev]);
         try {
           await addBookToFirestore(newBook);
         } catch (e) {}
         triggerToast(`Book "${newBook.title}" added to Sunstone Library!`);
+      } else {
+        const errData = await res.json();
+        triggerToast(errData.error || 'Failed to upload book.', 'error');
       }
     } catch (e) {
       const newBookFallback = {
@@ -291,18 +380,41 @@ export default function App() {
   const handleDeleteBook = async (bookId) => {
     setBooks((prev) => prev.filter((b) => b.id !== bookId));
     try {
-      await deleteBookFromFirestore(bookId);
+      if (token) {
+        await fetch(`/api/books/${bookId}`, {
+          method: 'DELETE',
+          headers: { Authorization: `Bearer ${token}` }
+        });
+      }
     } catch (e) {}
+
     try {
-      await fetch(`/api/books/${bookId}`, { method: 'DELETE' });
+      await deleteBookFromFirestore(bookId);
     } catch (e) {}
     triggerToast('Book removed from Sunstone catalog.');
   };
 
-  const handleToggleStudentStatus = (studentId) => {
+  const handleToggleStudentStatus = async (studentId) => {
+    const student = students.find((s) => s.id === studentId);
+    const newStatus = student && student.status === 'Active' ? 'Suspended' : 'Active';
+
     setStudents((prev) =>
-      prev.map((s) => (s.id === studentId ? { ...s, status: s.status === 'Active' ? 'Suspended' : 'Active' } : s))
+      prev.map((s) => (s.id === studentId ? { ...s, status: newStatus } : s))
     );
+
+    try {
+      if (token) {
+        await fetch(`/api/students/${studentId}/status`, {
+          method: 'PUT',
+          headers: {
+            'Content-Type': 'application/json',
+            Authorization: `Bearer ${token}`
+          },
+          body: JSON.stringify({ status: newStatus })
+        });
+      }
+    } catch (e) {}
+
     triggerToast('Student access permissions updated.');
   };
 
@@ -344,7 +456,7 @@ export default function App() {
   const journalBooks = books.filter((b) => b.program === 'Journals');
 
   const pendingRequestsCount = borrowRequests.filter(
-    (r) => user && r.studentId === user.id && r.status === 'Pending'
+    (r) => user && (r.studentId === user.id || r.studentEmail === user.email) && r.status === 'Pending'
   ).length;
 
   return (
@@ -393,7 +505,7 @@ export default function App() {
           </div>
         )}
 
-        {/* VIEW 1: HOME CATALOG VIEW (NETFLIX / SWIGGY STYLE) */}
+        {/* VIEW 1: HOME CATALOG VIEW */}
         {currentView === 'catalog' && (
           <div className="catalog-view-wrap">
             {/* Netflix Hero Billboard */}
@@ -560,7 +672,7 @@ export default function App() {
           <main className="view-content-main">
             <AdminConsole
               user={user}
-              onAdminLogin={(adminUser) => handleSetUser(adminUser)}
+              onAdminLogin={(adminUser, adminToken) => handleSetUser(adminUser, adminToken)}
               allBooks={books}
               onUploadBook={handleUploadBook}
               onDeleteBook={handleDeleteBook}
@@ -573,7 +685,7 @@ export default function App() {
         )}
       </div>
 
-      {/* MOBILE BOTTOM NAVIGATION BAR (Swiggy / Zomato style) */}
+      {/* MOBILE BOTTOM NAVIGATION BAR */}
       <MobileNav
         currentView={currentView}
         setCurrentView={setCurrentView}
@@ -598,16 +710,16 @@ export default function App() {
       {showAuthModal && (
         <AuthModal
           onClose={() => setShowAuthModal(false)}
-          onLoginSuccess={(usr) => {
-            handleSetUser(usr);
+          onLoginSuccess={(usr, usrToken) => {
+            handleSetUser(usr, usrToken);
             setShowAuthModal(false);
           }}
-          onRegisterSuccess={(usr) => {
-            handleSetUser(usr);
+          onRegisterSuccess={(usr, usrToken) => {
+            handleSetUser(usr, usrToken);
             setShowAuthModal(false);
           }}
-          onAdminLoginSuccess={(adminUsr) => {
-            handleSetUser(adminUsr);
+          onAdminLoginSuccess={(adminUsr, adminToken) => {
+            handleSetUser(adminUsr, adminToken);
             setCurrentView('admin');
             setShowAuthModal(false);
           }}

@@ -39,19 +39,30 @@ export default function AdminConsole({
 
   const isAdminAuthenticated = user && user.role === 'admin';
 
-  const handleAdminLoginFormSubmit = (e) => {
+  const handleAdminLoginFormSubmit = async (e) => {
     e.preventDefault();
-    if (adminEmail.trim().toLowerCase() === SECURE_ADMIN_EMAIL && adminPassword === SECURE_ADMIN_PASSWORD) {
-      onAdminLogin({
-        id: 'usr_admin',
-        name: 'Prayas Lab Admin',
-        email: SECURE_ADMIN_EMAIL,
-        role: 'admin',
-        program: 'All Programs'
+    setLoginError('');
+
+    try {
+      const res = await fetch('/api/auth/login', {
+        method: 'POST',
+        headers: { 'Content-Type': 'application/json' },
+        body: JSON.stringify({
+          email: adminEmail.trim().toLowerCase(),
+          password: adminPassword
+        })
       });
+
+      const data = await res.json();
+      if (!res.ok || data.user.role !== 'admin') {
+        setLoginError(data.error || 'Invalid administrative credentials. Access restricted to authorized library coordinators.');
+        return;
+      }
+
+      onAdminLogin(data.user, data.token);
       setLoginError('');
-    } else {
-      setLoginError('Invalid administrative credentials. Access restricted to authorized library coordinators.');
+    } catch (err) {
+      setLoginError('Could not connect to authentication server. Please check backend connection.');
     }
   };
 

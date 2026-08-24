@@ -2,19 +2,25 @@
   "rules": {
     "books": {
       ".read": true,
-      ".write": true
+      ".write": "auth != null && auth.token.role === 'admin'"
     },
     "borrowRequests": {
-      ".read": true,
-      ".write": true
+      ".read": "auth != null",
+      "$requestId": {
+        ".write": "auth != null"
+      }
     },
     "notes": {
-      ".read": true,
-      ".write": true
+      "$studentId": {
+        ".read": "auth != null && (auth.uid === $studentId || auth.token.role === 'admin')",
+        ".write": "auth != null && auth.uid === $studentId"
+      }
     },
     "users": {
-      ".read": true,
-      ".write": true
+      "$userId": {
+        ".read": "auth != null && (auth.uid === $userId || auth.token.role === 'admin')",
+        ".write": "auth != null && (auth.uid === $userId || auth.token.role === 'admin')"
+      }
     }
   }
 }

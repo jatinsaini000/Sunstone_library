@@ -1,10 +1,11 @@
 import React, { useState } from 'react';
-import { X, User, Lock, Mail, GraduationCap, ShieldCheck, Key } from 'lucide-react';
+import { X, User, Lock, Mail, GraduationCap, ShieldCheck, Key, Loader2 } from 'lucide-react';
 import SunstoneLogo from './SunstoneLogo.jsx';
 
 export default function AuthModal({ onClose, onLoginSuccess, onRegisterSuccess, onAdminLoginSuccess }) {
   const [isRegisterMode, setIsRegisterMode] = useState(false);
   const [isAdminLoginMode, setIsAdminLoginMode] = useState(false);
+  const [loading, setLoading] = useState(false);
 
   // Form Fields
   const [email, setEmail] = useState('');
@@ -12,70 +13,129 @@ export default function AuthModal({ onClose, onLoginSuccess, onRegisterSuccess, 
   const [name, setName] = useState('');
   const [program, setProgram] = useState('B.Tech CS');
 
-  // Secure Admin Credentials from Environment with safe defaults
-  const SECURE_ADMIN_EMAIL = (import.meta.env.VITE_ADMIN_EMAIL || 'admin@sunstone.in').toLowerCase().trim();
-  const SECURE_ADMIN_PASSWORD = import.meta.env.VITE_ADMIN_PASSWORD || 'SunstoneAdmin2026!';
-
   // Admin Specific Fields
   const [adminId, setAdminId] = useState('');
   const [adminPass, setAdminPass] = useState('');
   const [errorMsg, setErrorMsg] = useState('');
 
-  const handleStudentSubmit = (e) => {
+  const handleStudentSubmit = async (e) => {
     e.preventDefault();
     if (!email || !password) {
       setErrorMsg('Please enter both email and password.');
       return;
     }
 
-    if (isRegisterMode) {
-      if (!name.trim()) {
-        setErrorMsg('Please enter your full name.');
-        return;
-      }
-      onRegisterSuccess({
-        id: 'usr_' + Date.now(),
-        name: name.trim(),
-        email: email.trim().toLowerCase(),
-        password,
-        role: 'student',
-        program,
-        status: 'Active'
-      });
-    } else {
-      if (email.trim().toLowerCase() === SECURE_ADMIN_EMAIL && password === SECURE_ADMIN_PASSWORD) {
-        onAdminLoginSuccess({
-          id: 'usr_admin',
-          name: 'Prayas Lab Admin',
-          email: SECURE_ADMIN_EMAIL,
-          role: 'admin',
-          program: 'All Programs'
+    setLoading(true);
+    setErrorMsg('');
+
+    try {
+      if (isRegisterMode) {
+        if (!name.trim()) {
+          setErrorMsg('Please enter your full name.');
+          setLoading(false);
+          return;
+        }
+
+        const res = await fetch('/api/auth/register', {
+          method: 'POST',
+          headers: { 'Content-Type': 'application/json' },
+          body: JSON.stringify({
+            name: name.trim(),
+            email: email.trim().toLowerCase(),
+            password,
+            program
+          })
         });
+
+        const data = await res.json();
+        if (!res.ok) {
+          setErrorMsg(data.error || 'Registration failed. Please check your details.');
+          setLoading(false);
+          return;
+        }
+
+        onRegisterSuccess(data.user, data.token);
+      } else {
+        const res = await fetch('/api/auth/login', {
+          method: 'POST',
+          headers: { 'Content-Type': 'application/json' },
+          body: JSON.stringify({
+            email: email.trim().toLowerCase(),
+            password
+          })
+        });
+
+        const data = await res.json();
+        if (!res.ok) {
+          setErrorMsg(data.error || 'Invalid credentials. Please verify your email and password.');
+          setLoading(false);
+          return;
+        }
+
+        if (data.user.role === 'admin') {
+          onAdminLoginSuccess(data.user, data.token);
+        } else {
+          onLoginSuccess(data.user, data.token);
+        }
+      }
+    } catch (err) {
+      // Offline fallback
+      if (isRegisterMode) {
+        onRegisterSuccess({
+          id: 'usr_' + Date.now(),
+          name: name.trim(),
+          email: email.trim().toLowerCase(),
+          role: 'student',
+          program,
+          status: 'Active'
+        }, 'offline_jwt_token_' + Date.now());
       } else {
         onLoginSuccess({
           id: 'usr_' + Date.now(),
           name: email.split('@')[0],
           email: email.trim().toLowerCase(),
           role: 'student',
-          program: 'B.Tech CS'
-        });
+          program: 'B.Tech CS',
+          status: 'Active'
+        }, 'offline_jwt_token_' + Date.now());
       }
+    } finally {
+      setLoading(false);
     }
   };
 
-  const handleAdminSubmit = (e) => {
+  const handleAdminSubmit = async (e) => {
     e.preventDefault();
-    if (adminId.trim().toLowerCase() === SECURE_ADMIN_EMAIL && adminPass === SECURE_ADMIN_PASSWORD) {
-      onAdminLoginSuccess({
-        id: 'usr_admin',
-        name: 'Prayas Lab Admin',
-        email: SECURE_ADMIN_EMAIL,
-        role: 'admin',
-        program: 'All Programs'
+    if (!adminId || !adminPass) {
+      setErrorMsg('Please enter both Admin ID and Security Key.');
+      return;
+    }
+
+    setLoading(true);
+    setErrorMsg('');
+
+    try {
+      const res = await fetch('/api/auth/login', {
+        method: 'POST',
+        headers: { 'Content-Type': 'application/json' },
+        body: JSON.stringify({
+          email: adminId.trim().toLowerCase(),
+          password: adminPass
+        })
       });
-      setErrorMsg('');
-    } else {
-      setErrorMsg('Invalid administrative credentials. Access restricted to authorized library coordinators.');
+
+      const data = await res.json();
+      if (!res.ok || data.user.role !== 'admin') {
+        setErrorMsg(data.error || 'Invalid administrative credentials. Access restricted.');
+        setLoading(false);
+        return;
+      }
+
+      onAdminLoginSuccess(data.user, data.token);
+    } catch (err) {
+      setErrorMsg('Connection error. Please ensure backend service is running.');
+    } finally {
+      setLoading(false);
     }
   };
 
@@ -158,9 +218,11 @@ export default function AuthModal({ onClose, onLoginSuccess, onRegisterSuccess, 
 
               <button
                 type="submit"
+                disabled={loading}
                 className="btn-primary auth-submit-btn admin-theme"
               >
-                <ShieldCheck size={16} /> Authenticate Admin Access
+                {loading ? <Loader2 size={16} className="animate-spin" /> : <ShieldCheck size={16} />}
+                <span>{loading ? 'Authenticating...' : 'Authenticate Admin Access'}</span>
               </button>
 
               <div className="auth-mode-toggle">
@@ -220,7 +282,7 @@ export default function AuthModal({ onClose, onLoginSuccess, onRegisterSuccess, 
                 <input
                   type="email"
                   className="form-control"
-                  placeholder="student@sunstone.edu.in"
+                  placeholder="student@sunstone.in"
                   value={email}
                   onChange={(e) => {
                     setEmail(e.target.value);
@@ -246,9 +308,11 @@ export default function AuthModal({ onClose, onLoginSuccess, onRegisterSuccess, 
 
               <button
                 type="submit"
+                disabled={loading}
                 className="btn-primary auth-submit-btn"
               >
-                {isRegisterMode ? 'Complete Registration' : 'Sign In to Sunstone'}
+                {loading ? <Loader2 size={16} className="animate-spin" /> : null}
+                <span>{loading ? 'Processing...' : isRegisterMode ? 'Complete Registration' : 'Sign In to Sunstone'}</span>
               </button>
 
               <div className="auth-mode-toggle">
