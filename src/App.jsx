@@ -100,7 +100,14 @@ export default function App() {
     }
   });
 
-  const [savedBookIds, setSavedBookIds] = useState(['bk_cs_1', 'bk_spec_1']);
+  const [savedBookIds, setSavedBookIds] = useState(() => {
+    try {
+      const saved = localStorage.getItem('sunstone_saved_books');
+      return saved ? JSON.parse(saved) : ['bk_general_1', 'bk_general_2'];
+    } catch (e) {
+      return ['bk_general_1', 'bk_general_2'];
+    }
+  });
   const [userNotes, setUserNotes] = useState([
     {
       id: 'n1',
@@ -306,6 +313,7 @@ export default function App() {
     setSavedBookIds((prev) => {
       const isSaved = prev.includes(bookId);
       const next = isSaved ? prev.filter((id) => id !== bookId) : [...prev, bookId];
+      try { localStorage.setItem('sunstone_saved_books', JSON.stringify(next)); } catch(e){}
       triggerToast(isSaved ? 'Book removed from your shelf' : 'Book saved to your personal shelf!');
       return next;
     });

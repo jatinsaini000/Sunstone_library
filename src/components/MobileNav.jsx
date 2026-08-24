@@ -34,29 +34,7 @@ export default function MobileNav({
         <span className="mobile-nav-label">Explore</span>
       </button>
 
-      {/* 2. Programs / Categories */}
-      <button
-        type="button"
-        className="mobile-nav-item"
-        onClick={() => {
-          if (currentView !== 'catalog') {
-            setCurrentView('catalog');
-          }
-          if (onSelectCategoryModal) {
-            onSelectCategoryModal();
-          } else {
-            const el = document.getElementById('programs-section');
-            if (el) {
-              el.scrollIntoView({ behavior: 'smooth' });
-            }
-          }
-        }}
-      >
-        <div className="mobile-nav-icon-box">
-          <Compass size={20} />
-        </div>
-        <span className="mobile-nav-label">Programs</span>
-      </button>
+
 
       {/* 3. My Shelf (with saved count badge) */}
       <button
