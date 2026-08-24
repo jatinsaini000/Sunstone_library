@@ -17,22 +17,8 @@ const SECURE_ADMIN_PASSWORD = process.env.ADMIN_PASSWORD || process.env.VITE_ADM
 const FIREBASE_DB_URL = (process.env.VITE_FIREBASE_DATABASE_URL || 'https://sunstone-library-cbf2d-default-rtdb.asia-southeast1.firebasedatabase.app/').replace(/\/$/, '');
 
 // --- Security: Strict CORS Configuration ---
-const allowedOrigins = [
-  'http://localhost:3000',
-  'http://localhost:5000',
-  'http://127.0.0.1:3000',
-  'http://127.0.0.1:5000'
-];
-
 app.use(cors({
-  origin: (origin, callback) => {
-    // Allow requests with no origin (like mobile apps, curl, or same-origin serverless)
-    if (!origin) return callback(null, true);
-    if (allowedOrigins.includes(origin) || origin.endsWith('.netlify.app')) {
-      return callback(null, true);
-    }
-    return callback(null, true); // Fallback to allow seamless preview deployments
-  },
+  origin: true,
   credentials: true
 }));
 
@@ -265,7 +251,6 @@ function saveLocalData(data) {
 let db = loadLocalData();
 
 async function getLiveDb() {
-  // Sync in-memory DB with Firebase Realtime Database
   try {
     const cloudBooks = await fetchFromFirebase('books');
     if (cloudBooks && cloudBooks.length > 0) db.books = cloudBooks;
@@ -282,10 +267,11 @@ async function getLiveDb() {
   return db;
 }
 
-// --- Auth Routes ---
+// --- API Router (Universal Mounting for Netlify & Express) ---
+const apiRouter = express.Router();
 
-/** POST /api/auth/login - Secure login with password verification & JWT token issue */
-app.post('/api/auth/login', rateLimiter({ windowMs: 60000, maxRequests: 20 }), async (req, res) => {
+/** POST /auth/login - Secure login with password verification & JWT token issue */
+apiRouter.post('/auth/login', rateLimiter({ windowMs: 60000, maxRequests: 30 }), async (req, res) => {
   const { email, password } = req.body;
   if (!email || !password) {
     return res.status(400).json({ error: 'Email and password are required.' });
@@ -295,7 +281,11 @@ app.post('/api/auth/login', rateLimiter({ windowMs: 60000, maxRequests: 20 }), a
   const currentDb = await getLiveDb();
 
   // Check Master Admin Account
-  if (cleanEmail === SECURE_ADMIN_EMAIL && (password === SECURE_ADMIN_PASSWORD || password === 'SunstoneAdmin2026!' || password === 'admin')) {
+  const isMasterAdmin =
+    cleanEmail === SECURE_ADMIN_EMAIL &&
+    (password === SECURE_ADMIN_PASSWORD || password === 'SunstoneAdmin2026!' || password === 'admin');
+
+  if (isMasterAdmin) {
     const adminUser = {
       id: 'usr_admin',
       name: 'Prayas Lab Admin',
@@ -341,15 +331,15 @@ app.post('/api/auth/login', rateLimiter({ windowMs: 60000, maxRequests: 20 }), a
   res.json({ token, user: safeUser });
 });
 
-/** POST /api/auth/register - Secure student registration with password hashing */
-app.post('/api/auth/register', rateLimiter({ windowMs: 60000, maxRequests: 10 }), async (req, res) => {
+/** POST /auth/register - Secure student registration with password hashing */
+apiRouter.post('/auth/register', rateLimiter({ windowMs: 60000, maxRequests: 20 }), async (req, res) => {
   const { name, email, password, program } = req.body;
   if (!name || !email || !password) {
     return res.status(400).json({ error: 'Name, email, and password are required.' });
   }
 
-  if (password.length < 6) {
-    return res.status(400).json({ error: 'Password must be at least 6 characters.' });
+  if (password.length < 4) {
+    return res.status(400).json({ error: 'Password must be at least 4 characters.' });
   }
 
   const cleanEmail = email.toLowerCase().trim();
@@ -383,8 +373,8 @@ app.post('/api/auth/register', rateLimiter({ windowMs: 60000, maxRequests: 10 })
   res.json({ token, user: safeUser });
 });
 
-/** GET /api/auth/me - Verify token and return active profile */
-app.get('/api/auth/me', requireAuth, async (req, res) => {
+/** GET /auth/me - Verify token and return active profile */
+apiRouter.get('/auth/me', requireAuth, async (req, res) => {
   if (req.user.role === 'admin') {
     return res.json({ user: req.user });
   }
@@ -396,14 +386,14 @@ app.get('/api/auth/me', requireAuth, async (req, res) => {
 
 // --- Catalog & Book Routes ---
 
-/** GET /api/books - Public catalog browsing */
-app.get('/api/books', async (req, res) => {
+/** GET /books - Public catalog browsing */
+apiRouter.get('/books', async (req, res) => {
   const currentDb = await getLiveDb();
   res.json(currentDb.books);
 });
 
-/** GET /api/books/:id/pdf - Protected PDF access check */
-app.get('/api/books/:id/pdf', requireAuth, async (req, res) => {
+/** GET /books/:id/pdf - Protected PDF access check */
+apiRouter.get('/books/:id/pdf', requireAuth, async (req, res) => {
   const currentDb = await getLiveDb();
   const book = currentDb.books.find(b => b.id === req.params.id);
 
@@ -411,12 +401,10 @@ app.get('/api/books/:id/pdf', requireAuth, async (req, res) => {
     return res.status(404).json({ error: 'Book not found.' });
   }
 
-  // Admins always have access
   if (req.user.role === 'admin') {
     return res.json({ pdfUrl: book.pdfUrl, title: book.title });
   }
 
-  // Check if student has an Approved borrow request
   const hasApprovedBorrow = (currentDb.borrowRequests || []).some(
     r => r.bookId === req.params.id &&
          (r.studentId === req.user.id || r.studentEmail === req.user.email) &&
@@ -425,16 +413,16 @@ app.get('/api/books/:id/pdf', requireAuth, async (req, res) => {
 
   if (!hasApprovedBorrow) {
     return res.status(403).json({
-      error: 'Borrow Approval Required: You must have an approved borrow request from the Prayas Lab Admin to read this book.'
+      error: 'Borrow Approval Required: You must have an approved borrow request to read this book.'
     });
   }
 
   res.json({ pdfUrl: book.pdfUrl, title: book.title });
 });
 
-/** POST /api/books - Protected: Upload and add book (Admin Only) */
-app.post(
-  '/api/books',
+/** POST /books - Protected: Upload and add book (Admin Only) */
+apiRouter.post(
+  '/books',
   requireAdmin,
   rateLimiter({ windowMs: 60000, maxRequests: 20 }),
   upload.fields([{ name: 'pdfFile', maxCount: 1 }, { name: 'coverImage', maxCount: 1 }]),
@@ -525,8 +513,8 @@ app.post(
   }
 );
 
-/** DELETE /api/books/:id - Protected: Delete book (Admin Only) */
-app.delete('/api/books/:id', requireAdmin, async (req, res) => {
+/** DELETE /books/:id - Protected: Delete book (Admin Only) */
+apiRouter.delete('/books/:id', requireAdmin, async (req, res) => {
   const currentDb = await getLiveDb();
   const bookId = req.params.id;
 
@@ -542,8 +530,8 @@ app.delete('/api/books/:id', requireAdmin, async (req, res) => {
 
 // --- Borrow Requests Routes ---
 
-/** GET /api/borrow-requests - Protected: Admins see all, students see their own */
-app.get('/api/borrow-requests', requireAuth, async (req, res) => {
+/** GET /borrow-requests - Protected: Admins see all, students see their own */
+apiRouter.get('/borrow-requests', requireAuth, async (req, res) => {
   const currentDb = await getLiveDb();
   if (req.user.role === 'admin') {
     return res.json(currentDb.borrowRequests || []);
@@ -552,8 +540,8 @@ app.get('/api/borrow-requests', requireAuth, async (req, res) => {
   res.json(myRequests);
 });
 
-/** POST /api/borrow-requests - Protected: Submit borrow request (Verified Student) */
-app.post('/api/borrow-requests', requireAuth, async (req, res) => {
+/** POST /borrow-requests - Protected: Submit borrow request (Verified Student) */
+apiRouter.post('/borrow-requests', requireAuth, async (req, res) => {
   const currentDb = await getLiveDb();
   const { bookId, bookTitle, borrowType, studentMessage } = req.body;
 
@@ -585,8 +573,8 @@ app.post('/api/borrow-requests', requireAuth, async (req, res) => {
   res.json({ message: 'Borrow request submitted successfully.', request: newRequest });
 });
 
-/** PUT /api/borrow-requests/:id - Protected: Update borrow status / approve / reject (Admin Only) */
-app.put('/api/borrow-requests/:id', requireAdmin, async (req, res) => {
+/** PUT /borrow-requests/:id - Protected: Update borrow status / approve / reject (Admin Only) */
+apiRouter.put('/borrow-requests/:id', requireAdmin, async (req, res) => {
   const currentDb = await getLiveDb();
   const { status, adminNote } = req.body;
   const reqItem = (currentDb.borrowRequests || []).find(r => r.id === req.params.id);
@@ -606,8 +594,8 @@ app.put('/api/borrow-requests/:id', requireAdmin, async (req, res) => {
 
 // --- Students Management (Admin Only) ---
 
-/** GET /api/students - Protected: List registered students */
-app.get('/api/students', requireAdmin, async (req, res) => {
+/** GET /students - Protected: List registered students */
+apiRouter.get('/students', requireAdmin, async (req, res) => {
   const currentDb = await getLiveDb();
   const students = (currentDb.users || [])
     .filter(u => u.role === 'student')
@@ -615,8 +603,8 @@ app.get('/api/students', requireAdmin, async (req, res) => {
   res.json(students);
 });
 
-/** PUT /api/students/:id/status - Protected: Toggle student account status (Admin Only) */
-app.put('/api/students/:id/status', requireAdmin, async (req, res) => {
+/** PUT /students/:id/status - Protected: Toggle student account status (Admin Only) */
+apiRouter.put('/students/:id/status', requireAdmin, async (req, res) => {
   const currentDb = await getLiveDb();
   const { status } = req.body;
   const student = (currentDb.users || []).find(u => u.id === req.params.id);
@@ -634,15 +622,15 @@ app.put('/api/students/:id/status', requireAdmin, async (req, res) => {
 
 // --- Study Notes Routes ---
 
-/** GET /api/notes - Protected: Get authenticated student notes */
-app.get('/api/notes', requireAuth, async (req, res) => {
+/** GET /notes - Protected: Get authenticated student notes */
+apiRouter.get('/notes', requireAuth, async (req, res) => {
   const currentDb = await getLiveDb();
   const myNotes = (currentDb.userNotes || []).filter(n => n.studentId === req.user.id);
   res.json(myNotes);
 });
 
-/** POST /api/notes - Protected: Create personal study note */
-app.post('/api/notes', requireAuth, async (req, res) => {
+/** POST /notes - Protected: Create personal study note */
+apiRouter.post('/notes', requireAuth, async (req, res) => {
   const currentDb = await getLiveDb();
   const { bookId, bookTitle, pageNumber, noteText } = req.body;
 
@@ -669,8 +657,8 @@ app.post('/api/notes', requireAuth, async (req, res) => {
   res.json({ note: newNote });
 });
 
-/** DELETE /api/notes/:id - Protected: Delete personal study note */
-app.delete('/api/notes/:id', requireAuth, async (req, res) => {
+/** DELETE /notes/:id - Protected: Delete personal study note */
+apiRouter.delete('/notes/:id', requireAuth, async (req, res) => {
   const currentDb = await getLiveDb();
   const noteId = req.params.id;
   const note = (currentDb.userNotes || []).find(n => n.id === noteId);
@@ -692,6 +680,11 @@ app.delete('/api/notes/:id', requireAuth, async (req, res) => {
 
   res.json({ message: 'Note deleted successfully.' });
 });
+
+// --- Universal Router Mounting (Matches /api, /.netlify/functions/api, and /) ---
+app.use('/.netlify/functions/api', apiRouter);
+app.use('/api', apiRouter);
+app.use('/', apiRouter);
 
 // Start Server when run directly
 if (!process.env.NETLIFY && process.env.NODE_ENV !== 'test') {
