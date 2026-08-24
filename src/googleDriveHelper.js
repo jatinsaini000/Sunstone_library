@@ -73,10 +73,8 @@ export function resolvePdfViewerUrl(pdfUrl, options = {}) {
       const mappedId = getDriveFileIdForFilename(localFilename || filename);
       if (mappedId) return getDrivePreviewUrl(mappedId);
 
-      if (typeof window !== 'undefined') {
-        return `${window.location.origin}${pdfUrl}`;
-      }
-      return pdfUrl;
+      // Offline fallback removed per user request
+      return null;
     }
   }
 
