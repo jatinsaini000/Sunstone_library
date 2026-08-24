@@ -591,7 +591,11 @@ app.delete('/api/notes/:id', requireAuth, (req, res) => {
   res.json({ message: 'Note deleted successfully.' });
 });
 
-// Start Server
-app.listen(PORT, () => {
-  console.log(`Sunstone Prayas Library Secure Server running on port ${PORT}`);
-});
+// Start Server when run directly
+if (!process.env.NETLIFY && process.env.NODE_ENV !== 'test') {
+  app.listen(PORT, () => {
+    console.log(`Sunstone Prayas Library Secure Server running on port ${PORT}`);
+  });
+}
+
+export default app;
