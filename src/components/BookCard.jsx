@@ -26,9 +26,9 @@ export default function BookCard({
       {/* Poster Image Container - Clicking directly opens Reader */}
       <div
         className="poster-box"
-        onClick={() => onOpenReader(book)}
+        onClick={() => onOpenSnippets(book)}
         style={{ cursor: 'pointer' }}
-        title={isBorrowed ? 'Click image to read full book' : 'Click image to open free preview (Pages 1–5)'}
+        title="Click image to read chapter snippets"
       >
         <img
           src={finalCoverUrl}
@@ -65,7 +65,7 @@ export default function BookCard({
         <h4
           className="netflix-card-title"
           title={book.title}
-          onClick={() => onOpenReader(book)}
+          onClick={() => onOpenSnippets(book)}
           style={{ cursor: 'pointer' }}
         >
           {book.title}
