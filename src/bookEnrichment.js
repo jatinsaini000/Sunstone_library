@@ -33,8 +33,8 @@ export function enrichBookWithPdfSource(book) {
       localPath: catalogMatch.localPath || book.localPath,
       driveFileId: catalogMatch.driveFileId || book.driveFileId,
       fileType: catalogMatch.fileType || book.fileType,
-      category: book.category || catalogMatch.category,
-      program: book.program || catalogMatch.program
+      category: catalogMatch.category || book.category,
+      program: catalogMatch.program || book.program
     };
   }
 
