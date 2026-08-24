@@ -30,3 +30,4 @@ uploads/books/*
 !uploads/books/.gitkeep
 uploads/covers/*
 !uploads/covers/.gitkeep
+src/books/

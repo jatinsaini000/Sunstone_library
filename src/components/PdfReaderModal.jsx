@@ -5,7 +5,8 @@ import {
   Lock, Send, Eye, ShieldCheck, ArrowRight, RotateCcw, Palette, ExternalLink, Clock
 } from 'lucide-react';
 import SunstoneLogo from './SunstoneLogo.jsx';
-import { convertGoogleDriveUrl } from '../googleDriveHelper.js';
+import { resolvePdfViewerUrl, isEmbeddablePdfUrl } from '../googleDriveHelper.js';
+import { getDriveFileIdForFilename, getDrivePreviewUrl } from '../driveBookMap.js';
 
 export default function PdfReaderModal({
   book,
@@ -30,6 +31,26 @@ export default function PdfReaderModal({
   const [isFullscreen, setIsFullscreen] = useState(false);
   const [notesSearch, setNotesSearch] = useState('');
   const [showLockPrompt, setShowLockPrompt] = useState(false);
+  const [pdfLoadError, setPdfLoadError] = useState(false);
+  const [pdfLoading, setPdfLoading] = useState(true);
+
+  const localFilename = book?.localPath
+    ? book.localPath.split('/').pop()
+    : (book?.pdfUrl && book.pdfUrl.includes('/uploads/') ? book.pdfUrl.split('/').pop() : book ? `${book.title}.pdf` : null);
+
+  const embedPdfUrl = book ? resolvePdfViewerUrl(book.pdfUrl, {
+    filename: localFilename,
+    title: book.title
+  }) : null;
+
+  const canShowLivePdf = Boolean(embedPdfUrl && isEmbeddablePdfUrl(embedPdfUrl));
+
+  useEffect(() => {
+    if (!book) return;
+    setPdfLoadError(false);
+    setPdfLoading(canShowLivePdf);
+    setViewerType(canShowLivePdf ? 'livePdf' : 'interactive');
+  }, [book?.id, canShowLivePdf]);
 
   if (!book) return null;
 
@@ -40,8 +61,6 @@ export default function PdfReaderModal({
 
   const progressPercent = Math.round((currentPage / (isPreviewMode ? MAX_FREE_PREVIEW_PAGES : totalPages)) * 100);
   const chapterNumber = Math.max(1, Math.ceil(currentPage / 15));
-
-  const embedPdfUrl = book.pdfUrl ? convertGoogleDriveUrl(book.pdfUrl) : null;
 
   // Toggle Browser Fullscreen API
   const toggleFullscreen = () => {
@@ -246,7 +265,7 @@ export default function PdfReaderModal({
         {/* Right: Desktop Controls */}
         <div className="pdf-reader-desktop-actions">
           {/* Mode switch if live PDF URL is present */}
-          {embedPdfUrl && (
+          {canShowLivePdf && (
             <div style={{ display: 'flex', background: 'rgba(0,0,0,0.25)', padding: '2px', borderRadius: '20px', border: '1px solid rgba(255,255,255,0.1)' }}>
               <button
                 onClick={() => setViewerType('interactive')}
@@ -513,20 +532,65 @@ export default function PdfReaderModal({
       <div className="pdf-reader-workspace">
         {/* CENTER: PDF CANVAS VIEWER */}
         <div className="pdf-reader-canvas-container">
-          {viewerType === 'livePdf' && embedPdfUrl ? (
-            <div style={{ width: '100%', height: '100%', display: 'flex', flexDirection: 'column' }}>
-              <iframe
-                src={embedPdfUrl}
-                title={book.title}
-                style={{
-                  width: '100%',
-                  height: 'calc(100vh - 120px)',
-                  border: 'none',
-                  borderRadius: '8px',
-                  background: '#ffffff'
-                }}
-                allow="autoplay"
-              />
+          {viewerType === 'livePdf' && canShowLivePdf ? (
+            <div style={{ width: '100%', height: '100%', display: 'flex', flexDirection: 'column', position: 'relative' }}>
+              {pdfLoading && !pdfLoadError && (
+                <div style={{
+                  position: 'absolute', inset: 0, display: 'flex', alignItems: 'center', justifyContent: 'center',
+                  background: 'rgba(9,13,22,0.85)', zIndex: 2, color: '#94a3b8', fontSize: '14px', fontWeight: '600'
+                }}>
+                  Loading PDF from Google Drive...
+                </div>
+              )}
+              {pdfLoadError ? (
+                <div style={{
+                  maxWidth: '520px', margin: 'auto', textAlign: 'center', padding: '24px',
+                  background: 'var(--sunstone-card-bg)', borderRadius: '16px', border: '1px solid var(--sunstone-border)'
+                }}>
+                  <p style={{ color: 'var(--sunstone-text-secondary)', marginBottom: '16px' }}>
+                    Could not load the PDF inline. Open it directly in Google Drive or try the local copy.
+                  </p>
+                  <div style={{ display: 'flex', gap: '10px', justifyContent: 'center', flexWrap: 'wrap' }}>
+                    {finalPdfUrl.includes('drive.google.com') && (
+                      <a
+                        href={book.pdfUrl || finalPdfUrl.replace('/preview', '/view')}
+                        target="_blank"
+                        rel="noopener noreferrer"
+                        className="btn-primary"
+                        style={{ display: 'inline-flex', alignItems: 'center', gap: '6px', padding: '10px 16px', textDecoration: 'none' }}
+                      >
+                        <ExternalLink size={14} /> Open in Google Drive
+                      </a>
+                    )}
+                    {book.localPath && (
+                      <a
+                        href={book.localPath}
+                        target="_blank"
+                        rel="noopener noreferrer"
+                        className="btn-secondary"
+                        style={{ display: 'inline-flex', alignItems: 'center', gap: '6px', padding: '10px 16px', textDecoration: 'none' }}
+                      >
+                        <ExternalLink size={14} /> Open Local PDF
+                      </a>
+                    )}
+                  </div>
+                </div>
+              ) : (
+                <iframe
+                  src={finalPdfUrl}
+                  title={book.title}
+                  onLoad={() => setPdfLoading(false)}
+                  onError={() => { setPdfLoading(false); setPdfLoadError(true); }}
+                  style={{
+                    width: '100%',
+                    height: 'calc(100vh - 120px)',
+                    border: 'none',
+                    borderRadius: '8px',
+                    background: '#ffffff'
+                  }}
+                  allow="autoplay"
+                />
+              )}
             </div>
           ) : showLockPrompt ? (
             /* Lock Screen Overlay when reaching Page 6 / End of Preview */

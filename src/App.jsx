@@ -25,6 +25,7 @@ import {
   X
 } from 'lucide-react';
 import { initialBooks, initialBorrowRequests, initialStudents } from './starterBooks.js';
+import { preferCatalogIfStale, enrichBooksCatalog } from './bookEnrichment.js';
 import {
   getBooksFromFirestore,
   getBorrowRequestsFromFirestore,
@@ -169,16 +170,21 @@ export default function App() {
     verifySession();
   }, [token]);
 
-  // 1. Load Books Data (Firestore -> Server -> LocalStorage)
+  // 1. Load Books Data (Firestore -> Server -> LocalStorage -> Catalog)
   useEffect(() => {
     async function loadBooksData() {
+      const applyBooks = (bookList) => {
+        const resolved = preferCatalogIfStale(bookList);
+        setBooks(resolved);
+        try {
+          localStorage.setItem('sunstone_books', JSON.stringify(resolved));
+        } catch (e) {}
+      };
+
       try {
         const fsBooks = await getBooksFromFirestore();
         if (fsBooks && fsBooks.length > 0) {
-          setBooks(fsBooks);
-          try {
-            localStorage.setItem('sunstone_books', JSON.stringify(fsBooks));
-          } catch (e) {}
+          applyBooks(enrichBooksCatalog(fsBooks));
           return;
         }
       } catch (e) {}
@@ -189,13 +195,13 @@ export default function App() {
         if (res.ok && contentType && contentType.includes('application/json')) {
           const data = await res.json();
           if (Array.isArray(data) && data.length > 0) {
-            setBooks(data);
-            try {
-              localStorage.setItem('sunstone_books', JSON.stringify(data));
-            } catch (e) {}
+            applyBooks(enrichBooksCatalog(data));
+            return;
           }
         }
       } catch (err) {}
+
+      applyBooks(initialBooks);
     }
     loadBooksData();
   }, []);
