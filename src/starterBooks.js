@@ -450,6 +450,36 @@ export const initialBooks = [
     description: "Curated collection of live industry case studies solved by Sunstone students during Prayas Lab hackathons and corporate residencies."
   },
   {
+    id: "bk_spec_3",
+    title: "Startup & Entrepreneurship Playbook: From Idea to Scale",
+    author: "Sunstone Prayas Incubation Cell",
+    program: "Special Collections",
+    category: "Entrepreneurship",
+    coverUrl: "https://images.unsplash.com/photo-1559136555-9303baea8ebd?auto=format&fit=crop&w=600&q=80",
+    fileType: "url",
+    pdfUrl: "https://raw.githubusercontent.com/mozilla/pdf.js/ba2edeae/web/compressed.tracemonkey-pldi-09.pdf",
+    downloadable: true,
+    isbn: "978-8194821034",
+    rating: 4.9,
+    pages: 260,
+    publishedYear: 2026,
+    quickSummary: {
+      highlights: [
+        "Lean startup validation, MVP design, and rapid market discovery.",
+        "Fundraising term sheets, venture capital economics, and angel rounds.",
+        "Go-to-market execution, viral loops, and sustainable unit economics."
+      ],
+      keyTakeaways: [
+        "Validate startup ideas with minimal capital and fast user feedback.",
+        "Structure investor pitch decks and financial projections.",
+        "Scale from seed stage to Series A with strong product-market fit."
+      ],
+      estimatedReadingTime: "6 Hours",
+      difficultyLevel: "Practical / Industry"
+    },
+    description: "Comprehensive practical playbook crafted by Prayas Lab startup mentors and founders for students building tech and venture-backed startups."
+  },
+  {
     id: "bk_jrnl_1",
     title: "Journal of Indian Management & Applied Computing (Vol. 14)",
     author: "Sunstone Academic Review Board",
