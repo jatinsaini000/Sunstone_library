@@ -180,4 +180,65 @@ export async function deleteNoteFromFirestore(noteId) {
   } catch (e) {}
 }
 
+/** Fetch all registered students from Firebase */
+export async function getStudentsFromFirestore() {
+  try {
+    const dbRef = ref(rtdb);
+    const snapshot = await get(child(dbRef, 'users'));
+    if (snapshot.exists()) {
+      const val = snapshot.val();
+      const allUsers = Array.isArray(val) ? val.filter(Boolean) : Object.values(val);
+      return allUsers.filter(u => u.role === 'student');
+    }
+  } catch (err) {}
+
+  try {
+    const usersCol = collection(db, 'users');
+    const fsSnap = await getDocs(usersCol);
+    if (!fsSnap.empty) {
+      return fsSnap.docs
+        .map(docSnap => ({ id: docSnap.id, ...docSnap.data() }))
+        .filter(u => u.role === 'student');
+    }
+  } catch (error) {}
+
+  return null;
+}
+
+/** Add a new registered student to Firebase */
+export async function addStudentToFirestore(studentData) {
+  const studentId = studentData.id || ('usr_' + Date.now());
+  const finalStudent = {
+    ...studentData,
+    id: studentId,
+    role: 'student',
+    status: studentData.status || 'Active',
+    createdAt: studentData.createdAt || new Date().toISOString()
+  };
+
+  try {
+    await set(ref(rtdb, 'users/' + studentId), finalStudent);
+  } catch (e) {}
+
+  try {
+    await setDoc(doc(db, 'users', studentId), finalStudent);
+  } catch (e) {}
+
+  return finalStudent;
+}
+
+/** Update student account status in Firebase (Active / Suspended) */
+export async function updateStudentStatusInFirestore(studentId, status) {
+  const updates = { status, updatedAt: new Date().toISOString() };
+
+  try {
+    await update(ref(rtdb, 'users/' + studentId), updates);
+  } catch (e) {}
+
+  try {
+    await updateDoc(doc(db, 'users', studentId), updates);
+  } catch (e) {}
+}
+
 export default app;
+

@@ -419,8 +419,10 @@ export default function AdminConsole({
                           className="btn-primary"
                           style={{ padding: '6px 14px', fontSize: '12px', background: '#10b981' }}
                           onClick={() => {
-                            const note = prompt('Optional Admin Reply message to student:', 'Approved! Please collect your copy from Prayas Lab counter.');
-                            onUpdateBorrowStatus(req.id, 'Approved', note || 'Approved');
+                            const note = prompt('Optional Admin Reply message to student:', 'Approved! Access granted for Prayas Lab.');
+                            if (note !== null) {
+                              onUpdateBorrowStatus(req.id, 'Approved', note || 'Approved! Access granted.');
+                            }
                           }}
                         >
                           <CheckCircle size={14} /> Approve Request
@@ -430,7 +432,9 @@ export default function AdminConsole({
                           style={{ padding: '6px 14px', fontSize: '12px', color: '#ef4444', borderColor: 'rgba(239,68,68,0.3)' }}
                           onClick={() => {
                             const note = prompt('Reason for declining request:', 'Currently unavailable in lab stock.');
-                            onUpdateBorrowStatus(req.id, 'Rejected', note || 'Declined');
+                            if (note !== null) {
+                              onUpdateBorrowStatus(req.id, 'Rejected', note || 'Declined');
+                            }
                           }}
                         >
                           <XCircle size={14} /> Reject Request
@@ -735,10 +739,19 @@ export default function AdminConsole({
                     <td style={{ padding: '12px', textAlign: 'right' }}>
                       <button
                         className="btn-secondary"
-                        style={{ padding: '4px 12px', fontSize: '12px' }}
+                        style={{
+                          padding: '6px 14px',
+                          fontSize: '12px',
+                          fontWeight: '700',
+                          color: st.status === 'Active' ? '#ef4444' : '#10b981',
+                          borderColor: st.status === 'Active' ? 'rgba(239,68,68,0.4)' : 'rgba(16,185,129,0.4)',
+                          background: st.status === 'Active' ? 'rgba(239,68,68,0.08)' : 'rgba(16,185,129,0.08)',
+                          cursor: 'pointer',
+                          borderRadius: '20px'
+                        }}
                         onClick={() => onToggleStudentStatus(st.id, st.status === 'Active' ? 'Suspended' : 'Active')}
                       >
-                        {st.status === 'Active' ? 'Suspend Access' : 'Activate Access'}
+                        {st.status === 'Active' ? '🚫 Suspend Account' : '✓ Activate Account'}
                       </button>
                     </td>
                   </tr>
@@ -767,11 +780,28 @@ export default function AdminConsole({
                 </div>
 
                 <button
-                  onClick={() => onDeleteBook(b.id)}
-                  style={{ background: 'none', border: 'none', color: '#ef4444', cursor: 'pointer', padding: '8px' }}
+                  onClick={() => {
+                    if (window.confirm(`Are you sure you want to delete "${b.title}" from the Sunstone catalog?`)) {
+                      onDeleteBook(b.id);
+                    }
+                  }}
+                  style={{
+                    background: 'rgba(239, 68, 68, 0.1)',
+                    border: '1px solid rgba(239, 68, 68, 0.25)',
+                    borderRadius: '8px',
+                    color: '#ef4444',
+                    cursor: 'pointer',
+                    padding: '8px 12px',
+                    display: 'flex',
+                    alignItems: 'center',
+                    gap: '6px',
+                    fontSize: '12px',
+                    fontWeight: '700'
+                  }}
                   title="Delete Book"
                 >
-                  <Trash2 size={18} />
+                  <Trash2 size={15} />
+                  <span>Delete</span>
                 </button>
               </div>
             ))}

@@ -34,7 +34,10 @@ import {
   updateBorrowStatusInFirestore,
   getNotesFromFirestore,
   addNoteToFirestore,
-  deleteNoteFromFirestore
+  deleteNoteFromFirestore,
+  getStudentsFromFirestore,
+  addStudentToFirestore,
+  updateStudentStatusInFirestore
 } from './firebase.js';
 
 export default function App() {
@@ -86,8 +89,16 @@ export default function App() {
     setCurrentView('catalog');
   };
 
-  // Catalog Books State with immediate starter catalog
-  const [books, setBooks] = useState(initialBooks);
+  // Catalog Books State with persistent local cache
+  const [books, setBooks] = useState(() => {
+    try {
+      const saved = localStorage.getItem('sunstone_books');
+      return saved ? JSON.parse(saved) : initialBooks;
+    } catch (e) {
+      return initialBooks;
+    }
+  });
+
   const [savedBookIds, setSavedBookIds] = useState(['bk_cs_1', 'bk_spec_1']);
   const [userNotes, setUserNotes] = useState([
     {
@@ -101,8 +112,23 @@ export default function App() {
     }
   ]);
 
-  const [borrowRequests, setBorrowRequests] = useState(initialBorrowRequests);
-  const [students, setStudents] = useState(initialStudents);
+  const [borrowRequests, setBorrowRequests] = useState(() => {
+    try {
+      const saved = localStorage.getItem('sunstone_borrow_requests');
+      return saved ? JSON.parse(saved) : initialBorrowRequests;
+    } catch (e) {
+      return initialBorrowRequests;
+    }
+  });
+
+  const [students, setStudents] = useState(() => {
+    try {
+      const saved = localStorage.getItem('sunstone_students');
+      return saved ? JSON.parse(saved) : initialStudents;
+    } catch (e) {
+      return initialStudents;
+    }
+  });
 
   // Modal Control States
   const [showAuthModal, setShowAuthModal] = useState(false);
@@ -119,7 +145,7 @@ export default function App() {
     document.documentElement.setAttribute('data-theme', theme);
   }, [theme]);
 
-  // Server-Side Session Verification on App Startup (Prevents localStorage tampering)
+  // Server-Side Session Verification on App Startup
   useEffect(() => {
     async function verifySession() {
       if (!token) return;
@@ -136,7 +162,6 @@ export default function App() {
             } catch (e) {}
           }
         } else if (res.status === 401 || res.status === 403) {
-          // Token invalid or tampered with
           handleSetUser(null);
         }
       } catch (e) {}
@@ -144,12 +169,16 @@ export default function App() {
     verifySession();
   }, [token]);
 
+  // 1. Load Books Data (Firestore -> Server -> LocalStorage)
   useEffect(() => {
     async function loadBooksData() {
       try {
         const fsBooks = await getBooksFromFirestore();
         if (fsBooks && fsBooks.length > 0) {
           setBooks(fsBooks);
+          try {
+            localStorage.setItem('sunstone_books', JSON.stringify(fsBooks));
+          } catch (e) {}
           return;
         }
       } catch (e) {}
@@ -159,19 +188,28 @@ export default function App() {
         const contentType = res.headers.get('content-type');
         if (res.ok && contentType && contentType.includes('application/json')) {
           const data = await res.json();
-          if (Array.isArray(data) && data.length > 0) setBooks(data);
+          if (Array.isArray(data) && data.length > 0) {
+            setBooks(data);
+            try {
+              localStorage.setItem('sunstone_books', JSON.stringify(data));
+            } catch (e) {}
+          }
         }
       } catch (err) {}
     }
     loadBooksData();
   }, []);
 
+  // 2. Load Borrow Requests Data (Firestore -> Server -> LocalStorage)
   useEffect(() => {
     async function loadRequestsData() {
       try {
         const fsReqs = await getBorrowRequestsFromFirestore();
         if (fsReqs && fsReqs.length > 0) {
           setBorrowRequests(fsReqs);
+          try {
+            localStorage.setItem('sunstone_borrow_requests', JSON.stringify(fsReqs));
+          } catch (e) {}
           return;
         }
       } catch (e) {}
@@ -182,13 +220,51 @@ export default function App() {
         const contentType = res.headers.get('content-type');
         if (res.ok && contentType && contentType.includes('application/json')) {
           const data = await res.json();
-          if (Array.isArray(data) && data.length > 0) setBorrowRequests(data);
+          if (Array.isArray(data) && data.length > 0) {
+            setBorrowRequests(data);
+            try {
+              localStorage.setItem('sunstone_borrow_requests', JSON.stringify(data));
+            } catch (e) {}
+          }
         }
       } catch (e) {}
     }
     loadRequestsData();
   }, [token]);
 
+  // 3. Load Registered Students for Admin Console (Firestore -> Server -> LocalStorage)
+  useEffect(() => {
+    async function loadStudentsData() {
+      try {
+        const fsStudents = await getStudentsFromFirestore();
+        if (fsStudents && fsStudents.length > 0) {
+          setStudents(fsStudents);
+          try {
+            localStorage.setItem('sunstone_students', JSON.stringify(fsStudents));
+          } catch (e) {}
+          return;
+        }
+      } catch (e) {}
+
+      try {
+        const headers = token ? { Authorization: `Bearer ${token}` } : {};
+        const res = await fetch('/api/students', { headers });
+        const contentType = res.headers.get('content-type');
+        if (res.ok && contentType && contentType.includes('application/json')) {
+          const data = await res.json();
+          if (Array.isArray(data) && data.length > 0) {
+            setStudents(data);
+            try {
+              localStorage.setItem('sunstone_students', JSON.stringify(data));
+            } catch (e) {}
+          }
+        }
+      } catch (e) {}
+    }
+    loadStudentsData();
+  }, [token]);
+
+  // 4. Load Study Notes
   useEffect(() => {
     async function loadNotesData() {
       try {
@@ -274,20 +350,37 @@ export default function App() {
     triggerToast('Note deleted from your repository.');
   };
 
+  // Submit Borrow Request (Linked to Active Student Profile)
   const handleSubmitBorrowRequest = async (requestPayload) => {
+    const studentId = user ? user.id : ('usr_' + Date.now());
+    const studentName = user ? user.name : 'Student Scholar';
+    const studentEmail = user ? user.email : 'student@sunstone.in';
+    const studentProgram = user ? user.program : 'B.Tech CS';
+
+    const reqId = 'req_' + Date.now();
     const newReq = {
       ...requestPayload,
-      id: 'req_' + Date.now(),
-      studentId: user ? user.id : 'usr_guest',
-      studentName: user ? user.name : 'Guest Student',
-      studentEmail: user ? user.email : 'student@sunstone.in',
-      program: user ? user.program : 'B.Tech CS',
+      id: reqId,
+      studentId,
+      studentName,
+      studentEmail,
+      studentProgram,
       requestDate: new Date().toISOString(),
       status: 'Pending',
       adminNote: ''
     };
 
-    setBorrowRequests((prev) => [newReq, ...prev]);
+    setBorrowRequests((prev) => {
+      const next = [newReq, ...prev];
+      try {
+        localStorage.setItem('sunstone_borrow_requests', JSON.stringify(next));
+      } catch (e) {}
+      return next;
+    });
+
+    try {
+      await addBorrowRequestToFirestore(newReq);
+    } catch (e) {}
 
     try {
       if (token) {
@@ -297,22 +390,27 @@ export default function App() {
             'Content-Type': 'application/json',
             Authorization: `Bearer ${token}`
           },
-          body: JSON.stringify(requestPayload)
+          body: JSON.stringify(newReq)
         });
       }
-    } catch (e) {}
-
-    try {
-      await addBorrowRequestToFirestore(newReq);
     } catch (e) {}
 
     triggerToast(`Borrow request submitted for "${requestPayload.bookTitle}"!`);
   };
 
-  const handleUpdateBorrowStatus = async (requestId, status, adminNote) => {
-    setBorrowRequests((prev) =>
-      prev.map((r) => (r.id === requestId ? { ...r, status, adminNote } : r))
-    );
+  // Admin Updates Borrow Request (Approved / Rejected / Returned)
+  const handleUpdateBorrowStatus = async (requestId, status, adminNote = '') => {
+    setBorrowRequests((prev) => {
+      const next = prev.map((r) => (r.id === requestId ? { ...r, status, adminNote } : r));
+      try {
+        localStorage.setItem('sunstone_borrow_requests', JSON.stringify(next));
+      } catch (e) {}
+      return next;
+    });
+
+    try {
+      await updateBorrowStatusInFirestore(requestId, status, adminNote);
+    } catch (e) {}
 
     try {
       if (token) {
@@ -327,58 +425,123 @@ export default function App() {
       }
     } catch (e) {}
 
+    triggerToast(`Borrow request marked as ${status}.`);
+  };
+
+  // Admin Uploads New Book (Direct File / Google Drive Link / Web PDF)
+  const handleUploadBook = async (formData) => {
+    const title = formData.get('title') || 'Untitled Academic Textbook';
+    const author = formData.get('author') || 'Sunstone Faculty';
+    const program = formData.get('program') || 'All Programs';
+    const category = formData.get('category') || 'General Academic';
+    const description = formData.get('description') || 'Curated textbook standard for Prayas Lab scholars.';
+    const coverUrl = formData.get('coverUrl') || 'https://images.unsplash.com/photo-1544716278-ca5e3f4abd8c?auto=format&fit=crop&w=600&q=80';
+    const pdfUrl = formData.get('pdfUrl') || '';
+    const fileType = formData.get('fileType') || 'url';
+    const rawHighlights = formData.get('highlights');
+    const rawTakeaways = formData.get('keyTakeaways');
+    const rawSnippets = formData.get('chapterSnippets');
+
+    const parseArray = (input) => {
+      if (!input) return [];
+      if (Array.isArray(input)) return input;
+      try {
+        const parsed = JSON.parse(input);
+        if (Array.isArray(parsed)) return parsed;
+      } catch (e) {}
+      return String(input).split('\n').map((s) => s.trim()).filter(Boolean);
+    };
+
+    const parseSnippets = (input) => {
+      if (!input) return [];
+      if (Array.isArray(input)) return input;
+      try {
+        const parsed = JSON.parse(input);
+        if (Array.isArray(parsed)) return parsed;
+      } catch (e) {}
+      const blocks = String(input).split(/\n\s*\n/).map((s) => s.trim()).filter(Boolean);
+      return blocks.map((block, idx) => {
+        const firstLine = block.split('\n')[0];
+        const rest = block.split('\n').slice(1).join(' ').trim();
+        return {
+          chapterNumber: idx + 1,
+          title: firstLine.startsWith('Chapter') ? firstLine : `Chapter ${idx + 1}: ${firstLine.slice(0, 45)}`,
+          summary: rest || block
+        };
+      });
+    };
+
+    const highlights = parseArray(rawHighlights);
+    const keyTakeaways = parseArray(rawTakeaways);
+    const chapterSnippets = parseSnippets(rawSnippets);
+
+    const bookId = 'bk_' + Date.now();
+    const newBook = {
+      id: bookId,
+      title,
+      author,
+      program,
+      category,
+      coverUrl,
+      fileType,
+      pdfUrl: pdfUrl || 'https://raw.githubusercontent.com/mozilla/pdf.js/ba2edeae/web/compressed.tracemonkey-pldi-09.pdf',
+      description,
+      pages: 350,
+      rating: 4.9,
+      publishedYear: 2026,
+      downloadable: true,
+      quickSummary: {
+        highlights: highlights.length > 0 ? highlights : ['Comprehensive theoretical foundations and practical laboratory applications.'],
+        keyTakeaways: keyTakeaways.length > 0 ? keyTakeaways : ['Master core academic frameworks mapped to Sunstone curriculum.'],
+        estimatedReadingTime: '8 Hours',
+        difficultyLevel: 'Intermediate'
+      },
+      chapterSnippets: chapterSnippets.length > 0 ? chapterSnippets : undefined,
+      createdAt: new Date().toISOString()
+    };
+
+    // 1. Immediately update UI state & local cache
+    setBooks((prev) => {
+      const nextBooks = [newBook, ...prev];
+      try {
+        localStorage.setItem('sunstone_books', JSON.stringify(nextBooks));
+      } catch (e) {}
+      return nextBooks;
+    });
+
+    // 2. Persist to Firebase Realtime DB & Firestore
     try {
-      await updateBorrowStatusInFirestore(requestId, status, adminNote);
+      await addBookToFirestore(newBook);
     } catch (e) {}
 
-    triggerToast(`Request marked as ${status}.`);
-  };
-
-  const handleUploadBook = async (formData) => {
+    // 3. Persist to Express backend server if available
     try {
-      const headers = token ? { Authorization: `Bearer ${token}` } : {};
-      const res = await fetch('/api/books', {
-        method: 'POST',
-        headers,
-        body: formData
-      });
-      if (res.ok) {
-        const data = await res.json();
-        const newBook = data.book || data;
-        setBooks((prev) => [newBook, ...prev]);
-        try {
-          await addBookToFirestore(newBook);
-        } catch (e) {}
-        triggerToast(`Book "${newBook.title}" added to Sunstone Library!`);
-      } else {
-        const errData = await res.json();
-        triggerToast(errData.error || 'Failed to upload book.', 'error');
+      if (token) {
+        await fetch('/api/books', {
+          method: 'POST',
+          headers: { Authorization: `Bearer ${token}` },
+          body: formData
+        });
       }
-    } catch (e) {
-      const newBookFallback = {
-        id: 'bk_' + Date.now(),
-        title: formData.get('title'),
-        author: formData.get('author'),
-        program: formData.get('program'),
-        category: formData.get('category'),
-        coverUrl: 'https://images.unsplash.com/photo-1544716278-ca5e3f4abd8c?auto=format&fit=crop&w=600&q=80',
-        pdfUrl: formData.get('pdfUrl') || '',
-        description: formData.get('description'),
-        pages: 320,
-        rating: 4.9,
-        publishedYear: 2026,
-        isCustom: true
-      };
-      setBooks((prev) => [newBookFallback, ...prev]);
-      try {
-        await addBookToFirestore(newBookFallback);
-      } catch (err) {}
-      triggerToast(`Book published to Sunstone Library!`);
-    }
+    } catch (e) {}
+
+    triggerToast(`Book "${title}" published to Sunstone Library!`);
   };
 
+  // Admin Deletes Book from Catalog
   const handleDeleteBook = async (bookId) => {
-    setBooks((prev) => prev.filter((b) => b.id !== bookId));
+    setBooks((prev) => {
+      const nextBooks = prev.filter((b) => b.id !== bookId);
+      try {
+        localStorage.setItem('sunstone_books', JSON.stringify(nextBooks));
+      } catch (e) {}
+      return nextBooks;
+    });
+
+    try {
+      await deleteBookFromFirestore(bookId);
+    } catch (e) {}
+
     try {
       if (token) {
         await fetch(`/api/books/${bookId}`, {
@@ -388,19 +551,31 @@ export default function App() {
       }
     } catch (e) {}
 
-    try {
-      await deleteBookFromFirestore(bookId);
-    } catch (e) {}
     triggerToast('Book removed from Sunstone catalog.');
   };
 
-  const handleToggleStudentStatus = async (studentId) => {
+  // Admin Suspends or Activates Student Account
+  const handleToggleStudentStatus = async (studentId, forcedStatus = null) => {
     const student = students.find((s) => s.id === studentId);
-    const newStatus = student && student.status === 'Active' ? 'Suspended' : 'Active';
+    const newStatus = forcedStatus || (student && student.status === 'Active' ? 'Suspended' : 'Active');
 
-    setStudents((prev) =>
-      prev.map((s) => (s.id === studentId ? { ...s, status: newStatus } : s))
-    );
+    setStudents((prev) => {
+      const next = prev.map((s) => (s.id === studentId ? { ...s, status: newStatus } : s));
+      try {
+        localStorage.setItem('sunstone_students', JSON.stringify(next));
+      } catch (e) {}
+      return next;
+    });
+
+    // If currently logged-in user is this student, update session
+    if (user && user.id === studentId) {
+      const updatedUser = { ...user, status: newStatus };
+      handleSetUser(updatedUser, token);
+    }
+
+    try {
+      await updateStudentStatusInFirestore(studentId, newStatus);
+    } catch (e) {}
 
     try {
       if (token) {
@@ -415,14 +590,35 @@ export default function App() {
       }
     } catch (e) {}
 
-    triggerToast('Student access permissions updated.');
+    triggerToast(`Student status updated to ${newStatus}.`);
+  };
+
+  // Handler for New Student Registration
+  const handleRegisterSuccess = async (newUser, userToken) => {
+    handleSetUser(newUser, userToken);
+    if (newUser && newUser.role === 'student') {
+      setStudents((prev) => {
+        const exists = prev.some((s) => s.id === newUser.id || s.email === newUser.email);
+        const next = exists ? prev : [newUser, ...prev];
+        try {
+          localStorage.setItem('sunstone_students', JSON.stringify(next));
+        } catch (e) {}
+        return next;
+      });
+      try {
+        await addStudentToFirestore(newUser);
+      } catch (e) {}
+    }
+    setShowAuthModal(false);
+    triggerToast(`Welcome to Sunstone Library, ${newUser.name}!`);
   };
 
   // Filter books based on search query and selected program
   const filteredBooks = books.filter((b) => {
-    const matchesProgram = selectedProgram === 'All Programs' || b.program === selectedProgram;
     const query = searchQuery.toLowerCase().trim();
-    if (!query) return matchesProgram;
+    if (!query) {
+      return selectedProgram === 'All Programs' || b.program === selectedProgram;
+    }
 
     const matchesSearch =
       b.title.toLowerCase().includes(query) ||
@@ -431,6 +627,7 @@ export default function App() {
       b.category.toLowerCase().includes(query) ||
       (b.description && b.description.toLowerCase().includes(query));
 
+    const matchesProgram = selectedProgram === 'All Programs' || b.program === selectedProgram;
     return matchesProgram && matchesSearch;
   });
 
@@ -740,8 +937,7 @@ export default function App() {
             setShowAuthModal(false);
           }}
           onRegisterSuccess={(usr, usrToken) => {
-            handleSetUser(usr, usrToken);
-            setShowAuthModal(false);
+            handleRegisterSuccess(usr, usrToken);
           }}
           onAdminLoginSuccess={(adminUsr, adminToken) => {
             handleSetUser(adminUsr, adminToken);
