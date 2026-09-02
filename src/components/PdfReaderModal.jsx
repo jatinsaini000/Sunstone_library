@@ -294,8 +294,17 @@ export default function PdfReaderModal({
         {/* RIGHT DRAWER: NOTES */}
         <aside className={`pdf-reader-notes-drawer ${showNotesDrawer ? 'open' : ''}`}>
           <div className="notes-drawer-header">
-            <h3>My Study Notes</h3>
-            <button className="notes-drawer-close" onClick={() => setShowNotesDrawer(false)}>
+            <div className="notes-drawer-title-wrap">
+              <FileText size={18} color="var(--accent-sunstone-red)" />
+              <h3>My Study Notes</h3>
+            </div>
+            <button
+              type="button"
+              className="notes-drawer-close"
+              onClick={() => setShowNotesDrawer(false)}
+              title="Close notes drawer"
+              aria-label="Close notes drawer"
+            >
               <X size={16} />
             </button>
           </div>
@@ -303,33 +312,31 @@ export default function PdfReaderModal({
           <div className="notes-drawer-content">
             {/* NEW NOTE FORM */}
             <form className="notes-drawer-form" onSubmit={handleSaveNote}>
-              <div style={{ display: 'flex', gap: '8px', marginBottom: '8px' }}>
+              <div className="notes-form-row">
                 <input
                   type="text"
-                  placeholder="Page (Optional)"
+                  placeholder="Page (e.g. 15)"
                   value={manualPageNum}
                   onChange={(e) => setManualPageNum(e.target.value)}
-                  style={{
-                    width: '100px',
-                    background: 'rgba(15, 23, 42, 0.4)',
-                    border: '1px solid rgba(255, 255, 255, 0.1)',
-                    borderRadius: '6px',
-                    color: '#f8fafc',
-                    padding: '8px',
-                    fontSize: '13px',
-                    outline: 'none'
-                  }}
+                  className="notes-page-input"
                 />
+                <span className="notes-input-hint">Optional page reference</span>
               </div>
               <textarea
-                placeholder={`Take a note on "${book.title}"...`}
+                placeholder={`Take a study note on "${book.title}"...`}
                 value={newNoteText}
                 onChange={(e) => setNewNoteText(e.target.value)}
                 rows={3}
+                className="notes-textarea"
                 required
               ></textarea>
-              <button type="submit" disabled={!newNoteText.trim()}>
-                <Plus size={14} /> Save Note
+              <button
+                type="submit"
+                className="notes-save-btn"
+                disabled={!newNoteText.trim()}
+              >
+                <Plus size={15} />
+                <span>Save Note</span>
               </button>
             </form>
 
@@ -338,24 +345,28 @@ export default function PdfReaderModal({
             <div className="notes-list-container">
               {currentBookNotes.length === 0 ? (
                 <div className="notes-empty-state">
-                  <FileText size={32} opacity={0.3} />
-                  <p>No notes saved yet.</p>
-                  <span>Notes are saved securely to your Sunstone Lab profile.</span>
+                  <FileText size={36} className="notes-empty-icon" />
+                  <p className="notes-empty-title">No notes saved for this book yet.</p>
+                  <span className="notes-empty-sub">Add page notes above for study & revision.</span>
                 </div>
               ) : (
                 <div className="notes-list">
                   {currentBookNotes.map((note) => (
-                    <div key={note.id} className="note-item">
+                    <div key={note.id} className="note-item-card">
                       <div className="note-item-header">
-                        <span className="note-badge">Page {note.pageNumber}</span>
-                        <div className="note-actions">
-                          <button onClick={() => onDeleteNote(note.id)} title="Delete Note">
-                            <Trash2 size={13} />
-                          </button>
-                        </div>
+                        <span className="note-badge-pill">Page {note.pageNumber || 'N/A'}</span>
+                        <span className="note-date-text">{new Date(note.createdAt).toLocaleDateString()}</span>
+                        <button
+                          type="button"
+                          className="note-delete-icon-btn"
+                          onClick={() => onDeleteNote(note.id)}
+                          title="Delete Note"
+                          aria-label="Delete note"
+                        >
+                          <Trash2 size={13} />
+                        </button>
                       </div>
-                      <p className="note-text">{note.noteText}</p>
-                      <span className="note-date">{new Date(note.createdAt).toLocaleDateString()}</span>
+                      <p className="note-body-text">{note.noteText}</p>
                     </div>
                   ))}
                 </div>
