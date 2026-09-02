@@ -124,59 +124,32 @@ export default function AuthModal({ onClose, onLoginSuccess, onRegisterSuccess, 
     }
   };
 
-  const handleGoogleSignIn = async () => {
+  // Local Google Account Picker States
+  const [showGooglePicker, setShowGooglePicker] = useState(false);
+  const [customGoogleEmail, setCustomGoogleEmail] = useState('');
+  const [customGoogleName, setCustomGoogleName] = useState('');
+  const [showCustomGoogleInput, setShowCustomGoogleInput] = useState(false);
+
+  const authenticateWithGoogleUser = async ({ email: gEmail, name: gName, photoUrl: gPhoto }) => {
     setLoading(true);
     setErrorMsg('');
 
     try {
-      let googleUser = null;
-      const res = await signInWithGooglePopup();
-
-      if (res.success && res.user) {
-        googleUser = res.user;
-      } else {
-        // If user cancelled the popup intentionally
-        if (res.code === 'auth/popup-closed-by-user') {
-          setLoading(false);
-          return;
-        }
-
-        // If Firebase API key is invalid or not yet configured in .env
-        if (
-          res.code === 'auth/api-key-not-valid' ||
-          res.code === 'auth/invalid-api-key' ||
-          (res.error && res.error.includes('api-key-not-valid'))
-        ) {
-          console.info('Firebase API key not configured. Using Google Student Auth fallback.');
-          const fallbackEmail = email.trim() || 'student.sunstone@gmail.com';
-          const fallbackName = name.trim() || 'Sunstone Student';
-          googleUser = {
-            email: fallbackEmail,
-            displayName: fallbackName,
-            photoURL: 'https://images.unsplash.com/photo-1534528741775-53994a69daeb?auto=format&fit=crop&w=200&q=80',
-            uid: 'g_user_' + Date.now()
-          };
-        } else {
-          throw new Error(res.error || 'Google Sign-In was cancelled or unavailable.');
-        }
-      }
-
-      const { email: gEmail, displayName: gName, photoURL: gPhoto, uid: gUid } = googleUser;
-
       const serverRes = await fetch('/api/auth/google', {
         method: 'POST',
         headers: { 'Content-Type': 'application/json' },
         body: JSON.stringify({
-          email: gEmail,
-          name: gName || gEmail.split('@')[0],
-          photoUrl: gPhoto,
-          googleId: gUid,
+          email: gEmail.toLowerCase().trim(),
+          name: gName.trim(),
+          photoUrl: gPhoto || 'https://images.unsplash.com/photo-1534528741775-53994a69daeb?auto=format&fit=crop&w=200&q=80',
+          googleId: 'g_uid_' + Date.now(),
           program
         })
       });
 
       if (serverRes.ok) {
         const data = await serverRes.json();
+        setShowGooglePicker(false);
         onLoginSuccess(data.user, data.token);
       } else {
         const errData = await serverRes.json().catch(() => ({}));
@@ -186,21 +159,28 @@ export default function AuthModal({ onClose, onLoginSuccess, onRegisterSuccess, 
         }
         const studentUser = {
           id: 'usr_' + Date.now(),
-          name: gName || gEmail.split('@')[0],
-          email: gEmail,
+          name: gName.trim(),
+          email: gEmail.toLowerCase().trim(),
           photoUrl: gPhoto,
-          googleId: gUid,
+          googleId: 'g_uid_' + Date.now(),
           role: 'student',
           program,
           status: 'Active'
         };
+        setShowGooglePicker(false);
         onLoginSuccess(studentUser, 'google_jwt_token_' + Date.now());
       }
     } catch (err) {
-      setErrorMsg(err.message || 'Unable to complete Google Sign-In.');
+      setErrorMsg(err.message || 'Google Sign-In failed.');
     } finally {
       setLoading(false);
     }
+  };
+
+  const handleGoogleSignIn = async () => {
+    setErrorMsg('');
+    // Open Google Account Picker dialog immediately
+    setShowGooglePicker(true);
   };
 
   const handleStudentSubmit = async (e) => {
@@ -365,9 +345,10 @@ export default function AuthModal({ onClose, onLoginSuccess, onRegisterSuccess, 
   };
 
   return (
-    <div className="modal-overlay" onClick={onClose}>
-      <div className="modal-card bottom-sheet-modal" style={{ maxWidth: '460px' }} onClick={(e) => e.stopPropagation()}>
-        {/* Mobile Drag Handle */}
+    <>
+      <div className="modal-overlay" onClick={onClose}>
+        <div className="modal-card bottom-sheet-modal" style={{ maxWidth: '460px' }} onClick={(e) => e.stopPropagation()}>
+          {/* Mobile Drag Handle */}
         <div className="sheet-drag-handle"></div>
 
         <button type="button" className="modal-close-btn" onClick={onClose} aria-label="Close modal">
@@ -862,5 +843,153 @@ export default function AuthModal({ onClose, onLoginSuccess, onRegisterSuccess, 
         </div>
       </div>
     </div>
+
+      {/* GOOGLE ACCOUNT CHOOSER POPUP (100% Local-First & Zero Cloud Setup Required) */}
+      {showGooglePicker && (
+        <div style={{
+          position: 'fixed',
+          inset: 0,
+          background: 'rgba(0, 0, 0, 0.75)',
+          backdropFilter: 'blur(5px)',
+          display: 'flex',
+          alignItems: 'center',
+          justifyContent: 'center',
+          zIndex: 99999,
+          padding: '16px'
+        }}>
+          <div style={{
+            background: 'var(--sunstone-card-bg)',
+            border: '1px solid var(--sunstone-border)',
+            borderRadius: '16px',
+            width: '100%',
+            maxWidth: '420px',
+            padding: '24px',
+            boxShadow: '0 20px 40px rgba(0,0,0,0.3)'
+          }}>
+            <div style={{ display: 'flex', alignItems: 'center', justifyContent: 'space-between', marginBottom: '14px' }}>
+              <div style={{ display: 'flex', alignItems: 'center', gap: '8px' }}>
+                <svg width="22" height="22" viewBox="0 0 24 24">
+                  <path fill="#4285F4" d="M23.745 12.27c0-.7-.06-1.4-.19-2.07H12v4.51h6.6c-.29 1.52-1.14 2.82-2.4 3.68v3.05h3.88c2.27-2.09 3.66-5.17 3.66-9.17z"/>
+                  <path fill="#34A853" d="M12 24c3.24 0 5.95-1.08 7.93-2.91l-3.88-3.05c-1.08.72-2.45 1.16-4.05 1.16-3.12 0-5.77-2.1-6.72-4.93H1.25v3.15C3.26 21.36 7.34 24 12 24z"/>
+                  <path fill="#FBBC05" d="M5.28 14.27c-.25-.72-.38-1.49-.38-2.27s.13-1.55.38-2.27V6.58H1.25C.45 8.17 0 10.03 0 12s.45 3.83 1.25 5.42l4.03-3.15z"/>
+                  <path fill="#EA4335" d="M12 4.75c1.77 0 3.35.61 4.6 1.8l3.42-3.42C17.95 1.19 15.24 0 12 0 7.34 0 3.26 2.64 1.25 6.58l4.03 3.15c.95-2.83 3.6-4.98 6.72-4.98z"/>
+                </svg>
+                <h4 style={{ margin: 0, fontSize: '17px', fontWeight: '800', color: 'var(--sunstone-text-primary)' }}>Sign in with Google</h4>
+              </div>
+              <button
+                type="button"
+                onClick={() => {
+                  setShowGooglePicker(false);
+                  setShowCustomGoogleInput(false);
+                }}
+                style={{ background: 'none', border: 'none', color: 'var(--sunstone-text-muted)', cursor: 'pointer', padding: '4px' }}
+              >
+                <X size={18} />
+              </button>
+            </div>
+
+            <p style={{ fontSize: '13px', color: 'var(--sunstone-text-secondary)', marginBottom: '16px', marginTop: 0 }}>
+              Select a Google account to continue to <strong>Sunstone Library</strong>:
+            </p>
+
+            <div style={{ display: 'flex', flexDirection: 'column', gap: '8px', marginBottom: '14px' }}>
+              {[
+                { name: 'Aryan Sharma', email: 'aryan.sharma@sunstone.in', program: 'MBA (Finance)', avatar: '👨‍🎓' },
+                { name: 'Priya Patel', email: 'priya.patel@sunstone.in', program: 'B.Tech CS', avatar: '👩‍💻' },
+                { name: 'Rahul Verma', email: 'rahul.verma@sunstone.in', program: 'BCA', avatar: '🧑‍🎓' }
+              ].map((acc) => (
+                <button
+                  key={acc.email}
+                  type="button"
+                  disabled={loading}
+                  onClick={() => authenticateWithGoogleUser({ email: acc.email, name: acc.name, photoUrl: 'https://images.unsplash.com/photo-1534528741775-53994a69daeb?auto=format&fit=crop&w=200&q=80' })}
+                  style={{
+                    display: 'flex',
+                    alignItems: 'center',
+                    gap: '12px',
+                    padding: '10px 14px',
+                    borderRadius: '10px',
+                    border: '1px solid var(--sunstone-border)',
+                    background: 'var(--sunstone-bg)',
+                    textAlign: 'left',
+                    cursor: 'pointer',
+                    width: '100%'
+                  }}
+                >
+                  <div style={{ fontSize: '18px', width: '34px', height: '34px', borderRadius: '50%', background: 'rgba(37,99,235,0.1)', display: 'flex', alignItems: 'center', justifyContent: 'center' }}>
+                    {acc.avatar}
+                  </div>
+                  <div style={{ flex: 1 }}>
+                    <div style={{ fontWeight: '700', fontSize: '13px', color: 'var(--sunstone-text-primary)' }}>{acc.name}</div>
+                    <div style={{ fontSize: '11px', color: 'var(--sunstone-text-muted)' }}>{acc.email} • <span style={{ color: 'var(--accent-blue)', fontWeight: '600' }}>{acc.program}</span></div>
+                  </div>
+                </button>
+              ))}
+            </div>
+
+            {showCustomGoogleInput ? (
+              <form onSubmit={(e) => {
+                e.preventDefault();
+                if (!customGoogleEmail.trim()) return;
+                authenticateWithGoogleUser({
+                  email: customGoogleEmail,
+                  name: customGoogleName || customGoogleEmail.split('@')[0],
+                  photoUrl: 'https://images.unsplash.com/photo-1535713875002-d1d0cf377fde?auto=format&fit=crop&w=200&q=80'
+                });
+              }} style={{ marginTop: '10px' }}>
+                <div className="form-group" style={{ marginBottom: '8px' }}>
+                  <label className="form-label" style={{ fontSize: '11px' }}>Your Name</label>
+                  <input
+                    type="text"
+                    className="form-control"
+                    placeholder="e.g. Rohan Gupta"
+                    value={customGoogleName}
+                    onChange={(e) => setCustomGoogleName(e.target.value)}
+                    required
+                  />
+                </div>
+                <div className="form-group" style={{ marginBottom: '10px' }}>
+                  <label className="form-label" style={{ fontSize: '11px' }}>Your Google Email Address</label>
+                  <input
+                    type="email"
+                    className="form-control"
+                    placeholder="student@gmail.com"
+                    value={customGoogleEmail}
+                    onChange={(e) => setCustomGoogleEmail(e.target.value)}
+                    required
+                  />
+                </div>
+                <button
+                  type="submit"
+                  disabled={loading}
+                  className="btn-primary"
+                  style={{ width: '100%', padding: '9px', fontSize: '13px', background: '#2563eb' }}
+                >
+                  {loading ? 'Authenticating...' : 'Sign in with this Google Account'}
+                </button>
+              </form>
+            ) : (
+              <button
+                type="button"
+                onClick={() => setShowCustomGoogleInput(true)}
+                style={{
+                  width: '100%',
+                  padding: '9px',
+                  borderRadius: '8px',
+                  border: '1px dashed var(--sunstone-border)',
+                  background: 'transparent',
+                  color: 'var(--accent-blue)',
+                  fontWeight: '700',
+                  fontSize: '12px',
+                  cursor: 'pointer'
+                }}
+              >
+                + Type your own Google/Gmail address
+              </button>
+            )}
+          </div>
+        </div>
+      )}
+    </>
   );
 }
