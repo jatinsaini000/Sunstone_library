@@ -1,5 +1,5 @@
 import React from 'react';
-import { Home, Compass, Bookmark, Send, ShieldCheck, User } from 'lucide-react';
+import { Home, Bookmark, Send, ShieldCheck, User } from 'lucide-react';
 
 export default function MobileNav({
   currentView,
@@ -9,13 +9,12 @@ export default function MobileNav({
   user,
   onOpenAuth,
   savedCount = 0,
-  requestCount = 0,
-  onSelectCategoryModal
+  requestCount = 0
 }) {
   const isCatalog = currentView === 'catalog';
   const isShelf = currentView === 'profile' && profileSubTab === 'shelf';
   const isRequests = currentView === 'profile' && profileSubTab === 'requests';
-  const isProfileOrAdmin = currentView === 'admin' || (currentView === 'profile' && profileSubTab !== 'shelf' && profileSubTab !== 'requests');
+  const isProfileOrAdmin = currentView === 'admin' || (currentView === 'profile' && profileSubTab === 'notes');
 
   return (
     <nav className="mobile-bottom-nav">
@@ -94,7 +93,7 @@ export default function MobileNav({
             window.scrollTo({ top: 0, behavior: 'smooth' });
           } else {
             setCurrentView('profile');
-            if (setProfileSubTab) setProfileSubTab('analytics');
+            if (setProfileSubTab) setProfileSubTab('notes');
             window.scrollTo({ top: 0, behavior: 'smooth' });
           }
         }}

@@ -1,5 +1,5 @@
 import React from 'react';
-import { BookOpen, Zap, Bookmark, Star, Send, FileText, Lock, Unlock, Eye } from 'lucide-react';
+import { BookOpen, Zap, Bookmark, Star, Send, FileText } from 'lucide-react';
 import { getDriveFileIdForFilename } from '../driveBookMap.js';
 
 export default function BookCard({

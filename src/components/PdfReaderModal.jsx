@@ -1,7 +1,7 @@
 import React, { useState, useEffect } from 'react';
 import {
   X, Bookmark, FileText, Plus, Trash2,
-  Maximize2, Minimize2, ExternalLink
+  Maximize2, Minimize2, ExternalLink, Lock
 } from 'lucide-react';
 import SunstoneLogo from './SunstoneLogo.jsx';
 import { resolvePdfViewerUrl } from '../googleDriveHelper.js';

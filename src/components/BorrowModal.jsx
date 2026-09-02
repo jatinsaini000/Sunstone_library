@@ -1,5 +1,5 @@
 import React, { useState } from 'react';
-import { X, Send, BookOpen, Clock, AlertCircle } from 'lucide-react';
+import { X, Send } from 'lucide-react';
 
 export default function BorrowModal({ book, user, onClose, onSubmitBorrowRequest }) {
   const [borrowType, setBorrowType] = useState('Physical Copy');

@@ -16,6 +16,19 @@ const SECURE_ADMIN_EMAIL = (process.env.ADMIN_EMAIL || process.env.VITE_ADMIN_EM
 const SECURE_ADMIN_PASSWORD = process.env.ADMIN_PASSWORD || process.env.VITE_ADMIN_PASSWORD || 'SunstoneAdmin2026!';
 const FIREBASE_DB_URL = (process.env.VITE_FIREBASE_DATABASE_URL || 'https://sunstone-library-cbf2d-default-rtdb.asia-southeast1.firebasedatabase.app/').replace(/\/$/, '');
 
+// --- Security: HTTP Security Headers ---
+app.use((req, res, next) => {
+  res.setHeader('X-Content-Type-Options', 'nosniff');
+  res.setHeader('X-Frame-Options', 'SAMEORIGIN');
+  res.setHeader('X-XSS-Protection', '1; mode=block');
+  res.setHeader('Referrer-Policy', 'strict-origin-when-cross-origin');
+  res.setHeader('Permissions-Policy', 'geolocation=(), microphone=(), camera=()');
+  if (req.secure || req.headers['x-forwarded-proto'] === 'https') {
+    res.setHeader('Strict-Transport-Security', 'max-age=31536000; includeSubDomains; preload');
+  }
+  next();
+});
+
 // --- Security: Strict CORS Configuration ---
 app.use(cors({
   origin: true,
@@ -38,8 +51,18 @@ try {
 
 app.use('/uploads', express.static(uploadsDir));
 
-// --- Security: Rate Limiter Middleware ---
+// --- Security: Input Sanitization Helper ---
+function sanitizeInput(val) {
+  if (typeof val === 'string') {
+    return val.replace(/<[^>]*>?/gm, '').trim();
+  }
+  return val;
+}
+
+// --- Security: Rate Limiter & Account Lockout Tracker ---
 const rateLimitMap = new Map();
+const failedLoginMap = new Map();
+
 function rateLimiter({ windowMs = 60000, maxRequests = 60, message = 'Too many requests. Please try again later.' } = {}) {
   return (req, res, next) => {
     const ip = req.ip || req.headers['x-forwarded-for'] || req.socket?.remoteAddress || 'unknown';
@@ -276,7 +299,7 @@ async function getLiveDb() {
 // --- API Router (Universal Mounting for Netlify & Express) ---
 const apiRouter = express.Router();
 
-/** POST /auth/login - Secure login with password verification & JWT token issue */
+/** POST /auth/login - Secure login with password verification, lockout protection & JWT token issue */
 apiRouter.post('/auth/login', rateLimiter({ windowMs: 60000, maxRequests: 30 }), async (req, res) => {
   const { email, password } = req.body;
   if (!email || !password) {
@@ -284,6 +307,21 @@ apiRouter.post('/auth/login', rateLimiter({ windowMs: 60000, maxRequests: 30 }),
   }
 
   const cleanEmail = email.toLowerCase().trim();
+
+  // Check Account Lockout (5 failed attempts locks for 15 minutes)
+  const lockoutEntry = failedLoginMap.get(cleanEmail);
+  const now = Date.now();
+  if (lockoutEntry && lockoutEntry.attempts >= 5) {
+    if (now < lockoutEntry.lockoutUntil) {
+      const remainingMinutes = Math.ceil((lockoutEntry.lockoutUntil - now) / 60000);
+      return res.status(429).json({
+        error: `Account temporarily locked due to repeated failed login attempts. Please try again in ${remainingMinutes} minute(s).`
+      });
+    } else {
+      failedLoginMap.delete(cleanEmail);
+    }
+  }
+
   const currentDb = await getLiveDb();
 
   // Check Master Admin Account
@@ -292,6 +330,7 @@ apiRouter.post('/auth/login', rateLimiter({ windowMs: 60000, maxRequests: 30 }),
     (password === SECURE_ADMIN_PASSWORD || password === 'SunstoneAdmin2026!' || password === 'admin');
 
   if (isMasterAdmin) {
+    failedLoginMap.delete(cleanEmail);
     const adminUser = {
       id: 'usr_admin',
       name: 'Prayas Lab Admin',
@@ -305,8 +344,12 @@ apiRouter.post('/auth/login', rateLimiter({ windowMs: 60000, maxRequests: 30 }),
   }
 
   // Check Registered Users
-  const user = currentDb.users.find(u => u.email.toLowerCase() === cleanEmail);
+  const user = currentDb.users.find(u => u && u.email && u.email.toLowerCase() === cleanEmail);
   if (!user) {
+    const entry = failedLoginMap.get(cleanEmail) || { attempts: 0, lockoutUntil: 0 };
+    entry.attempts += 1;
+    if (entry.attempts >= 5) entry.lockoutUntil = now + 15 * 60 * 1000;
+    failedLoginMap.set(cleanEmail, entry);
     return res.status(401).json({ error: 'Invalid email or password.' });
   }
 
@@ -329,29 +372,36 @@ apiRouter.post('/auth/login', rateLimiter({ windowMs: 60000, maxRequests: 30 }),
   }
 
   if (!isPasswordValid) {
+    const entry = failedLoginMap.get(cleanEmail) || { attempts: 0, lockoutUntil: 0 };
+    entry.attempts += 1;
+    if (entry.attempts >= 5) entry.lockoutUntil = now + 15 * 60 * 1000;
+    failedLoginMap.set(cleanEmail, entry);
     return res.status(401).json({ error: 'Invalid email or password.' });
   }
+
+  // Reset failed login attempts on successful login
+  failedLoginMap.delete(cleanEmail);
 
   const safeUser = sanitizeUser(user);
   const token = generateJwt(safeUser);
   res.json({ token, user: safeUser });
 });
 
-/** POST /auth/register - Secure student registration with password hashing */
+/** POST /auth/register - Secure student registration with password hashing & complexity enforcement */
 apiRouter.post('/auth/register', rateLimiter({ windowMs: 60000, maxRequests: 20 }), async (req, res) => {
   const { name, email, password, program } = req.body;
   if (!name || !email || !password) {
     return res.status(400).json({ error: 'Name, email, and password are required.' });
   }
 
-  if (password.length < 4) {
-    return res.status(400).json({ error: 'Password must be at least 4 characters.' });
+  if (password.length < 8) {
+    return res.status(400).json({ error: 'Password must be at least 8 characters long for security compliance.' });
   }
 
   const cleanEmail = email.toLowerCase().trim();
   const currentDb = await getLiveDb();
 
-  if (currentDb.users.some(u => u.email.toLowerCase() === cleanEmail)) {
+  if (currentDb.users.some(u => u && u.email && u.email.toLowerCase() === cleanEmail)) {
     return res.status(400).json({ error: 'An account with this email address already exists.' });
   }
 
@@ -360,12 +410,12 @@ apiRouter.post('/auth/register', rateLimiter({ windowMs: 60000, maxRequests: 20 
 
   const newUser = {
     id: userId,
-    name: name.trim(),
+    name: sanitizeInput(name),
     email: cleanEmail,
     salt,
     passwordHash: hash,
     role: 'student',
-    program: program || 'B.Tech CS',
+    program: sanitizeInput(program) || 'B.Tech CS',
     status: 'Active',
     createdAt: new Date().toISOString()
   };
@@ -542,12 +592,12 @@ apiRouter.get('/borrow-requests', requireAuth, async (req, res) => {
   if (req.user.role === 'admin') {
     return res.json(currentDb.borrowRequests || []);
   }
-  const myRequests = (currentDb.borrowRequests || []).filter(r => r.studentId === req.user.id || r.studentEmail === req.user.email);
+  const myRequests = (currentDb.borrowRequests || []).filter(r => r && (r.studentId === req.user.id || (r.studentEmail && r.studentEmail.toLowerCase() === req.user.email?.toLowerCase())));
   res.json(myRequests);
 });
 
 /** POST /borrow-requests - Protected: Submit borrow request (Verified Student) */
-apiRouter.post('/borrow-requests', requireAuth, async (req, res) => {
+apiRouter.post('/borrow-requests', requireAuth, rateLimiter({ windowMs: 60000, maxRequests: 15 }), async (req, res) => {
   const currentDb = await getLiveDb();
   const { bookId, bookTitle, borrowType, studentMessage } = req.body;
 
@@ -562,11 +612,11 @@ apiRouter.post('/borrow-requests', requireAuth, async (req, res) => {
     studentName: req.user.name,
     studentEmail: req.user.email,
     studentProgram: req.user.program || 'General',
-    bookId,
-    bookTitle,
+    bookId: sanitizeInput(bookId),
+    bookTitle: sanitizeInput(bookTitle),
     requestDate: new Date().toISOString(),
-    borrowType: borrowType || 'Physical Copy',
-    studentMessage: (studentMessage || 'I would like to borrow this textbook.').trim(),
+    borrowType: sanitizeInput(borrowType) || 'Physical Copy',
+    studentMessage: sanitizeInput(studentMessage || 'I would like to borrow this textbook.').trim(),
     status: 'Pending',
     adminNote: ''
   };
@@ -583,14 +633,14 @@ apiRouter.post('/borrow-requests', requireAuth, async (req, res) => {
 apiRouter.put('/borrow-requests/:id', requireAdmin, async (req, res) => {
   const currentDb = await getLiveDb();
   const { status, adminNote } = req.body;
-  const reqItem = (currentDb.borrowRequests || []).find(r => r.id === req.params.id);
+  const reqItem = (currentDb.borrowRequests || []).find(r => r && r.id === req.params.id);
 
   if (!reqItem) {
     return res.status(404).json({ error: 'Borrow request not found.' });
   }
 
-  if (status) reqItem.status = status;
-  if (adminNote !== undefined) reqItem.adminNote = adminNote;
+  if (status) reqItem.status = sanitizeInput(status);
+  if (adminNote !== undefined) reqItem.adminNote = sanitizeInput(adminNote);
 
   saveLocalData(currentDb);
   putToFirebase(`borrowRequests/${req.params.id}`, reqItem);
@@ -604,7 +654,7 @@ apiRouter.put('/borrow-requests/:id', requireAdmin, async (req, res) => {
 apiRouter.get('/students', requireAdmin, async (req, res) => {
   const currentDb = await getLiveDb();
   const students = (currentDb.users || [])
-    .filter(u => u.role === 'student')
+    .filter(u => u && u.role === 'student')
     .map(sanitizeUser);
   res.json(students);
 });
@@ -613,13 +663,13 @@ apiRouter.get('/students', requireAdmin, async (req, res) => {
 apiRouter.put('/students/:id/status', requireAdmin, async (req, res) => {
   const currentDb = await getLiveDb();
   const { status } = req.body;
-  const student = (currentDb.users || []).find(u => u.id === req.params.id);
+  const student = (currentDb.users || []).find(u => u && u.id === req.params.id);
 
   if (!student) {
     return res.status(404).json({ error: 'Student not found.' });
   }
 
-  student.status = status || 'Active';
+  student.status = sanitizeInput(status) || 'Active';
   saveLocalData(currentDb);
   putToFirebase(`users/${req.params.id}`, student);
 
@@ -631,12 +681,12 @@ apiRouter.put('/students/:id/status', requireAdmin, async (req, res) => {
 /** GET /notes - Protected: Get authenticated student notes */
 apiRouter.get('/notes', requireAuth, async (req, res) => {
   const currentDb = await getLiveDb();
-  const myNotes = (currentDb.userNotes || []).filter(n => n.studentId === req.user.id);
+  const myNotes = (currentDb.userNotes || []).filter(n => n && n.studentId === req.user.id);
   res.json(myNotes);
 });
 
 /** POST /notes - Protected: Create personal study note */
-apiRouter.post('/notes', requireAuth, async (req, res) => {
+apiRouter.post('/notes', requireAuth, rateLimiter({ windowMs: 60000, maxRequests: 20 }), async (req, res) => {
   const currentDb = await getLiveDb();
   const { bookId, bookTitle, pageNumber, noteText } = req.body;
 
@@ -648,10 +698,10 @@ apiRouter.post('/notes', requireAuth, async (req, res) => {
   const newNote = {
     id: noteId,
     studentId: req.user.id,
-    bookId,
-    bookTitle: bookTitle || 'Academic Textbook',
-    pageNumber: pageNumber || 1,
-    noteText: noteText.trim(),
+    bookId: sanitizeInput(bookId),
+    bookTitle: sanitizeInput(bookTitle) || 'Academic Textbook',
+    pageNumber: typeof pageNumber === 'number' ? pageNumber : parseInt(pageNumber) || 1,
+    noteText: sanitizeInput(noteText).trim(),
     createdAt: new Date().toISOString()
   };
 
@@ -691,6 +741,15 @@ apiRouter.delete('/notes/:id', requireAuth, async (req, res) => {
 app.use('/.netlify/functions/api', apiRouter);
 app.use('/api', apiRouter);
 app.use('/', apiRouter);
+
+// --- Security: Safe Global Error Handling (No Stack Trace Leakage) ---
+app.use((err, req, res, next) => {
+  console.error('[SERVER SECURITY LOG] Uncaught Error:', err.message);
+  if (res.headersSent) return next(err);
+  res.status(err.status || 500).json({
+    error: err.message && err.status < 500 ? err.message : 'An unexpected server error occurred. Request logged securely.'
+  });
+});
 
 // Start Server when run directly
 if (!process.env.NETLIFY && process.env.NODE_ENV !== 'test') {

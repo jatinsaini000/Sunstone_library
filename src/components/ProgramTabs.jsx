@@ -1,5 +1,5 @@
 import React from 'react';
-import { Layers, GraduationCap, Code, Server, Briefcase, Sparkles, BookOpenCheck } from 'lucide-react';
+import { Layers, GraduationCap, Code, Briefcase, Sparkles, BookOpenCheck } from 'lucide-react';
 
 export default function ProgramTabs({ selectedProgram, setSelectedProgram, counts = {} }) {
   const programs = [

@@ -1,11 +1,10 @@
 import React from 'react';
-import { BookOpen, Zap, Sparkles, FileText, Send, Unlock, Lock, Eye } from 'lucide-react';
+import { BookOpen, Sparkles, FileText, Send } from 'lucide-react';
 
 export default function HeroBanner({
   book,
   onOpenReader,
   onOpenSnippets,
-  onOpenQuickSummary,
   onOpenBorrowModal,
   isBorrowed = false
 }) {

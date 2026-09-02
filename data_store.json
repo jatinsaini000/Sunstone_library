@@ -1,56 +1,130 @@
 {
   "users": [
     {
+      "createdAt": "2026-01-10T10:00:00.000Z",
+      "email": "admin@sunstone.in",
       "id": "usr_admin",
       "name": "Prayas Lab Admin",
-      "email": "admin@sunstone.in",
-      "salt": "dc737ddfd18dbb117c37e65b5399fff2",
-      "passwordHash": "b6f2e2dd0b869a01ad745bdc5500cdc6ef48992d32dbffb40dfe93427b1101c44c67f20e4655f9cf52c94279dce09a442290764fc05e73c1c20c7c1e1e844529",
-      "role": "admin",
+      "password": "admin",
       "program": "All Programs",
-      "status": "Active",
-      "createdAt": "2026-01-10T10:00:00.000Z"
+      "role": "admin",
+      "status": "Active"
     },
     {
+      "createdAt": "2026-02-01T10:00:00.000Z",
+      "email": "jatin@sunstone.in",
       "id": "usr_student1",
       "name": "Jatin",
-      "email": "jatin@sunstone.in",
-      "salt": "128e75e45c70efd644469d404aa2f9cc",
-      "passwordHash": "785c8eec1cd918d56ae0744be3ab6c05b84b81a7dbfb1b54ca82ee3fb4cb093988e1f26c9e23f4722a2032f7d43200157c2de9e9ffd8849816cdebc694c7ddbb",
-      "role": "student",
+      "password": "pass",
       "program": "B.Tech CS",
-      "status": "Active",
-      "createdAt": "2026-02-01T10:00:00.000Z"
+      "role": "student",
+      "status": "Active"
     },
     {
+      "createdAt": "2026-02-05T10:00:00.000Z",
+      "email": "ananya@sunstone.in",
       "id": "usr_student2",
       "name": "Ananya Verma",
-      "email": "ananya@sunstone.in",
-      "salt": "2a4ed2436ef0ae192d8c6c7bbab2a6cc",
-      "passwordHash": "2c842eb574cdf24755165a47675f642faed32726479bcb487d15d8f24a7b76888c6c1eb4097a27b1fca21c84a7faeeb7718c1b056925b69683d5e3355fc0837e",
-      "role": "student",
+      "password": "pass",
       "program": "MBA",
-      "status": "Active",
-      "createdAt": "2026-02-05T10:00:00.000Z"
+      "role": "student",
+      "status": "Active"
+    },
+    {
+      "createdAt": "2026-08-24T15:17:59.507Z",
+      "email": "sainijatin505@gmail.com",
+      "id": "usr_1787584679507",
+      "name": "Jatin Saini",
+      "program": "B.Tech & BCA",
+      "role": "student",
+      "status": "Active"
+    },
+    {
+      "createdAt": "2026-08-25T04:06:02.482Z",
+      "email": "atulsingh07711@gmail.com",
+      "id": "usr_1787630762481",
+      "name": "Atul",
+      "program": "B.Tech & BCA",
+      "role": "student",
+      "status": "Active"
+    },
+    {
+      "createdAt": "2026-08-25T04:15:52.155Z",
+      "email": "prince54918@gmail.com",
+      "id": "usr_1787631352153",
+      "name": "Abhay",
+      "program": "B.Tech & BCA",
+      "role": "student",
+      "status": "Active"
+    },
+    {
+      "createdAt": "2026-08-25T04:27:33.820Z",
+      "email": "jatinsaini@gmail.com",
+      "id": "usr_1787632053819",
+      "name": "jatin sani",
+      "program": "B.Tech & BCA",
+      "role": "student",
+      "status": "Active"
+    },
+    {
+      "createdAt": "2026-09-02T04:19:03.190Z",
+      "email": "test_student_1788322742603@sunstone.in",
+      "id": "usr_1788322743190",
+      "name": "Test Student",
+      "passwordHash": "91d4cc092280ec9f4456676dcc8bb8a10f0ef5dd7d4bc6174538c7ada6b65e99ded5bb3cb54c75d2693cb61f0e1f35b9150c58e92f2d711b7e813b94d943d98f",
+      "program": "B.Tech CS",
+      "role": "student",
+      "salt": "3569f4e2ecb2cf7747e77fa45f4163b6",
+      "status": "Active"
+    },
+    {
+      "createdAt": "2026-09-02T04:36:07.907Z",
+      "email": "test_student_1788323766672@sunstone.in",
+      "id": "usr_1788323767907",
+      "name": "Priya Sharma",
+      "passwordHash": "c80d1f60671f989b5530e2d4678423630c3dba934a3e9b996c24ed7b644932e953e96303af91d8c2ea30c6967754795a340891a5862d8ff7b1eea407c5ff1328",
+      "program": "B.Tech CS",
+      "role": "student",
+      "salt": "1ce0c65706f859cbeda7e08eaeed4ff3",
+      "status": "Active"
+    },
+    {
+      "createdAt": "2026-09-02T04:36:55.842Z",
+      "email": "test_student_1788323814649@sunstone.in",
+      "id": "usr_1788323815842",
+      "name": "Priya Sharma",
+      "passwordHash": "c3ec992c4a63918476ae057261af51d13d3ec3161888a305e23a9e873c4bcb96bc6933f90e3030ff9c8eb10f310736caef149d08febea28fbbe528bcce413767",
+      "program": "B.Tech CS",
+      "role": "student",
+      "salt": "76f9ff38a0edb503663fce2697a67ce5",
+      "status": "Active"
+    },
+    {
+      "status": "Suspended",
+      "updatedAt": "2026-08-24T14:59:49.630Z"
+    },
+    {
+      "status": "Suspended",
+      "updatedAt": "2026-08-24T14:59:50.713Z"
     }
   ],
   "books": [
     {
-      "id": "bk_general_1",
-      "title": "[Seppe vanden Broucke, Bart Baesens] Practical Web",
-      "author": "Sunstone Library",
-      "program": "All Programs",
+      "author": "Unknown Author",
       "category": "Technical",
       "coverUrl": "https://images.unsplash.com/photo-1516116216624-53e697fedbea?auto=format&fit=crop&w=600&q=80",
-      "fileType": "file",
-      "pdfUrl": "/uploads/books/[Seppe_vanden_Broucke,_Bart_Baesens]_Practical_Web.pdf",
-      "driveFileId": null,
-      "localPath": "/uploads/books/[Seppe_vanden_Broucke,_Bart_Baesens]_Practical_Web.pdf",
+      "description": "A comprehensive technical guide: Automating.DevOps.with.GitLab.CI.CD.Pipelines. Perfect for enhancing your skills and knowledge.",
       "downloadable": true,
-      "rating": 4.8,
+      "fileType": "file",
+      "id": "bk_tech_1787577980614_1",
+      "isbn": "ISBN-838987075",
       "pages": 350,
+      "pdfUrl": "/uploads/books/Automating.DevOps.with.GitLab.CI.CD.Pipelines.pdf",
+      "program": "All Programs",
       "publishedYear": 2024,
       "quickSummary": {
+        "difficultyLevel": "Intermediate to Advanced",
+        "estimatedReadingTime": "12 Hours",
         "highlights": [
           "Comprehensive technical material.",
           "Practical examples and case studies.",
@@ -59,28 +133,27 @@
         "keyTakeaways": [
           "Master core technical concepts.",
           "Apply learning to real-world projects."
-        ],
-        "estimatedReadingTime": "12 Hours",
-        "difficultyLevel": "Intermediate to Advanced"
+        ]
       },
-      "description": "A comprehensive technical guide: [Seppe vanden Broucke, Bart Baesens] Practical Web. Available via Google Drive and local library storage."
+      "rating": 4.8,
+      "title": "Automating.DevOps.with.GitLab.CI.CD.Pipelines"
     },
     {
-      "id": "bk_general_2",
-      "title": "A Practical Guide to Azure DevOps Learn by doing",
-      "author": "Sunstone Library",
-      "program": "All Programs",
+      "author": "Unknown Author",
       "category": "Technical",
       "coverUrl": "https://images.unsplash.com/photo-1516116216624-53e697fedbea?auto=format&fit=crop&w=600&q=80",
-      "fileType": "drive",
-      "pdfUrl": "https://drive.google.com/file/d/1IECq9jvN7zeVQb2fy07RLnTzfzn04v7D/view?usp=sharing",
-      "driveFileId": "1IECq9jvN7zeVQb2fy07RLnTzfzn04v7D",
-      "localPath": "/uploads/books/A_Practical_Guide_to_Azure_DevOps_Learn_by_doing.pdf",
+      "description": "A comprehensive technical guide: AWS interview. Perfect for enhancing your skills and knowledge.",
       "downloadable": true,
-      "rating": 4.8,
+      "fileType": "file",
+      "id": "bk_tech_1787577980615_2",
+      "isbn": "ISBN-652011288",
       "pages": 350,
+      "pdfUrl": "/uploads/books/AWS interview.pdf",
+      "program": "All Programs",
       "publishedYear": 2024,
       "quickSummary": {
+        "difficultyLevel": "Intermediate to Advanced",
+        "estimatedReadingTime": "12 Hours",
         "highlights": [
           "Comprehensive technical material.",
           "Practical examples and case studies.",
@@ -89,28 +162,375 @@
         "keyTakeaways": [
           "Master core technical concepts.",
           "Apply learning to real-world projects."
-        ],
-        "estimatedReadingTime": "12 Hours",
-        "difficultyLevel": "Intermediate to Advanced"
+        ]
       },
-      "description": "A comprehensive technical guide: A Practical Guide to Azure DevOps Learn by doing. Available via Google Drive and local library storage."
+      "rating": 4.8,
+      "title": "AWS interview"
     },
     {
-      "id": "bk_general_3",
-      "title": "A Practical Introduction to Python Programming Heinold",
-      "author": "Sunstone Library",
-      "program": "All Programs",
+      "author": "Unknown Author",
       "category": "Technical",
       "coverUrl": "https://images.unsplash.com/photo-1516116216624-53e697fedbea?auto=format&fit=crop&w=600&q=80",
+      "description": "A comprehensive technical guide: AWS Learning Roadmap. Perfect for enhancing your skills and knowledge.",
+      "downloadable": true,
       "fileType": "file",
+      "id": "bk_tech_1787577980615_3",
+      "isbn": "ISBN-874896361",
+      "pages": 350,
+      "pdfUrl": "/uploads/books/AWS Learning Roadmap.pdf",
+      "program": "All Programs",
+      "publishedYear": 2024,
+      "quickSummary": {
+        "difficultyLevel": "Intermediate to Advanced",
+        "estimatedReadingTime": "12 Hours",
+        "highlights": [
+          "Comprehensive technical material.",
+          "Practical examples and case studies.",
+          "Industry standard practices."
+        ],
+        "keyTakeaways": [
+          "Master core technical concepts.",
+          "Apply learning to real-world projects."
+        ]
+      },
+      "rating": 4.8,
+      "title": "AWS Learning Roadmap"
+    },
+    {
+      "author": "Unknown Author",
+      "category": "Technical",
+      "coverUrl": "https://images.unsplash.com/photo-1516116216624-53e697fedbea?auto=format&fit=crop&w=600&q=80",
+      "description": "A comprehensive technical guide: AWS Basic Interview Questions CloudDost Telegram. Perfect for enhancing your skills and knowledge.",
+      "downloadable": true,
+      "fileType": "file",
+      "id": "bk_tech_1787577980615_4",
+      "isbn": "ISBN-188048912",
+      "pages": 350,
+      "pdfUrl": "/uploads/books/AWS_Basic_Interview_Questions_CloudDost_Telegram.pdf",
+      "program": "All Programs",
+      "publishedYear": 2024,
+      "quickSummary": {
+        "difficultyLevel": "Intermediate to Advanced",
+        "estimatedReadingTime": "12 Hours",
+        "highlights": [
+          "Comprehensive technical material.",
+          "Practical examples and case studies.",
+          "Industry standard practices."
+        ],
+        "keyTakeaways": [
+          "Master core technical concepts.",
+          "Apply learning to real-world projects."
+        ]
+      },
+      "rating": 4.8,
+      "title": "AWS Basic Interview Questions CloudDost Telegram"
+    },
+    {
+      "author": "Unknown Author",
+      "category": "Technical",
+      "coverUrl": "https://images.unsplash.com/photo-1516116216624-53e697fedbea?auto=format&fit=crop&w=600&q=80",
+      "description": "A comprehensive technical guide: AWS Cerified Cloud Practitioner. Perfect for enhancing your skills and knowledge.",
+      "downloadable": true,
+      "fileType": "file",
+      "id": "bk_tech_1787577980615_5",
+      "isbn": "ISBN-239605533",
+      "pages": 350,
+      "pdfUrl": "/uploads/books/AWS_Cerified_Cloud_Practitioner.pdf",
+      "program": "All Programs",
+      "publishedYear": 2024,
+      "quickSummary": {
+        "difficultyLevel": "Intermediate to Advanced",
+        "estimatedReadingTime": "12 Hours",
+        "highlights": [
+          "Comprehensive technical material.",
+          "Practical examples and case studies.",
+          "Industry standard practices."
+        ],
+        "keyTakeaways": [
+          "Master core technical concepts.",
+          "Apply learning to real-world projects."
+        ]
+      },
+      "rating": 4.8,
+      "title": "AWS Cerified Cloud Practitioner"
+    },
+    {
+      "author": "Unknown Author",
+      "category": "Technical",
+      "coverUrl": "https://images.unsplash.com/photo-1516116216624-53e697fedbea?auto=format&fit=crop&w=600&q=80",
+      "description": "A comprehensive technical guide: aws certified solutions architect. Perfect for enhancing your skills and knowledge.",
+      "downloadable": true,
+      "fileType": "file",
+      "id": "bk_tech_1787577980615_6",
+      "isbn": "ISBN-769957822",
+      "pages": 350,
+      "pdfUrl": "/uploads/books/aws_certified_solutions_architect.pdf",
+      "program": "All Programs",
+      "publishedYear": 2024,
+      "quickSummary": {
+        "difficultyLevel": "Intermediate to Advanced",
+        "estimatedReadingTime": "12 Hours",
+        "highlights": [
+          "Comprehensive technical material.",
+          "Practical examples and case studies.",
+          "Industry standard practices."
+        ],
+        "keyTakeaways": [
+          "Master core technical concepts.",
+          "Apply learning to real-world projects."
+        ]
+      },
+      "rating": 4.8,
+      "title": "aws certified solutions architect"
+    },
+    {
+      "author": "Unknown Author",
+      "category": "Technical",
+      "coverUrl": "https://images.unsplash.com/photo-1516116216624-53e697fedbea?auto=format&fit=crop&w=600&q=80",
+      "description": "A comprehensive technical guide: AWS Cookbook Recipes for Success on AWS John Culkin, Mike Zazon. Perfect for enhancing your skills and knowledge.",
+      "downloadable": true,
+      "fileType": "file",
+      "id": "bk_tech_1787577980615_7",
+      "isbn": "ISBN-246750595",
+      "pages": 350,
+      "pdfUrl": "/uploads/books/AWS_Cookbook_Recipes_for_Success_on_AWS_John_Culkin,_Mike_Zazon.pdf",
+      "program": "All Programs",
+      "publishedYear": 2024,
+      "quickSummary": {
+        "difficultyLevel": "Intermediate to Advanced",
+        "estimatedReadingTime": "12 Hours",
+        "highlights": [
+          "Comprehensive technical material.",
+          "Practical examples and case studies.",
+          "Industry standard practices."
+        ],
+        "keyTakeaways": [
+          "Master core technical concepts.",
+          "Apply learning to real-world projects."
+        ]
+      },
+      "rating": 4.8,
+      "title": "AWS Cookbook Recipes for Success on AWS John Culkin, Mike Zazon"
+    },
+    {
+      "author": "Unknown Author",
+      "category": "Technical",
+      "coverUrl": "https://images.unsplash.com/photo-1516116216624-53e697fedbea?auto=format&fit=crop&w=600&q=80",
+      "description": "A comprehensive technical guide: AWS vs Azure vs Google vs IBM vs Oracle vs Alibaba A detailed comparison. Perfect for enhancing your skills and knowledge.",
+      "downloadable": true,
+      "fileType": "file",
+      "id": "bk_tech_1787577980615_8",
+      "isbn": "ISBN-253272552",
+      "pages": 350,
+      "pdfUrl": "/uploads/books/AWS_vs_Azure_vs_Google_vs_IBM_vs_Oracle_vs_Alibaba_A_detailed_comparison.pdf",
+      "program": "All Programs",
+      "publishedYear": 2024,
+      "quickSummary": {
+        "difficultyLevel": "Intermediate to Advanced",
+        "estimatedReadingTime": "12 Hours",
+        "highlights": [
+          "Comprehensive technical material.",
+          "Practical examples and case studies.",
+          "Industry standard practices."
+        ],
+        "keyTakeaways": [
+          "Master core technical concepts.",
+          "Apply learning to real-world projects."
+        ]
+      },
+      "rating": 4.8,
+      "title": "AWS vs Azure vs Google vs IBM vs Oracle vs Alibaba A detailed comparison"
+    },
+    {
+      "author": "Unknown Author",
+      "category": "Technical",
+      "coverUrl": "https://images.unsplash.com/photo-1516116216624-53e697fedbea?auto=format&fit=crop&w=600&q=80",
+      "description": "A comprehensive technical guide: Azure DevOps Engineer. Perfect for enhancing your skills and knowledge.",
+      "downloadable": true,
+      "fileType": "file",
+      "id": "bk_tech_1787577980615_9",
+      "isbn": "ISBN-110963476",
+      "pages": 350,
+      "pdfUrl": "/uploads/books/Azure DevOps Engineer.pdf",
+      "program": "All Programs",
+      "publishedYear": 2024,
+      "quickSummary": {
+        "difficultyLevel": "Intermediate to Advanced",
+        "estimatedReadingTime": "12 Hours",
+        "highlights": [
+          "Comprehensive technical material.",
+          "Practical examples and case studies.",
+          "Industry standard practices."
+        ],
+        "keyTakeaways": [
+          "Master core technical concepts.",
+          "Apply learning to real-world projects."
+        ]
+      },
+      "rating": 4.8,
+      "title": "Azure DevOps Engineer"
+    },
+    {
+      "author": "Unknown Author",
+      "category": "Technical",
+      "coverUrl": "https://images.unsplash.com/photo-1516116216624-53e697fedbea?auto=format&fit=crop&w=600&q=80",
+      "description": "A comprehensive technical guide: AZURE Full Course. Perfect for enhancing your skills and knowledge.",
+      "downloadable": true,
+      "fileType": "file",
+      "id": "bk_tech_1787577980615_10",
+      "isbn": "ISBN-127170260",
+      "pages": 350,
+      "pdfUrl": "/uploads/books/AZURE Full Course.pdf",
+      "program": "All Programs",
+      "publishedYear": 2024,
+      "quickSummary": {
+        "difficultyLevel": "Intermediate to Advanced",
+        "estimatedReadingTime": "12 Hours",
+        "highlights": [
+          "Comprehensive technical material.",
+          "Practical examples and case studies.",
+          "Industry standard practices."
+        ],
+        "keyTakeaways": [
+          "Master core technical concepts.",
+          "Apply learning to real-world projects."
+        ]
+      },
+      "rating": 4.8,
+      "title": "AZURE Full Course"
+    },
+    {
+      "author": "Unknown Author",
+      "category": "Technical",
+      "coverUrl": "https://images.unsplash.com/photo-1516116216624-53e697fedbea?auto=format&fit=crop&w=600&q=80",
+      "description": "A comprehensive technical guide: Azure&AWS CLoudServiceMap. Perfect for enhancing your skills and knowledge.",
+      "downloadable": true,
+      "fileType": "file",
+      "id": "bk_tech_1787577980615_11",
+      "isbn": "ISBN-473373840",
+      "pages": 350,
+      "pdfUrl": "/uploads/books/Azure&AWS_CLoudServiceMap.pdf",
+      "program": "All Programs",
+      "publishedYear": 2024,
+      "quickSummary": {
+        "difficultyLevel": "Intermediate to Advanced",
+        "estimatedReadingTime": "12 Hours",
+        "highlights": [
+          "Comprehensive technical material.",
+          "Practical examples and case studies.",
+          "Industry standard practices."
+        ],
+        "keyTakeaways": [
+          "Master core technical concepts.",
+          "Apply learning to real-world projects."
+        ]
+      },
+      "rating": 4.8,
+      "title": "Azure&AWS CLoudServiceMap"
+    },
+    {
+      "author": "Unknown Author",
+      "category": "Technical",
+      "coverUrl": "https://images.unsplash.com/photo-1516116216624-53e697fedbea?auto=format&fit=crop&w=600&q=80",
+      "description": "A comprehensive technical guide: AzureCertPath. Perfect for enhancing your skills and knowledge.",
+      "downloadable": true,
+      "fileType": "file",
+      "id": "bk_tech_1787577980615_12",
+      "isbn": "ISBN-379257991",
+      "pages": 350,
+      "pdfUrl": "/uploads/books/AzureCertPath.pdf",
+      "program": "All Programs",
+      "publishedYear": 2024,
+      "quickSummary": {
+        "difficultyLevel": "Intermediate to Advanced",
+        "estimatedReadingTime": "12 Hours",
+        "highlights": [
+          "Comprehensive technical material.",
+          "Practical examples and case studies.",
+          "Industry standard practices."
+        ],
+        "keyTakeaways": [
+          "Master core technical concepts.",
+          "Apply learning to real-world projects."
+        ]
+      },
+      "rating": 4.8,
+      "title": "AzureCertPath"
+    },
+    {
+      "author": "Unknown Author",
+      "category": "Technical",
+      "coverUrl": "https://images.unsplash.com/photo-1516116216624-53e697fedbea?auto=format&fit=crop&w=600&q=80",
+      "description": "A comprehensive technical guide: AzureDevOps. Perfect for enhancing your skills and knowledge.",
+      "downloadable": true,
+      "fileType": "file",
+      "id": "bk_tech_1787577980615_13",
+      "isbn": "ISBN-759222991",
+      "pages": 350,
+      "pdfUrl": "/uploads/books/AzureDevOps.pdf",
+      "program": "All Programs",
+      "publishedYear": 2024,
+      "quickSummary": {
+        "difficultyLevel": "Intermediate to Advanced",
+        "estimatedReadingTime": "12 Hours",
+        "highlights": [
+          "Comprehensive technical material.",
+          "Practical examples and case studies.",
+          "Industry standard practices."
+        ],
+        "keyTakeaways": [
+          "Master core technical concepts.",
+          "Apply learning to real-world projects."
+        ]
+      },
+      "rating": 4.8,
+      "title": "AzureDevOps"
+    },
+    {
+      "author": "Unknown Author",
+      "category": "Technical",
+      "coverUrl": "https://images.unsplash.com/photo-1516116216624-53e697fedbea?auto=format&fit=crop&w=600&q=80",
+      "description": "A comprehensive technical guide: A Practical Guide to Azure DevOps Learn by doing. Perfect for enhancing your skills and knowledge.",
+      "downloadable": true,
+      "fileType": "file",
+      "id": "bk_tech_1787577980615_14",
+      "isbn": "ISBN-661679181",
+      "pages": 350,
+      "pdfUrl": "/uploads/books/A_Practical_Guide_to_Azure_DevOps_Learn_by_doing.pdf",
+      "program": "All Programs",
+      "publishedYear": 2024,
+      "quickSummary": {
+        "difficultyLevel": "Intermediate to Advanced",
+        "estimatedReadingTime": "12 Hours",
+        "highlights": [
+          "Comprehensive technical material.",
+          "Practical examples and case studies.",
+          "Industry standard practices."
+        ],
+        "keyTakeaways": [
+          "Master core technical concepts.",
+          "Apply learning to real-world projects."
+        ]
+      },
+      "rating": 4.8,
+      "title": "A Practical Guide to Azure DevOps Learn by doing"
+    },
+    {
+      "author": "Unknown Author",
+      "category": "Technical",
+      "coverUrl": "https://images.unsplash.com/photo-1516116216624-53e697fedbea?auto=format&fit=crop&w=600&q=80",
+      "description": "A comprehensive technical guide: A Practical Introduction to Python Programming Heinold. Perfect for enhancing your skills and knowledge.",
+      "downloadable": true,
+      "fileType": "file",
+      "id": "bk_tech_1787577980615_15",
+      "isbn": "ISBN-981836602",
+      "pages": 350,
       "pdfUrl": "/uploads/books/A_Practical_Introduction_to_Python_Programming_Heinold.pdf",
-      "driveFileId": null,
-      "localPath": "/uploads/books/A_Practical_Introduction_to_Python_Programming_Heinold.pdf",
-      "downloadable": true,
-      "rating": 4.8,
-      "pages": 350,
+      "program": "All Programs",
       "publishedYear": 2024,
       "quickSummary": {
+        "difficultyLevel": "Intermediate to Advanced",
+        "estimatedReadingTime": "12 Hours",
         "highlights": [
           "Comprehensive technical material.",
           "Practical examples and case studies.",
@@ -119,418 +539,27 @@
         "keyTakeaways": [
           "Master core technical concepts.",
           "Apply learning to real-world projects."
-        ],
-        "estimatedReadingTime": "12 Hours",
-        "difficultyLevel": "Intermediate to Advanced"
+        ]
       },
-      "description": "A comprehensive technical guide: A Practical Introduction to Python Programming Heinold. Available via Google Drive and local library storage."
-    },
-    {
-      "id": "bk_general_4",
-      "title": "Automating.DevOps.with.GitLab.CI.CD.Pipelines",
-      "author": "Sunstone Library",
-      "program": "All Programs",
-      "category": "Technical",
-      "coverUrl": "https://images.unsplash.com/photo-1516116216624-53e697fedbea?auto=format&fit=crop&w=600&q=80",
-      "fileType": "drive",
-      "pdfUrl": "https://drive.google.com/file/d/1QB2Agk81OfkaSdCONIs79hblJdfCQ-5i/view?usp=sharing",
-      "driveFileId": "1QB2Agk81OfkaSdCONIs79hblJdfCQ-5i",
-      "localPath": "/uploads/books/Automating.DevOps.with.GitLab.CI.CD.Pipelines.pdf",
-      "downloadable": true,
       "rating": 4.8,
-      "pages": 350,
-      "publishedYear": 2024,
-      "quickSummary": {
-        "highlights": [
-          "Comprehensive technical material.",
-          "Practical examples and case studies.",
-          "Industry standard practices."
-        ],
-        "keyTakeaways": [
-          "Master core technical concepts.",
-          "Apply learning to real-world projects."
-        ],
-        "estimatedReadingTime": "12 Hours",
-        "difficultyLevel": "Intermediate to Advanced"
-      },
-      "description": "A comprehensive technical guide: Automating.DevOps.with.GitLab.CI.CD.Pipelines. Available via Google Drive and local library storage."
+      "title": "A Practical Introduction to Python Programming Heinold"
     },
     {
-      "id": "bk_general_5",
-      "title": "AWS interview",
-      "author": "Sunstone Library",
-      "program": "All Programs",
+      "author": "Unknown Author",
       "category": "Technical",
       "coverUrl": "https://images.unsplash.com/photo-1516116216624-53e697fedbea?auto=format&fit=crop&w=600&q=80",
-      "fileType": "drive",
-      "pdfUrl": "https://drive.google.com/file/d/1WE8QeRaMdP8-x_oGOPPfpos-YPxxrVsp/view?usp=sharing",
-      "driveFileId": "1WE8QeRaMdP8-x_oGOPPfpos-YPxxrVsp",
-      "localPath": "/uploads/books/AWS interview.pdf",
+      "description": "A comprehensive technical guide: Basic to Advance Python hand written notes. Perfect for enhancing your skills and knowledge.",
       "downloadable": true,
-      "rating": 4.8,
-      "pages": 350,
-      "publishedYear": 2024,
-      "quickSummary": {
-        "highlights": [
-          "Comprehensive technical material.",
-          "Practical examples and case studies.",
-          "Industry standard practices."
-        ],
-        "keyTakeaways": [
-          "Master core technical concepts.",
-          "Apply learning to real-world projects."
-        ],
-        "estimatedReadingTime": "12 Hours",
-        "difficultyLevel": "Intermediate to Advanced"
-      },
-      "description": "A comprehensive technical guide: AWS interview. Available via Google Drive and local library storage."
-    },
-    {
-      "id": "bk_general_6",
-      "title": "AWS Learning Roadmap",
-      "author": "Sunstone Library",
-      "program": "All Programs",
-      "category": "Technical",
-      "coverUrl": "https://images.unsplash.com/photo-1516116216624-53e697fedbea?auto=format&fit=crop&w=600&q=80",
-      "fileType": "drive",
-      "pdfUrl": "https://drive.google.com/file/d/1I33gFhoGKoaxlzR_EFLaqNrp_lAgBbms/view?usp=sharing",
-      "driveFileId": "1I33gFhoGKoaxlzR_EFLaqNrp_lAgBbms",
-      "localPath": "/uploads/books/AWS Learning Roadmap.pdf",
-      "downloadable": true,
-      "rating": 4.8,
-      "pages": 350,
-      "publishedYear": 2024,
-      "quickSummary": {
-        "highlights": [
-          "Comprehensive technical material.",
-          "Practical examples and case studies.",
-          "Industry standard practices."
-        ],
-        "keyTakeaways": [
-          "Master core technical concepts.",
-          "Apply learning to real-world projects."
-        ],
-        "estimatedReadingTime": "12 Hours",
-        "difficultyLevel": "Intermediate to Advanced"
-      },
-      "description": "A comprehensive technical guide: AWS Learning Roadmap. Available via Google Drive and local library storage."
-    },
-    {
-      "id": "bk_general_7",
-      "title": "AWS Basic Interview Questions CloudDost Telegram",
-      "author": "Sunstone Library",
-      "program": "All Programs",
-      "category": "Technical",
-      "coverUrl": "https://images.unsplash.com/photo-1516116216624-53e697fedbea?auto=format&fit=crop&w=600&q=80",
-      "fileType": "drive",
-      "pdfUrl": "https://drive.google.com/file/d/1QH-Pqo4QYV7wQzbeApFPPsk666_ViiXa/view?usp=sharing",
-      "driveFileId": "1QH-Pqo4QYV7wQzbeApFPPsk666_ViiXa",
-      "localPath": "/uploads/books/AWS_Basic_Interview_Questions_CloudDost_Telegram.pdf",
-      "downloadable": true,
-      "rating": 4.8,
-      "pages": 350,
-      "publishedYear": 2024,
-      "quickSummary": {
-        "highlights": [
-          "Comprehensive technical material.",
-          "Practical examples and case studies.",
-          "Industry standard practices."
-        ],
-        "keyTakeaways": [
-          "Master core technical concepts.",
-          "Apply learning to real-world projects."
-        ],
-        "estimatedReadingTime": "12 Hours",
-        "difficultyLevel": "Intermediate to Advanced"
-      },
-      "description": "A comprehensive technical guide: AWS Basic Interview Questions CloudDost Telegram. Available via Google Drive and local library storage."
-    },
-    {
-      "id": "bk_general_8",
-      "title": "AWS Cerified Cloud Practitioner",
-      "author": "Sunstone Library",
-      "program": "All Programs",
-      "category": "Technical",
-      "coverUrl": "https://images.unsplash.com/photo-1516116216624-53e697fedbea?auto=format&fit=crop&w=600&q=80",
-      "fileType": "drive",
-      "pdfUrl": "https://drive.google.com/file/d/1NyCILEZJJyI1ZAWLAWv2vW_xvRigqFVJ/view?usp=sharing",
-      "driveFileId": "1NyCILEZJJyI1ZAWLAWv2vW_xvRigqFVJ",
-      "localPath": "/uploads/books/AWS_Cerified_Cloud_Practitioner.pdf",
-      "downloadable": true,
-      "rating": 4.8,
-      "pages": 350,
-      "publishedYear": 2024,
-      "quickSummary": {
-        "highlights": [
-          "Comprehensive technical material.",
-          "Practical examples and case studies.",
-          "Industry standard practices."
-        ],
-        "keyTakeaways": [
-          "Master core technical concepts.",
-          "Apply learning to real-world projects."
-        ],
-        "estimatedReadingTime": "12 Hours",
-        "difficultyLevel": "Intermediate to Advanced"
-      },
-      "description": "A comprehensive technical guide: AWS Cerified Cloud Practitioner. Available via Google Drive and local library storage."
-    },
-    {
-      "id": "bk_general_9",
-      "title": "aws certified solutions architect",
-      "author": "Sunstone Library",
-      "program": "All Programs",
-      "category": "Technical",
-      "coverUrl": "https://images.unsplash.com/photo-1516116216624-53e697fedbea?auto=format&fit=crop&w=600&q=80",
-      "fileType": "drive",
-      "pdfUrl": "https://drive.google.com/file/d/1-etkJ3A6ge0pLmR7noasgxV5YcetMFkj/view?usp=sharing",
-      "driveFileId": "1-etkJ3A6ge0pLmR7noasgxV5YcetMFkj",
-      "localPath": "/uploads/books/aws_certified_solutions_architect.pdf",
-      "downloadable": true,
-      "rating": 4.8,
-      "pages": 350,
-      "publishedYear": 2024,
-      "quickSummary": {
-        "highlights": [
-          "Comprehensive technical material.",
-          "Practical examples and case studies.",
-          "Industry standard practices."
-        ],
-        "keyTakeaways": [
-          "Master core technical concepts.",
-          "Apply learning to real-world projects."
-        ],
-        "estimatedReadingTime": "12 Hours",
-        "difficultyLevel": "Intermediate to Advanced"
-      },
-      "description": "A comprehensive technical guide: aws certified solutions architect. Available via Google Drive and local library storage."
-    },
-    {
-      "id": "bk_general_10",
-      "title": "AWS Cookbook Recipes for Success on AWS John Culkin, Mike Zazon",
-      "author": "Sunstone Library",
-      "program": "All Programs",
-      "category": "Technical",
-      "coverUrl": "https://images.unsplash.com/photo-1516116216624-53e697fedbea?auto=format&fit=crop&w=600&q=80",
-      "fileType": "drive",
-      "pdfUrl": "https://drive.google.com/file/d/1HhhlzX3Rf4JfeisTHKvfhGZIMdKsiYmm/view?usp=sharing",
-      "driveFileId": "1HhhlzX3Rf4JfeisTHKvfhGZIMdKsiYmm",
-      "localPath": "/uploads/books/AWS_Cookbook_Recipes_for_Success_on_AWS_John_Culkin,_Mike_Zazon.pdf",
-      "downloadable": true,
-      "rating": 4.8,
-      "pages": 350,
-      "publishedYear": 2024,
-      "quickSummary": {
-        "highlights": [
-          "Comprehensive technical material.",
-          "Practical examples and case studies.",
-          "Industry standard practices."
-        ],
-        "keyTakeaways": [
-          "Master core technical concepts.",
-          "Apply learning to real-world projects."
-        ],
-        "estimatedReadingTime": "12 Hours",
-        "difficultyLevel": "Intermediate to Advanced"
-      },
-      "description": "A comprehensive technical guide: AWS Cookbook Recipes for Success on AWS John Culkin, Mike Zazon. Available via Google Drive and local library storage."
-    },
-    {
-      "id": "bk_general_11",
-      "title": "AWS vs Azure vs Google vs IBM vs Oracle vs Alibaba A detailed comparison",
-      "author": "Sunstone Library",
-      "program": "All Programs",
-      "category": "Technical",
-      "coverUrl": "https://images.unsplash.com/photo-1516116216624-53e697fedbea?auto=format&fit=crop&w=600&q=80",
-      "fileType": "drive",
-      "pdfUrl": "https://drive.google.com/file/d/1-dtUGQrdAhJBdnSIiy1YVn4xFClPFrYB/view?usp=sharing",
-      "driveFileId": "1-dtUGQrdAhJBdnSIiy1YVn4xFClPFrYB",
-      "localPath": "/uploads/books/AWS_vs_Azure_vs_Google_vs_IBM_vs_Oracle_vs_Alibaba_A_detailed_comparison.pdf",
-      "downloadable": true,
-      "rating": 4.8,
-      "pages": 350,
-      "publishedYear": 2024,
-      "quickSummary": {
-        "highlights": [
-          "Comprehensive technical material.",
-          "Practical examples and case studies.",
-          "Industry standard practices."
-        ],
-        "keyTakeaways": [
-          "Master core technical concepts.",
-          "Apply learning to real-world projects."
-        ],
-        "estimatedReadingTime": "12 Hours",
-        "difficultyLevel": "Intermediate to Advanced"
-      },
-      "description": "A comprehensive technical guide: AWS vs Azure vs Google vs IBM vs Oracle vs Alibaba A detailed comparison. Available via Google Drive and local library storage."
-    },
-    {
-      "id": "bk_general_12",
-      "title": "Azure DevOps Engineer",
-      "author": "Sunstone Library",
-      "program": "All Programs",
-      "category": "Technical",
-      "coverUrl": "https://images.unsplash.com/photo-1516116216624-53e697fedbea?auto=format&fit=crop&w=600&q=80",
-      "fileType": "drive",
-      "pdfUrl": "https://drive.google.com/file/d/1kUWAeAm_cA4QY1Ocjln1FHwtHtNMDkAM/view?usp=sharing",
-      "driveFileId": "1kUWAeAm_cA4QY1Ocjln1FHwtHtNMDkAM",
-      "localPath": "/uploads/books/Azure DevOps Engineer.pdf",
-      "downloadable": true,
-      "rating": 4.8,
-      "pages": 350,
-      "publishedYear": 2024,
-      "quickSummary": {
-        "highlights": [
-          "Comprehensive technical material.",
-          "Practical examples and case studies.",
-          "Industry standard practices."
-        ],
-        "keyTakeaways": [
-          "Master core technical concepts.",
-          "Apply learning to real-world projects."
-        ],
-        "estimatedReadingTime": "12 Hours",
-        "difficultyLevel": "Intermediate to Advanced"
-      },
-      "description": "A comprehensive technical guide: Azure DevOps Engineer. Available via Google Drive and local library storage."
-    },
-    {
-      "id": "bk_general_13",
-      "title": "AZURE Full Course",
-      "author": "Sunstone Library",
-      "program": "All Programs",
-      "category": "Technical",
-      "coverUrl": "https://images.unsplash.com/photo-1516116216624-53e697fedbea?auto=format&fit=crop&w=600&q=80",
-      "fileType": "drive",
-      "pdfUrl": "https://drive.google.com/file/d/1adc8cT3NHxjxizJKLTxeALa4LfW_inyT/view?usp=sharing",
-      "driveFileId": "1adc8cT3NHxjxizJKLTxeALa4LfW_inyT",
-      "localPath": "/uploads/books/AZURE Full Course.pdf",
-      "downloadable": true,
-      "rating": 4.8,
-      "pages": 350,
-      "publishedYear": 2024,
-      "quickSummary": {
-        "highlights": [
-          "Comprehensive technical material.",
-          "Practical examples and case studies.",
-          "Industry standard practices."
-        ],
-        "keyTakeaways": [
-          "Master core technical concepts.",
-          "Apply learning to real-world projects."
-        ],
-        "estimatedReadingTime": "12 Hours",
-        "difficultyLevel": "Intermediate to Advanced"
-      },
-      "description": "A comprehensive technical guide: AZURE Full Course. Available via Google Drive and local library storage."
-    },
-    {
-      "id": "bk_general_14",
-      "title": "Azure&AWS CLoudServiceMap",
-      "author": "Sunstone Library",
-      "program": "All Programs",
-      "category": "Technical",
-      "coverUrl": "https://images.unsplash.com/photo-1516116216624-53e697fedbea?auto=format&fit=crop&w=600&q=80",
-      "fileType": "drive",
-      "pdfUrl": "https://drive.google.com/file/d/1zsrDzSx2OxS3DlfNWA8s6WnhwViLV73Q/view?usp=sharing",
-      "driveFileId": "1zsrDzSx2OxS3DlfNWA8s6WnhwViLV73Q",
-      "localPath": "/uploads/books/Azure&AWS_CLoudServiceMap.pdf",
-      "downloadable": true,
-      "rating": 4.8,
-      "pages": 350,
-      "publishedYear": 2024,
-      "quickSummary": {
-        "highlights": [
-          "Comprehensive technical material.",
-          "Practical examples and case studies.",
-          "Industry standard practices."
-        ],
-        "keyTakeaways": [
-          "Master core technical concepts.",
-          "Apply learning to real-world projects."
-        ],
-        "estimatedReadingTime": "12 Hours",
-        "difficultyLevel": "Intermediate to Advanced"
-      },
-      "description": "A comprehensive technical guide: Azure&AWS CLoudServiceMap. Available via Google Drive and local library storage."
-    },
-    {
-      "id": "bk_general_15",
-      "title": "AzureCertPath",
-      "author": "Sunstone Library",
-      "program": "All Programs",
-      "category": "Technical",
-      "coverUrl": "https://images.unsplash.com/photo-1516116216624-53e697fedbea?auto=format&fit=crop&w=600&q=80",
-      "fileType": "drive",
-      "pdfUrl": "https://drive.google.com/file/d/1t8aikLSY8PHv2QTpdRyGSquEFO9cEr2R/view?usp=sharing",
-      "driveFileId": "1t8aikLSY8PHv2QTpdRyGSquEFO9cEr2R",
-      "localPath": "/uploads/books/AzureCertPath.pdf",
-      "downloadable": true,
-      "rating": 4.8,
-      "pages": 350,
-      "publishedYear": 2024,
-      "quickSummary": {
-        "highlights": [
-          "Comprehensive technical material.",
-          "Practical examples and case studies.",
-          "Industry standard practices."
-        ],
-        "keyTakeaways": [
-          "Master core technical concepts.",
-          "Apply learning to real-world projects."
-        ],
-        "estimatedReadingTime": "12 Hours",
-        "difficultyLevel": "Intermediate to Advanced"
-      },
-      "description": "A comprehensive technical guide: AzureCertPath. Available via Google Drive and local library storage."
-    },
-    {
-      "id": "bk_general_16",
-      "title": "AzureDevOps",
-      "author": "Sunstone Library",
-      "program": "All Programs",
-      "category": "Technical",
-      "coverUrl": "https://images.unsplash.com/photo-1516116216624-53e697fedbea?auto=format&fit=crop&w=600&q=80",
-      "fileType": "drive",
-      "pdfUrl": "https://drive.google.com/file/d/1OmSIzH8GjgRLqkAXaE8oMLEAMDl0XYM5/view?usp=sharing",
-      "driveFileId": "1OmSIzH8GjgRLqkAXaE8oMLEAMDl0XYM5",
-      "localPath": "/uploads/books/AzureDevOps.pdf",
-      "downloadable": true,
-      "rating": 4.8,
-      "pages": 350,
-      "publishedYear": 2024,
-      "quickSummary": {
-        "highlights": [
-          "Comprehensive technical material.",
-          "Practical examples and case studies.",
-          "Industry standard practices."
-        ],
-        "keyTakeaways": [
-          "Master core technical concepts.",
-          "Apply learning to real-world projects."
-        ],
-        "estimatedReadingTime": "12 Hours",
-        "difficultyLevel": "Intermediate to Advanced"
-      },
-      "description": "A comprehensive technical guide: AzureDevOps. Available via Google Drive and local library storage."
-    },
-    {
-      "id": "bk_general_17",
-      "title": "Basic to Advance Python hand written notes",
-      "author": "Sunstone Library",
-      "program": "All Programs",
-      "category": "Technical",
-      "coverUrl": "https://images.unsplash.com/photo-1516116216624-53e697fedbea?auto=format&fit=crop&w=600&q=80",
       "fileType": "file",
+      "id": "bk_tech_1787577980615_16",
+      "isbn": "ISBN-932795057",
+      "pages": 350,
       "pdfUrl": "/uploads/books/Basic to Advance Python hand written notes.pdf",
-      "driveFileId": null,
-      "localPath": "/uploads/books/Basic to Advance Python hand written notes.pdf",
-      "downloadable": true,
-      "rating": 4.8,
-      "pages": 350,
+      "program": "All Programs",
       "publishedYear": 2024,
       "quickSummary": {
+        "difficultyLevel": "Intermediate to Advanced",
+        "estimatedReadingTime": "12 Hours",
         "highlights": [
           "Comprehensive technical material.",
           "Practical examples and case studies.",
@@ -539,28 +568,27 @@
         "keyTakeaways": [
           "Master core technical concepts.",
           "Apply learning to real-world projects."
-        ],
-        "estimatedReadingTime": "12 Hours",
-        "difficultyLevel": "Intermediate to Advanced"
+        ]
       },
-      "description": "A comprehensive technical guide: Basic to Advance Python hand written notes. Available via Google Drive and local library storage."
+      "rating": 4.8,
+      "title": "Basic to Advance Python hand written notes"
     },
     {
-      "id": "bk_general_18",
-      "title": "Beginning Django CMS (en)",
-      "author": "Sunstone Library",
-      "program": "All Programs",
+      "author": "Unknown Author",
       "category": "Technical",
       "coverUrl": "https://images.unsplash.com/photo-1516116216624-53e697fedbea?auto=format&fit=crop&w=600&q=80",
+      "description": "A comprehensive technical guide: Beginning Django CMS (en). Perfect for enhancing your skills and knowledge.",
+      "downloadable": true,
       "fileType": "file",
+      "id": "bk_tech_1787577980615_17",
+      "isbn": "ISBN-786707717",
+      "pages": 350,
       "pdfUrl": "/uploads/books/Beginning Django CMS (en).pdf",
-      "driveFileId": null,
-      "localPath": "/uploads/books/Beginning Django CMS (en).pdf",
-      "downloadable": true,
-      "rating": 4.8,
-      "pages": 350,
+      "program": "All Programs",
       "publishedYear": 2024,
       "quickSummary": {
+        "difficultyLevel": "Intermediate to Advanced",
+        "estimatedReadingTime": "12 Hours",
         "highlights": [
           "Comprehensive technical material.",
           "Practical examples and case studies.",
@@ -569,28 +597,27 @@
         "keyTakeaways": [
           "Master core technical concepts.",
           "Apply learning to real-world projects."
-        ],
-        "estimatedReadingTime": "12 Hours",
-        "difficultyLevel": "Intermediate to Advanced"
+        ]
       },
-      "description": "A comprehensive technical guide: Beginning Django CMS (en). Available via Google Drive and local library storage."
+      "rating": 4.8,
+      "title": "Beginning Django CMS (en)"
     },
     {
-      "id": "bk_general_19",
-      "title": "Complex Network Analysis in Python",
-      "author": "Sunstone Library",
-      "program": "All Programs",
+      "author": "Unknown Author",
       "category": "Technical",
       "coverUrl": "https://images.unsplash.com/photo-1516116216624-53e697fedbea?auto=format&fit=crop&w=600&q=80",
+      "description": "A comprehensive technical guide: Complex Network Analysis in Python. Perfect for enhancing your skills and knowledge.",
+      "downloadable": true,
       "fileType": "file",
+      "id": "bk_tech_1787577980615_18",
+      "isbn": "ISBN-867623003",
+      "pages": 350,
       "pdfUrl": "/uploads/books/Complex Network Analysis in Python.pdf",
-      "driveFileId": null,
-      "localPath": "/uploads/books/Complex Network Analysis in Python.pdf",
-      "downloadable": true,
-      "rating": 4.8,
-      "pages": 350,
+      "program": "All Programs",
       "publishedYear": 2024,
       "quickSummary": {
+        "difficultyLevel": "Intermediate to Advanced",
+        "estimatedReadingTime": "12 Hours",
         "highlights": [
           "Comprehensive technical material.",
           "Practical examples and case studies.",
@@ -599,268 +626,259 @@
         "keyTakeaways": [
           "Master core technical concepts.",
           "Apply learning to real-world projects."
-        ],
-        "estimatedReadingTime": "12 Hours",
-        "difficultyLevel": "Intermediate to Advanced"
+        ]
       },
-      "description": "A comprehensive technical guide: Complex Network Analysis in Python. Available via Google Drive and local library storage."
-    },
-    {
-      "id": "bk_general_20",
-      "title": "Devops For Dummies",
-      "author": "Sunstone Library",
-      "program": "All Programs",
-      "category": "Technical",
-      "coverUrl": "https://images.unsplash.com/photo-1516116216624-53e697fedbea?auto=format&fit=crop&w=600&q=80",
-      "fileType": "drive",
-      "pdfUrl": "https://drive.google.com/file/d/1IrKluFzsnaQgQXmEsw5dEGoXf2aRoWD8/view?usp=sharing",
-      "driveFileId": "1IrKluFzsnaQgQXmEsw5dEGoXf2aRoWD8",
-      "localPath": "/uploads/books/Devops For Dummies.pdf",
-      "downloadable": true,
       "rating": 4.8,
-      "pages": 350,
-      "publishedYear": 2024,
-      "quickSummary": {
-        "highlights": [
-          "Comprehensive technical material.",
-          "Practical examples and case studies.",
-          "Industry standard practices."
-        ],
-        "keyTakeaways": [
-          "Master core technical concepts.",
-          "Apply learning to real-world projects."
-        ],
-        "estimatedReadingTime": "12 Hours",
-        "difficultyLevel": "Intermediate to Advanced"
-      },
-      "description": "A comprehensive technical guide: Devops For Dummies. Available via Google Drive and local library storage."
+      "title": "Complex Network Analysis in Python"
     },
     {
-      "id": "bk_general_21",
-      "title": "DevOps 1695290060",
-      "author": "Sunstone Library",
-      "program": "All Programs",
+      "author": "Unknown Author",
       "category": "Technical",
       "coverUrl": "https://images.unsplash.com/photo-1516116216624-53e697fedbea?auto=format&fit=crop&w=600&q=80",
-      "fileType": "drive",
-      "pdfUrl": "https://drive.google.com/file/d/1U0ZfGUakFFz4uCddiDT1hA1afNOhqXIt/view?usp=sharing",
-      "driveFileId": "1U0ZfGUakFFz4uCddiDT1hA1afNOhqXIt",
-      "localPath": "/uploads/books/DevOps_1695290060.pdf",
+      "description": "A comprehensive technical guide: Devops For Dummies. Perfect for enhancing your skills and knowledge.",
       "downloadable": true,
-      "rating": 4.8,
-      "pages": 350,
-      "publishedYear": 2024,
-      "quickSummary": {
-        "highlights": [
-          "Comprehensive technical material.",
-          "Practical examples and case studies.",
-          "Industry standard practices."
-        ],
-        "keyTakeaways": [
-          "Master core technical concepts.",
-          "Apply learning to real-world projects."
-        ],
-        "estimatedReadingTime": "12 Hours",
-        "difficultyLevel": "Intermediate to Advanced"
-      },
-      "description": "A comprehensive technical guide: DevOps 1695290060. Available via Google Drive and local library storage."
-    },
-    {
-      "id": "bk_general_22",
-      "title": "DevOps 1695548180",
-      "author": "Sunstone Library",
-      "program": "All Programs",
-      "category": "Technical",
-      "coverUrl": "https://images.unsplash.com/photo-1516116216624-53e697fedbea?auto=format&fit=crop&w=600&q=80",
-      "fileType": "drive",
-      "pdfUrl": "https://drive.google.com/file/d/1lpcBuqnEtSxbo_KvFtGn7wQixE3d_Ds-/view?usp=sharing",
-      "driveFileId": "1lpcBuqnEtSxbo_KvFtGn7wQixE3d_Ds-",
-      "localPath": "/uploads/books/DevOps_1695548180.pdf",
-      "downloadable": true,
-      "rating": 4.8,
-      "pages": 350,
-      "publishedYear": 2024,
-      "quickSummary": {
-        "highlights": [
-          "Comprehensive technical material.",
-          "Practical examples and case studies.",
-          "Industry standard practices."
-        ],
-        "keyTakeaways": [
-          "Master core technical concepts.",
-          "Apply learning to real-world projects."
-        ],
-        "estimatedReadingTime": "12 Hours",
-        "difficultyLevel": "Intermediate to Advanced"
-      },
-      "description": "A comprehensive technical guide: DevOps 1695548180. Available via Google Drive and local library storage."
-    },
-    {
-      "id": "bk_general_23",
-      "title": "DevOps 1696088085",
-      "author": "Sunstone Library",
-      "program": "All Programs",
-      "category": "Technical",
-      "coverUrl": "https://images.unsplash.com/photo-1516116216624-53e697fedbea?auto=format&fit=crop&w=600&q=80",
-      "fileType": "drive",
-      "pdfUrl": "https://drive.google.com/file/d/1sx1PXRHNhMTLSxDXumXd-TNH6qckYSvJ/view?usp=sharing",
-      "driveFileId": "1sx1PXRHNhMTLSxDXumXd-TNH6qckYSvJ",
-      "localPath": "/uploads/books/DevOps_1696088085.pdf",
-      "downloadable": true,
-      "rating": 4.8,
-      "pages": 350,
-      "publishedYear": 2024,
-      "quickSummary": {
-        "highlights": [
-          "Comprehensive technical material.",
-          "Practical examples and case studies.",
-          "Industry standard practices."
-        ],
-        "keyTakeaways": [
-          "Master core technical concepts.",
-          "Apply learning to real-world projects."
-        ],
-        "estimatedReadingTime": "12 Hours",
-        "difficultyLevel": "Intermediate to Advanced"
-      },
-      "description": "A comprehensive technical guide: DevOps 1696088085. Available via Google Drive and local library storage."
-    },
-    {
-      "id": "bk_general_24",
-      "title": "DevOps 1696443361",
-      "author": "Sunstone Library",
-      "program": "All Programs",
-      "category": "Technical",
-      "coverUrl": "https://images.unsplash.com/photo-1516116216624-53e697fedbea?auto=format&fit=crop&w=600&q=80",
-      "fileType": "drive",
-      "pdfUrl": "https://drive.google.com/file/d/1ihpMjn_edxn7h1kZCcMWCl4YmZe1GWJU/view?usp=sharing",
-      "driveFileId": "1ihpMjn_edxn7h1kZCcMWCl4YmZe1GWJU",
-      "localPath": "/uploads/books/DevOps_1696443361.pdf",
-      "downloadable": true,
-      "rating": 4.8,
-      "pages": 350,
-      "publishedYear": 2024,
-      "quickSummary": {
-        "highlights": [
-          "Comprehensive technical material.",
-          "Practical examples and case studies.",
-          "Industry standard practices."
-        ],
-        "keyTakeaways": [
-          "Master core technical concepts.",
-          "Apply learning to real-world projects."
-        ],
-        "estimatedReadingTime": "12 Hours",
-        "difficultyLevel": "Intermediate to Advanced"
-      },
-      "description": "A comprehensive technical guide: DevOps 1696443361. Available via Google Drive and local library storage."
-    },
-    {
-      "id": "bk_general_25",
-      "title": "DevOps 200 Interview questions 1692564411",
-      "author": "Sunstone Library",
-      "program": "All Programs",
-      "category": "Technical",
-      "coverUrl": "https://images.unsplash.com/photo-1516116216624-53e697fedbea?auto=format&fit=crop&w=600&q=80",
-      "fileType": "drive",
-      "pdfUrl": "https://drive.google.com/file/d/1R5WRVCFOPJcxdHkG8jDob_w94hGj6y7j/view?usp=sharing",
-      "driveFileId": "1R5WRVCFOPJcxdHkG8jDob_w94hGj6y7j",
-      "localPath": "/uploads/books/DevOps_200_Interview_questions_1692564411.pdf",
-      "downloadable": true,
-      "rating": 4.8,
-      "pages": 350,
-      "publishedYear": 2024,
-      "quickSummary": {
-        "highlights": [
-          "Comprehensive technical material.",
-          "Practical examples and case studies.",
-          "Industry standard practices."
-        ],
-        "keyTakeaways": [
-          "Master core technical concepts.",
-          "Apply learning to real-world projects."
-        ],
-        "estimatedReadingTime": "12 Hours",
-        "difficultyLevel": "Intermediate to Advanced"
-      },
-      "description": "A comprehensive technical guide: DevOps 200 Interview questions 1692564411. Available via Google Drive and local library storage."
-    },
-    {
-      "id": "bk_general_26",
-      "title": "DevOps Culture and Practice with OpenShift Deliver continuous business",
-      "author": "Sunstone Library",
-      "program": "All Programs",
-      "category": "Technical",
-      "coverUrl": "https://images.unsplash.com/photo-1516116216624-53e697fedbea?auto=format&fit=crop&w=600&q=80",
-      "fileType": "drive",
-      "pdfUrl": "https://drive.google.com/file/d/1vnDvOp2XUrb_rpIPo7W9m9vzbq3pP7Yt/view?usp=sharing",
-      "driveFileId": "1vnDvOp2XUrb_rpIPo7W9m9vzbq3pP7Yt",
-      "localPath": "/uploads/books/DevOps_Culture_and_Practice_with_OpenShift_Deliver_continuous_business.pdf",
-      "downloadable": true,
-      "rating": 4.8,
-      "pages": 350,
-      "publishedYear": 2024,
-      "quickSummary": {
-        "highlights": [
-          "Comprehensive technical material.",
-          "Practical examples and case studies.",
-          "Industry standard practices."
-        ],
-        "keyTakeaways": [
-          "Master core technical concepts.",
-          "Apply learning to real-world projects."
-        ],
-        "estimatedReadingTime": "12 Hours",
-        "difficultyLevel": "Intermediate to Advanced"
-      },
-      "description": "A comprehensive technical guide: DevOps Culture and Practice with OpenShift Deliver continuous business. Available via Google Drive and local library storage."
-    },
-    {
-      "id": "bk_general_27",
-      "title": "DevOps Interview Questions Answers 1695746349",
-      "author": "Sunstone Library",
-      "program": "All Programs",
-      "category": "Technical",
-      "coverUrl": "https://images.unsplash.com/photo-1516116216624-53e697fedbea?auto=format&fit=crop&w=600&q=80",
-      "fileType": "drive",
-      "pdfUrl": "https://drive.google.com/file/d/1IHLTV42Qi__mQBWgB72YNDgZSE3pCra3/view?usp=sharing",
-      "driveFileId": "1IHLTV42Qi__mQBWgB72YNDgZSE3pCra3",
-      "localPath": "/uploads/books/DevOps_Interview_Questions_Answers_1695746349.pdf",
-      "downloadable": true,
-      "rating": 4.8,
-      "pages": 350,
-      "publishedYear": 2024,
-      "quickSummary": {
-        "highlights": [
-          "Comprehensive technical material.",
-          "Practical examples and case studies.",
-          "Industry standard practices."
-        ],
-        "keyTakeaways": [
-          "Master core technical concepts.",
-          "Apply learning to real-world projects."
-        ],
-        "estimatedReadingTime": "12 Hours",
-        "difficultyLevel": "Intermediate to Advanced"
-      },
-      "description": "A comprehensive technical guide: DevOps Interview Questions Answers 1695746349. Available via Google Drive and local library storage."
-    },
-    {
-      "id": "bk_general_28",
-      "title": "Learning Python Network Programming (en)",
-      "author": "Sunstone Library",
-      "program": "All Programs",
-      "category": "Technical",
-      "coverUrl": "https://images.unsplash.com/photo-1516116216624-53e697fedbea?auto=format&fit=crop&w=600&q=80",
       "fileType": "file",
+      "id": "bk_tech_1787577980615_19",
+      "isbn": "ISBN-553805367",
+      "pages": 350,
+      "pdfUrl": "/uploads/books/Devops For Dummies.pdf",
+      "program": "All Programs",
+      "publishedYear": 2024,
+      "quickSummary": {
+        "difficultyLevel": "Intermediate to Advanced",
+        "estimatedReadingTime": "12 Hours",
+        "highlights": [
+          "Comprehensive technical material.",
+          "Practical examples and case studies.",
+          "Industry standard practices."
+        ],
+        "keyTakeaways": [
+          "Master core technical concepts.",
+          "Apply learning to real-world projects."
+        ]
+      },
+      "rating": 4.8,
+      "title": "Devops For Dummies"
+    },
+    {
+      "author": "Unknown Author",
+      "category": "Technical",
+      "coverUrl": "https://images.unsplash.com/photo-1516116216624-53e697fedbea?auto=format&fit=crop&w=600&q=80",
+      "description": "A comprehensive technical guide: DevOps 1695290060. Perfect for enhancing your skills and knowledge.",
+      "downloadable": true,
+      "fileType": "file",
+      "id": "bk_tech_1787577980615_20",
+      "isbn": "ISBN-511857827",
+      "pages": 350,
+      "pdfUrl": "/uploads/books/DevOps_1695290060.pdf",
+      "program": "All Programs",
+      "publishedYear": 2024,
+      "quickSummary": {
+        "difficultyLevel": "Intermediate to Advanced",
+        "estimatedReadingTime": "12 Hours",
+        "highlights": [
+          "Comprehensive technical material.",
+          "Practical examples and case studies.",
+          "Industry standard practices."
+        ],
+        "keyTakeaways": [
+          "Master core technical concepts.",
+          "Apply learning to real-world projects."
+        ]
+      },
+      "rating": 4.8,
+      "title": "DevOps 1695290060"
+    },
+    {
+      "author": "Unknown Author",
+      "category": "Technical",
+      "coverUrl": "https://images.unsplash.com/photo-1516116216624-53e697fedbea?auto=format&fit=crop&w=600&q=80",
+      "description": "A comprehensive technical guide: DevOps 1695548180. Perfect for enhancing your skills and knowledge.",
+      "downloadable": true,
+      "fileType": "file",
+      "id": "bk_tech_1787577980615_21",
+      "isbn": "ISBN-154352174",
+      "pages": 350,
+      "pdfUrl": "/uploads/books/DevOps_1695548180.pdf",
+      "program": "All Programs",
+      "publishedYear": 2024,
+      "quickSummary": {
+        "difficultyLevel": "Intermediate to Advanced",
+        "estimatedReadingTime": "12 Hours",
+        "highlights": [
+          "Comprehensive technical material.",
+          "Practical examples and case studies.",
+          "Industry standard practices."
+        ],
+        "keyTakeaways": [
+          "Master core technical concepts.",
+          "Apply learning to real-world projects."
+        ]
+      },
+      "rating": 4.8,
+      "title": "DevOps 1695548180"
+    },
+    {
+      "author": "Unknown Author",
+      "category": "Technical",
+      "coverUrl": "https://images.unsplash.com/photo-1516116216624-53e697fedbea?auto=format&fit=crop&w=600&q=80",
+      "description": "A comprehensive technical guide: DevOps 1696088085. Perfect for enhancing your skills and knowledge.",
+      "downloadable": true,
+      "fileType": "file",
+      "id": "bk_tech_1787577980615_22",
+      "isbn": "ISBN-255995166",
+      "pages": 350,
+      "pdfUrl": "/uploads/books/DevOps_1696088085.pdf",
+      "program": "All Programs",
+      "publishedYear": 2024,
+      "quickSummary": {
+        "difficultyLevel": "Intermediate to Advanced",
+        "estimatedReadingTime": "12 Hours",
+        "highlights": [
+          "Comprehensive technical material.",
+          "Practical examples and case studies.",
+          "Industry standard practices."
+        ],
+        "keyTakeaways": [
+          "Master core technical concepts.",
+          "Apply learning to real-world projects."
+        ]
+      },
+      "rating": 4.8,
+      "title": "DevOps 1696088085"
+    },
+    {
+      "author": "Unknown Author",
+      "category": "Technical",
+      "coverUrl": "https://images.unsplash.com/photo-1516116216624-53e697fedbea?auto=format&fit=crop&w=600&q=80",
+      "description": "A comprehensive technical guide: DevOps 1696443361. Perfect for enhancing your skills and knowledge.",
+      "downloadable": true,
+      "fileType": "file",
+      "id": "bk_tech_1787577980615_23",
+      "isbn": "ISBN-144880243",
+      "pages": 350,
+      "pdfUrl": "/uploads/books/DevOps_1696443361.pdf",
+      "program": "All Programs",
+      "publishedYear": 2024,
+      "quickSummary": {
+        "difficultyLevel": "Intermediate to Advanced",
+        "estimatedReadingTime": "12 Hours",
+        "highlights": [
+          "Comprehensive technical material.",
+          "Practical examples and case studies.",
+          "Industry standard practices."
+        ],
+        "keyTakeaways": [
+          "Master core technical concepts.",
+          "Apply learning to real-world projects."
+        ]
+      },
+      "rating": 4.8,
+      "title": "DevOps 1696443361"
+    },
+    {
+      "author": "Unknown Author",
+      "category": "Technical",
+      "coverUrl": "https://images.unsplash.com/photo-1516116216624-53e697fedbea?auto=format&fit=crop&w=600&q=80",
+      "description": "A comprehensive technical guide: DevOps 200 Interview questions 1692564411. Perfect for enhancing your skills and knowledge.",
+      "downloadable": true,
+      "fileType": "file",
+      "id": "bk_tech_1787577980615_24",
+      "isbn": "ISBN-820967261",
+      "pages": 350,
+      "pdfUrl": "/uploads/books/DevOps_200_Interview_questions_1692564411.pdf",
+      "program": "All Programs",
+      "publishedYear": 2024,
+      "quickSummary": {
+        "difficultyLevel": "Intermediate to Advanced",
+        "estimatedReadingTime": "12 Hours",
+        "highlights": [
+          "Comprehensive technical material.",
+          "Practical examples and case studies.",
+          "Industry standard practices."
+        ],
+        "keyTakeaways": [
+          "Master core technical concepts.",
+          "Apply learning to real-world projects."
+        ]
+      },
+      "rating": 4.8,
+      "title": "DevOps 200 Interview questions 1692564411"
+    },
+    {
+      "author": "Unknown Author",
+      "category": "Technical",
+      "coverUrl": "https://images.unsplash.com/photo-1516116216624-53e697fedbea?auto=format&fit=crop&w=600&q=80",
+      "description": "A comprehensive technical guide: DevOps Culture and Practice with OpenShift Deliver continuous business. Perfect for enhancing your skills and knowledge.",
+      "downloadable": true,
+      "fileType": "file",
+      "id": "bk_tech_1787577980615_25",
+      "isbn": "ISBN-694299026",
+      "pages": 350,
+      "pdfUrl": "/uploads/books/DevOps_Culture_and_Practice_with_OpenShift_Deliver_continuous_business.pdf",
+      "program": "All Programs",
+      "publishedYear": 2024,
+      "quickSummary": {
+        "difficultyLevel": "Intermediate to Advanced",
+        "estimatedReadingTime": "12 Hours",
+        "highlights": [
+          "Comprehensive technical material.",
+          "Practical examples and case studies.",
+          "Industry standard practices."
+        ],
+        "keyTakeaways": [
+          "Master core technical concepts.",
+          "Apply learning to real-world projects."
+        ]
+      },
+      "rating": 4.8,
+      "title": "DevOps Culture and Practice with OpenShift Deliver continuous business"
+    },
+    {
+      "author": "Unknown Author",
+      "category": "Technical",
+      "coverUrl": "https://images.unsplash.com/photo-1516116216624-53e697fedbea?auto=format&fit=crop&w=600&q=80",
+      "description": "A comprehensive technical guide: DevOps Interview Questions Answers 1695746349. Perfect for enhancing your skills and knowledge.",
+      "downloadable": true,
+      "fileType": "file",
+      "id": "bk_tech_1787577980615_26",
+      "isbn": "ISBN-662046597",
+      "pages": 350,
+      "pdfUrl": "/uploads/books/DevOps_Interview_Questions_Answers_1695746349.pdf",
+      "program": "All Programs",
+      "publishedYear": 2024,
+      "quickSummary": {
+        "difficultyLevel": "Intermediate to Advanced",
+        "estimatedReadingTime": "12 Hours",
+        "highlights": [
+          "Comprehensive technical material.",
+          "Practical examples and case studies.",
+          "Industry standard practices."
+        ],
+        "keyTakeaways": [
+          "Master core technical concepts.",
+          "Apply learning to real-world projects."
+        ]
+      },
+      "rating": 4.8,
+      "title": "DevOps Interview Questions Answers 1695746349"
+    },
+    {
+      "author": "Unknown Author",
+      "category": "Technical",
+      "coverUrl": "https://images.unsplash.com/photo-1516116216624-53e697fedbea?auto=format&fit=crop&w=600&q=80",
+      "description": "A comprehensive technical guide: Learning Python Network Programming (en). Perfect for enhancing your skills and knowledge.",
+      "downloadable": true,
+      "fileType": "file",
+      "id": "bk_tech_1787577980615_27",
+      "isbn": "ISBN-527379355",
+      "pages": 350,
       "pdfUrl": "/uploads/books/Learning Python Network Programming (en).pdf",
-      "driveFileId": null,
-      "localPath": "/uploads/books/Learning Python Network Programming (en).pdf",
-      "downloadable": true,
-      "rating": 4.8,
-      "pages": 350,
+      "program": "All Programs",
       "publishedYear": 2024,
       "quickSummary": {
+        "difficultyLevel": "Intermediate to Advanced",
+        "estimatedReadingTime": "12 Hours",
         "highlights": [
           "Comprehensive technical material.",
           "Practical examples and case studies.",
@@ -869,28 +887,27 @@
         "keyTakeaways": [
           "Master core technical concepts.",
           "Apply learning to real-world projects."
-        ],
-        "estimatedReadingTime": "12 Hours",
-        "difficultyLevel": "Intermediate to Advanced"
+        ]
       },
-      "description": "A comprehensive technical guide: Learning Python Network Programming (en). Available via Google Drive and local library storage."
+      "rating": 4.8,
+      "title": "Learning Python Network Programming (en)"
     },
     {
-      "id": "bk_general_29",
-      "title": "Mastering Python Networking (en)",
-      "author": "Sunstone Library",
-      "program": "All Programs",
+      "author": "Unknown Author",
       "category": "Technical",
       "coverUrl": "https://images.unsplash.com/photo-1516116216624-53e697fedbea?auto=format&fit=crop&w=600&q=80",
+      "description": "A comprehensive technical guide: Mastering Python Networking (en). Perfect for enhancing your skills and knowledge.",
+      "downloadable": true,
       "fileType": "file",
+      "id": "bk_tech_1787577980615_28",
+      "isbn": "ISBN-863320877",
+      "pages": 350,
       "pdfUrl": "/uploads/books/Mastering Python Networking (en).pdf",
-      "driveFileId": null,
-      "localPath": "/uploads/books/Mastering Python Networking (en).pdf",
-      "downloadable": true,
-      "rating": 4.8,
-      "pages": 350,
+      "program": "All Programs",
       "publishedYear": 2024,
       "quickSummary": {
+        "difficultyLevel": "Intermediate to Advanced",
+        "estimatedReadingTime": "12 Hours",
         "highlights": [
           "Comprehensive technical material.",
           "Practical examples and case studies.",
@@ -899,28 +916,27 @@
         "keyTakeaways": [
           "Master core technical concepts.",
           "Apply learning to real-world projects."
-        ],
-        "estimatedReadingTime": "12 Hours",
-        "difficultyLevel": "Intermediate to Advanced"
+        ]
       },
-      "description": "A comprehensive technical guide: Mastering Python Networking (en). Available via Google Drive and local library storage."
+      "rating": 4.8,
+      "title": "Mastering Python Networking (en)"
     },
     {
-      "id": "bk_general_30",
-      "title": "Math Adventures with Python (en)",
-      "author": "Sunstone Library",
-      "program": "All Programs",
+      "author": "Unknown Author",
       "category": "Technical",
       "coverUrl": "https://images.unsplash.com/photo-1516116216624-53e697fedbea?auto=format&fit=crop&w=600&q=80",
+      "description": "A comprehensive technical guide: Math Adventures with Python (en). Perfect for enhancing your skills and knowledge.",
+      "downloadable": true,
       "fileType": "file",
+      "id": "bk_tech_1787577980615_29",
+      "isbn": "ISBN-953214477",
+      "pages": 350,
       "pdfUrl": "/uploads/books/Math Adventures with Python (en).pdf",
-      "driveFileId": null,
-      "localPath": "/uploads/books/Math Adventures with Python (en).pdf",
-      "downloadable": true,
-      "rating": 4.8,
-      "pages": 350,
+      "program": "All Programs",
       "publishedYear": 2024,
       "quickSummary": {
+        "difficultyLevel": "Intermediate to Advanced",
+        "estimatedReadingTime": "12 Hours",
         "highlights": [
           "Comprehensive technical material.",
           "Practical examples and case studies.",
@@ -929,88 +945,85 @@
         "keyTakeaways": [
           "Master core technical concepts.",
           "Apply learning to real-world projects."
-        ],
-        "estimatedReadingTime": "12 Hours",
-        "difficultyLevel": "Intermediate to Advanced"
+        ]
       },
-      "description": "A comprehensive technical guide: Math Adventures with Python (en). Available via Google Drive and local library storage."
-    },
-    {
-      "id": "bk_general_31",
-      "title": "Migrating to AWS A Manager's Guide How to Foster Agility, Reduce",
-      "author": "Sunstone Library",
-      "program": "All Programs",
-      "category": "Technical",
-      "coverUrl": "https://images.unsplash.com/photo-1516116216624-53e697fedbea?auto=format&fit=crop&w=600&q=80",
-      "fileType": "drive",
-      "pdfUrl": "https://drive.google.com/file/d/1WRYnnao8bv9RJxqUJ38yoIE6n4oBOiLZ/view?usp=sharing",
-      "driveFileId": "1WRYnnao8bv9RJxqUJ38yoIE6n4oBOiLZ",
-      "localPath": "/uploads/books/Migrating_to_AWS_A_Manager's_Guide_How_to_Foster_Agility,_Reduce.pdf",
-      "downloadable": true,
       "rating": 4.8,
-      "pages": 350,
-      "publishedYear": 2024,
-      "quickSummary": {
-        "highlights": [
-          "Comprehensive technical material.",
-          "Practical examples and case studies.",
-          "Industry standard practices."
-        ],
-        "keyTakeaways": [
-          "Master core technical concepts.",
-          "Apply learning to real-world projects."
-        ],
-        "estimatedReadingTime": "12 Hours",
-        "difficultyLevel": "Intermediate to Advanced"
-      },
-      "description": "A comprehensive technical guide: Migrating to AWS A Manager's Guide How to Foster Agility, Reduce. Available via Google Drive and local library storage."
+      "title": "Math Adventures with Python (en)"
     },
     {
-      "id": "bk_general_32",
-      "title": "Mobile.DevOps.Playbook",
-      "author": "Sunstone Library",
-      "program": "All Programs",
+      "author": "Unknown Author",
       "category": "Technical",
       "coverUrl": "https://images.unsplash.com/photo-1516116216624-53e697fedbea?auto=format&fit=crop&w=600&q=80",
-      "fileType": "drive",
-      "pdfUrl": "https://drive.google.com/file/d/1eeWvARqaaRG9cCXFuLHwzzZgpFXx1gfK/view?usp=sharing",
-      "driveFileId": "1eeWvARqaaRG9cCXFuLHwzzZgpFXx1gfK",
-      "localPath": "/uploads/books/Mobile.DevOps.Playbook.pdf",
+      "description": "A comprehensive technical guide: Migrating to AWS A Manager's Guide How to Foster Agility, Reduce. Perfect for enhancing your skills and knowledge.",
       "downloadable": true,
-      "rating": 4.8,
-      "pages": 350,
-      "publishedYear": 2024,
-      "quickSummary": {
-        "highlights": [
-          "Comprehensive technical material.",
-          "Practical examples and case studies.",
-          "Industry standard practices."
-        ],
-        "keyTakeaways": [
-          "Master core technical concepts.",
-          "Apply learning to real-world projects."
-        ],
-        "estimatedReadingTime": "12 Hours",
-        "difficultyLevel": "Intermediate to Advanced"
-      },
-      "description": "A comprehensive technical guide: Mobile.DevOps.Playbook. Available via Google Drive and local library storage."
-    },
-    {
-      "id": "bk_general_33",
-      "title": "Natural Language Processing with Python (en)",
-      "author": "Sunstone Library",
-      "program": "All Programs",
-      "category": "Technical",
-      "coverUrl": "https://images.unsplash.com/photo-1516116216624-53e697fedbea?auto=format&fit=crop&w=600&q=80",
       "fileType": "file",
+      "id": "bk_tech_1787577980615_30",
+      "isbn": "ISBN-536901415",
+      "pages": 350,
+      "pdfUrl": "/uploads/books/Migrating_to_AWS_A_Manager's_Guide_How_to_Foster_Agility,_Reduce.pdf",
+      "program": "All Programs",
+      "publishedYear": 2024,
+      "quickSummary": {
+        "difficultyLevel": "Intermediate to Advanced",
+        "estimatedReadingTime": "12 Hours",
+        "highlights": [
+          "Comprehensive technical material.",
+          "Practical examples and case studies.",
+          "Industry standard practices."
+        ],
+        "keyTakeaways": [
+          "Master core technical concepts.",
+          "Apply learning to real-world projects."
+        ]
+      },
+      "rating": 4.8,
+      "title": "Migrating to AWS A Manager's Guide How to Foster Agility, Reduce"
+    },
+    {
+      "author": "Unknown Author",
+      "category": "Technical",
+      "coverUrl": "https://images.unsplash.com/photo-1516116216624-53e697fedbea?auto=format&fit=crop&w=600&q=80",
+      "description": "A comprehensive technical guide: Mobile.DevOps.Playbook. Perfect for enhancing your skills and knowledge.",
+      "downloadable": true,
+      "fileType": "file",
+      "id": "bk_tech_1787577980615_31",
+      "isbn": "ISBN-114867650",
+      "pages": 350,
+      "pdfUrl": "/uploads/books/Mobile.DevOps.Playbook.pdf",
+      "program": "All Programs",
+      "publishedYear": 2024,
+      "quickSummary": {
+        "difficultyLevel": "Intermediate to Advanced",
+        "estimatedReadingTime": "12 Hours",
+        "highlights": [
+          "Comprehensive technical material.",
+          "Practical examples and case studies.",
+          "Industry standard practices."
+        ],
+        "keyTakeaways": [
+          "Master core technical concepts.",
+          "Apply learning to real-world projects."
+        ]
+      },
+      "rating": 4.8,
+      "title": "Mobile.DevOps.Playbook"
+    },
+    {
+      "author": "Unknown Author",
+      "category": "Technical",
+      "coverUrl": "https://images.unsplash.com/photo-1516116216624-53e697fedbea?auto=format&fit=crop&w=600&q=80",
+      "description": "A comprehensive technical guide: Natural Language Processing with Python (en). Perfect for enhancing your skills and knowledge.",
+      "downloadable": true,
+      "fileType": "file",
+      "id": "bk_tech_1787577980615_32",
+      "isbn": "ISBN-985164971",
+      "pages": 350,
       "pdfUrl": "/uploads/books/Natural Language Processing with Python (en).pdf",
-      "driveFileId": null,
-      "localPath": "/uploads/books/Natural Language Processing with Python (en).pdf",
-      "downloadable": true,
-      "rating": 4.8,
-      "pages": 350,
+      "program": "All Programs",
       "publishedYear": 2024,
       "quickSummary": {
+        "difficultyLevel": "Intermediate to Advanced",
+        "estimatedReadingTime": "12 Hours",
         "highlights": [
           "Comprehensive technical material.",
           "Practical examples and case studies.",
@@ -1019,28 +1032,27 @@
         "keyTakeaways": [
           "Master core technical concepts.",
           "Apply learning to real-world projects."
-        ],
-        "estimatedReadingTime": "12 Hours",
-        "difficultyLevel": "Intermediate to Advanced"
+        ]
       },
-      "description": "A comprehensive technical guide: Natural Language Processing with Python (en). Available via Google Drive and local library storage."
+      "rating": 4.8,
+      "title": "Natural Language Processing with Python (en)"
     },
     {
-      "id": "bk_general_34",
-      "title": "Pro Python (en)",
-      "author": "Sunstone Library",
-      "program": "All Programs",
+      "author": "Unknown Author",
       "category": "Technical",
       "coverUrl": "https://images.unsplash.com/photo-1516116216624-53e697fedbea?auto=format&fit=crop&w=600&q=80",
+      "description": "A comprehensive technical guide: Pro Python (en). Perfect for enhancing your skills and knowledge.",
+      "downloadable": true,
       "fileType": "file",
+      "id": "bk_tech_1787577980615_33",
+      "isbn": "ISBN-828411170",
+      "pages": 350,
       "pdfUrl": "/uploads/books/Pro Python (en).pdf",
-      "driveFileId": null,
-      "localPath": "/uploads/books/Pro Python (en).pdf",
-      "downloadable": true,
-      "rating": 4.8,
-      "pages": 350,
+      "program": "All Programs",
       "publishedYear": 2024,
       "quickSummary": {
+        "difficultyLevel": "Intermediate to Advanced",
+        "estimatedReadingTime": "12 Hours",
         "highlights": [
           "Comprehensive technical material.",
           "Practical examples and case studies.",
@@ -1049,28 +1061,27 @@
         "keyTakeaways": [
           "Master core technical concepts.",
           "Apply learning to real-world projects."
-        ],
-        "estimatedReadingTime": "12 Hours",
-        "difficultyLevel": "Intermediate to Advanced"
+        ]
       },
-      "description": "A comprehensive technical guide: Pro Python (en). Available via Google Drive and local library storage."
+      "rating": 4.8,
+      "title": "Pro Python (en)"
     },
     {
-      "id": "bk_general_35",
-      "title": "Programming for Computations – Python (en)",
-      "author": "Sunstone Library",
-      "program": "All Programs",
+      "author": "Unknown Author",
       "category": "Technical",
       "coverUrl": "https://images.unsplash.com/photo-1516116216624-53e697fedbea?auto=format&fit=crop&w=600&q=80",
+      "description": "A comprehensive technical guide: Programming for Computations – Python (en). Perfect for enhancing your skills and knowledge.",
+      "downloadable": true,
       "fileType": "file",
+      "id": "bk_tech_1787577980616_34",
+      "isbn": "ISBN-521816019",
+      "pages": 350,
       "pdfUrl": "/uploads/books/Programming for Computations – Python (en).pdf",
-      "driveFileId": null,
-      "localPath": "/uploads/books/Programming for Computations – Python (en).pdf",
-      "downloadable": true,
-      "rating": 4.8,
-      "pages": 350,
+      "program": "All Programs",
       "publishedYear": 2024,
       "quickSummary": {
+        "difficultyLevel": "Intermediate to Advanced",
+        "estimatedReadingTime": "12 Hours",
         "highlights": [
           "Comprehensive technical material.",
           "Practical examples and case studies.",
@@ -1079,28 +1090,27 @@
         "keyTakeaways": [
           "Master core technical concepts.",
           "Apply learning to real-world projects."
-        ],
-        "estimatedReadingTime": "12 Hours",
-        "difficultyLevel": "Intermediate to Advanced"
+        ]
       },
-      "description": "A comprehensive technical guide: Programming for Computations – Python (en). Available via Google Drive and local library storage."
+      "rating": 4.8,
+      "title": "Programming for Computations – Python (en)"
     },
     {
-      "id": "bk_general_36",
-      "title": "Python for Computational Science and Engineering (en)",
-      "author": "Sunstone Library",
-      "program": "All Programs",
+      "author": "Unknown Author",
       "category": "Technical",
       "coverUrl": "https://images.unsplash.com/photo-1516116216624-53e697fedbea?auto=format&fit=crop&w=600&q=80",
+      "description": "A comprehensive technical guide: Python for Computational Science and Engineering (en). Perfect for enhancing your skills and knowledge.",
+      "downloadable": true,
       "fileType": "file",
+      "id": "bk_tech_1787577980616_35",
+      "isbn": "ISBN-405969338",
+      "pages": 350,
       "pdfUrl": "/uploads/books/Python for Computational Science and Engineering (en).pdf",
-      "driveFileId": null,
-      "localPath": "/uploads/books/Python for Computational Science and Engineering (en).pdf",
-      "downloadable": true,
-      "rating": 4.8,
-      "pages": 350,
+      "program": "All Programs",
       "publishedYear": 2024,
       "quickSummary": {
+        "difficultyLevel": "Intermediate to Advanced",
+        "estimatedReadingTime": "12 Hours",
         "highlights": [
           "Comprehensive technical material.",
           "Practical examples and case studies.",
@@ -1109,28 +1119,27 @@
         "keyTakeaways": [
           "Master core technical concepts.",
           "Apply learning to real-world projects."
-        ],
-        "estimatedReadingTime": "12 Hours",
-        "difficultyLevel": "Intermediate to Advanced"
+        ]
       },
-      "description": "A comprehensive technical guide: Python for Computational Science and Engineering (en). Available via Google Drive and local library storage."
+      "rating": 4.8,
+      "title": "Python for Computational Science and Engineering (en)"
     },
     {
-      "id": "bk_general_37",
-      "title": "Python for Scientists (en)",
-      "author": "Sunstone Library",
-      "program": "All Programs",
+      "author": "Unknown Author",
       "category": "Technical",
       "coverUrl": "https://images.unsplash.com/photo-1516116216624-53e697fedbea?auto=format&fit=crop&w=600&q=80",
+      "description": "A comprehensive technical guide: Python for Scientists (en). Perfect for enhancing your skills and knowledge.",
+      "downloadable": true,
       "fileType": "file",
+      "id": "bk_tech_1787577980616_36",
+      "isbn": "ISBN-445665101",
+      "pages": 350,
       "pdfUrl": "/uploads/books/Python for Scientists (en).pdf",
-      "driveFileId": null,
-      "localPath": "/uploads/books/Python for Scientists (en).pdf",
-      "downloadable": true,
-      "rating": 4.8,
-      "pages": 350,
+      "program": "All Programs",
       "publishedYear": 2024,
       "quickSummary": {
+        "difficultyLevel": "Intermediate to Advanced",
+        "estimatedReadingTime": "12 Hours",
         "highlights": [
           "Comprehensive technical material.",
           "Practical examples and case studies.",
@@ -1139,28 +1148,27 @@
         "keyTakeaways": [
           "Master core technical concepts.",
           "Apply learning to real-world projects."
-        ],
-        "estimatedReadingTime": "12 Hours",
-        "difficultyLevel": "Intermediate to Advanced"
+        ]
       },
-      "description": "A comprehensive technical guide: Python for Scientists (en). Available via Google Drive and local library storage."
+      "rating": 4.8,
+      "title": "Python for Scientists (en)"
     },
     {
-      "id": "bk_general_38",
-      "title": "Python Machine Learning Case  Studies (en)",
-      "author": "Sunstone Library",
-      "program": "All Programs",
+      "author": "Unknown Author",
       "category": "Technical",
       "coverUrl": "https://images.unsplash.com/photo-1516116216624-53e697fedbea?auto=format&fit=crop&w=600&q=80",
+      "description": "A comprehensive technical guide: Python Machine Learning Case  Studies (en). Perfect for enhancing your skills and knowledge.",
+      "downloadable": true,
       "fileType": "file",
+      "id": "bk_tech_1787577980616_37",
+      "isbn": "ISBN-382911188",
+      "pages": 350,
       "pdfUrl": "/uploads/books/Python Machine Learning Case  Studies (en).pdf",
-      "driveFileId": null,
-      "localPath": "/uploads/books/Python Machine Learning Case  Studies (en).pdf",
-      "downloadable": true,
-      "rating": 4.8,
-      "pages": 350,
+      "program": "All Programs",
       "publishedYear": 2024,
       "quickSummary": {
+        "difficultyLevel": "Intermediate to Advanced",
+        "estimatedReadingTime": "12 Hours",
         "highlights": [
           "Comprehensive technical material.",
           "Practical examples and case studies.",
@@ -1169,28 +1177,27 @@
         "keyTakeaways": [
           "Master core technical concepts.",
           "Apply learning to real-world projects."
-        ],
-        "estimatedReadingTime": "12 Hours",
-        "difficultyLevel": "Intermediate to Advanced"
+        ]
       },
-      "description": "A comprehensive technical guide: Python Machine Learning Case  Studies (en). Available via Google Drive and local library storage."
+      "rating": 4.8,
+      "title": "Python Machine Learning Case  Studies (en)"
     },
     {
-      "id": "bk_general_39",
-      "title": "Python Web Scraping (en)",
-      "author": "Sunstone Library",
-      "program": "All Programs",
+      "author": "Unknown Author",
       "category": "Technical",
       "coverUrl": "https://images.unsplash.com/photo-1516116216624-53e697fedbea?auto=format&fit=crop&w=600&q=80",
+      "description": "A comprehensive technical guide: Python Web Scraping (en). Perfect for enhancing your skills and knowledge.",
+      "downloadable": true,
       "fileType": "file",
+      "id": "bk_tech_1787577980616_38",
+      "isbn": "ISBN-520820706",
+      "pages": 350,
       "pdfUrl": "/uploads/books/Python Web Scraping (en).pdf",
-      "driveFileId": null,
-      "localPath": "/uploads/books/Python Web Scraping (en).pdf",
-      "downloadable": true,
-      "rating": 4.8,
-      "pages": 350,
+      "program": "All Programs",
       "publishedYear": 2024,
       "quickSummary": {
+        "difficultyLevel": "Intermediate to Advanced",
+        "estimatedReadingTime": "12 Hours",
         "highlights": [
           "Comprehensive technical material.",
           "Practical examples and case studies.",
@@ -1199,28 +1206,27 @@
         "keyTakeaways": [
           "Master core technical concepts.",
           "Apply learning to real-world projects."
-        ],
-        "estimatedReadingTime": "12 Hours",
-        "difficultyLevel": "Intermediate to Advanced"
+        ]
       },
-      "description": "A comprehensive technical guide: Python Web Scraping (en). Available via Google Drive and local library storage."
+      "rating": 4.8,
+      "title": "Python Web Scraping (en)"
     },
     {
-      "id": "bk_general_40",
-      "title": "Python",
-      "author": "Sunstone Library",
-      "program": "All Programs",
+      "author": "Unknown Author",
       "category": "Technical",
       "coverUrl": "https://images.unsplash.com/photo-1516116216624-53e697fedbea?auto=format&fit=crop&w=600&q=80",
+      "description": "A comprehensive technical guide: Python. Perfect for enhancing your skills and knowledge.",
+      "downloadable": true,
       "fileType": "file",
+      "id": "bk_tech_1787577980616_39",
+      "isbn": "ISBN-146769910",
+      "pages": 350,
       "pdfUrl": "/uploads/books/Python.pdf",
-      "driveFileId": null,
-      "localPath": "/uploads/books/Python.pdf",
-      "downloadable": true,
-      "rating": 4.8,
-      "pages": 350,
+      "program": "All Programs",
       "publishedYear": 2024,
       "quickSummary": {
+        "difficultyLevel": "Intermediate to Advanced",
+        "estimatedReadingTime": "12 Hours",
         "highlights": [
           "Comprehensive technical material.",
           "Practical examples and case studies.",
@@ -1229,28 +1235,27 @@
         "keyTakeaways": [
           "Master core technical concepts.",
           "Apply learning to real-world projects."
-        ],
-        "estimatedReadingTime": "12 Hours",
-        "difficultyLevel": "Intermediate to Advanced"
+        ]
       },
-      "description": "A comprehensive technical guide: Python. Available via Google Drive and local library storage."
+      "rating": 4.8,
+      "title": "Python"
     },
     {
-      "id": "bk_general_41",
-      "title": "quick-python-book-3rd",
-      "author": "Sunstone Library",
-      "program": "All Programs",
+      "author": "Unknown Author",
       "category": "Technical",
       "coverUrl": "https://images.unsplash.com/photo-1516116216624-53e697fedbea?auto=format&fit=crop&w=600&q=80",
+      "description": "A comprehensive technical guide: quick-python-book-3rd. Perfect for enhancing your skills and knowledge.",
+      "downloadable": true,
       "fileType": "file",
+      "id": "bk_tech_1787577980616_40",
+      "isbn": "ISBN-202814908",
+      "pages": 350,
       "pdfUrl": "/uploads/books/quick-python-book-3rd.pdf",
-      "driveFileId": null,
-      "localPath": "/uploads/books/quick-python-book-3rd.pdf",
-      "downloadable": true,
-      "rating": 4.8,
-      "pages": 350,
+      "program": "All Programs",
       "publishedYear": 2024,
       "quickSummary": {
+        "difficultyLevel": "Intermediate to Advanced",
+        "estimatedReadingTime": "12 Hours",
         "highlights": [
           "Comprehensive technical material.",
           "Practical examples and case studies.",
@@ -1259,118 +1264,114 @@
         "keyTakeaways": [
           "Master core technical concepts.",
           "Apply learning to real-world projects."
-        ],
-        "estimatedReadingTime": "12 Hours",
-        "difficultyLevel": "Intermediate to Advanced"
+        ]
       },
-      "description": "A comprehensive technical guide: quick-python-book-3rd. Available via Google Drive and local library storage."
-    },
-    {
-      "id": "bk_general_42",
-      "title": "Serverless Applications with Node",
-      "author": "Sunstone Library",
-      "program": "All Programs",
-      "category": "Technical",
-      "coverUrl": "https://images.unsplash.com/photo-1516116216624-53e697fedbea?auto=format&fit=crop&w=600&q=80",
-      "fileType": "drive",
-      "pdfUrl": "https://drive.google.com/file/d/1JmG3Sz4VHIRTthvczL7fVmmoTgcc1WM4/view?usp=sharing",
-      "driveFileId": "1JmG3Sz4VHIRTthvczL7fVmmoTgcc1WM4",
-      "localPath": "/uploads/books/Serverless_Applications_with_Node.pdf",
-      "downloadable": true,
       "rating": 4.8,
-      "pages": 350,
-      "publishedYear": 2024,
-      "quickSummary": {
-        "highlights": [
-          "Comprehensive technical material.",
-          "Practical examples and case studies.",
-          "Industry standard practices."
-        ],
-        "keyTakeaways": [
-          "Master core technical concepts.",
-          "Apply learning to real-world projects."
-        ],
-        "estimatedReadingTime": "12 Hours",
-        "difficultyLevel": "Intermediate to Advanced"
-      },
-      "description": "A comprehensive technical guide: Serverless Applications with Node. Available via Google Drive and local library storage."
+      "title": "quick-python-book-3rd"
     },
     {
-      "id": "bk_general_43",
-      "title": "Serverless Architecture on AWS Peter",
-      "author": "Sunstone Library",
-      "program": "All Programs",
+      "author": "Unknown Author",
       "category": "Technical",
       "coverUrl": "https://images.unsplash.com/photo-1516116216624-53e697fedbea?auto=format&fit=crop&w=600&q=80",
-      "fileType": "drive",
-      "pdfUrl": "https://drive.google.com/file/d/1q07OnOaK0K5Uk81_PW9SZRIRnt1FSB4g/view?usp=sharing",
-      "driveFileId": "1q07OnOaK0K5Uk81_PW9SZRIRnt1FSB4g",
-      "localPath": "/uploads/books/Serverless_Architecture_on_AWS_Peter.pdf",
+      "description": "A comprehensive technical guide: Serverless Applications with Node. Perfect for enhancing your skills and knowledge.",
       "downloadable": true,
-      "rating": 4.8,
-      "pages": 350,
-      "publishedYear": 2024,
-      "quickSummary": {
-        "highlights": [
-          "Comprehensive technical material.",
-          "Practical examples and case studies.",
-          "Industry standard practices."
-        ],
-        "keyTakeaways": [
-          "Master core technical concepts.",
-          "Apply learning to real-world projects."
-        ],
-        "estimatedReadingTime": "12 Hours",
-        "difficultyLevel": "Intermediate to Advanced"
-      },
-      "description": "A comprehensive technical guide: Serverless Architecture on AWS Peter. Available via Google Drive and local library storage."
-    },
-    {
-      "id": "bk_general_44",
-      "title": "Serverless Architectures on AWS Peter Sbarski, Yan Cui, Ajay Nair",
-      "author": "Sunstone Library",
-      "program": "All Programs",
-      "category": "Technical",
-      "coverUrl": "https://images.unsplash.com/photo-1516116216624-53e697fedbea?auto=format&fit=crop&w=600&q=80",
-      "fileType": "drive",
-      "pdfUrl": "https://drive.google.com/file/d/19s4DpoNoMeOxYyDs5A_Yl3uxaJOwW0iA/view?usp=sharing",
-      "driveFileId": "19s4DpoNoMeOxYyDs5A_Yl3uxaJOwW0iA",
-      "localPath": "/uploads/books/Serverless_Architectures_on_AWS_Peter_Sbarski,_Yan_Cui,_Ajay_Nair.pdf",
-      "downloadable": true,
-      "rating": 4.8,
-      "pages": 350,
-      "publishedYear": 2024,
-      "quickSummary": {
-        "highlights": [
-          "Comprehensive technical material.",
-          "Practical examples and case studies.",
-          "Industry standard practices."
-        ],
-        "keyTakeaways": [
-          "Master core technical concepts.",
-          "Apply learning to real-world projects."
-        ],
-        "estimatedReadingTime": "12 Hours",
-        "difficultyLevel": "Intermediate to Advanced"
-      },
-      "description": "A comprehensive technical guide: Serverless Architectures on AWS Peter Sbarski, Yan Cui, Ajay Nair. Available via Google Drive and local library storage."
-    },
-    {
-      "id": "bk_general_45",
-      "title": "Step by Step Guide to Python (en)",
-      "author": "Sunstone Library",
-      "program": "All Programs",
-      "category": "Technical",
-      "coverUrl": "https://images.unsplash.com/photo-1516116216624-53e697fedbea?auto=format&fit=crop&w=600&q=80",
       "fileType": "file",
+      "id": "bk_tech_1787577980616_41",
+      "isbn": "ISBN-551003313",
+      "pages": 350,
+      "pdfUrl": "/uploads/books/Serverless_Applications_with_Node.pdf",
+      "program": "All Programs",
+      "publishedYear": 2024,
+      "quickSummary": {
+        "difficultyLevel": "Intermediate to Advanced",
+        "estimatedReadingTime": "12 Hours",
+        "highlights": [
+          "Comprehensive technical material.",
+          "Practical examples and case studies.",
+          "Industry standard practices."
+        ],
+        "keyTakeaways": [
+          "Master core technical concepts.",
+          "Apply learning to real-world projects."
+        ]
+      },
+      "rating": 4.8,
+      "title": "Serverless Applications with Node"
+    },
+    {
+      "author": "Unknown Author",
+      "category": "Technical",
+      "coverUrl": "https://images.unsplash.com/photo-1516116216624-53e697fedbea?auto=format&fit=crop&w=600&q=80",
+      "description": "A comprehensive technical guide: Serverless Architectures on AWS Peter Sbarski, Yan Cui, Ajay Nair. Perfect for enhancing your skills and knowledge.",
+      "downloadable": true,
+      "fileType": "file",
+      "id": "bk_tech_1787577980616_42",
+      "isbn": "ISBN-231427245",
+      "pages": 350,
+      "pdfUrl": "/uploads/books/Serverless_Architectures_on_AWS_Peter_Sbarski,_Yan_Cui,_Ajay_Nair.pdf",
+      "program": "All Programs",
+      "publishedYear": 2024,
+      "quickSummary": {
+        "difficultyLevel": "Intermediate to Advanced",
+        "estimatedReadingTime": "12 Hours",
+        "highlights": [
+          "Comprehensive technical material.",
+          "Practical examples and case studies.",
+          "Industry standard practices."
+        ],
+        "keyTakeaways": [
+          "Master core technical concepts.",
+          "Apply learning to real-world projects."
+        ]
+      },
+      "rating": 4.8,
+      "title": "Serverless Architectures on AWS Peter Sbarski, Yan Cui, Ajay Nair"
+    },
+    {
+      "author": "Unknown Author",
+      "category": "Technical",
+      "coverUrl": "https://images.unsplash.com/photo-1516116216624-53e697fedbea?auto=format&fit=crop&w=600&q=80",
+      "description": "A comprehensive technical guide: Serverless Architecture on AWS Peter. Perfect for enhancing your skills and knowledge.",
+      "downloadable": true,
+      "fileType": "file",
+      "id": "bk_tech_1787577980616_43",
+      "isbn": "ISBN-334211446",
+      "pages": 350,
+      "pdfUrl": "/uploads/books/Serverless_Architecture_on_AWS_Peter.pdf",
+      "program": "All Programs",
+      "publishedYear": 2024,
+      "quickSummary": {
+        "difficultyLevel": "Intermediate to Advanced",
+        "estimatedReadingTime": "12 Hours",
+        "highlights": [
+          "Comprehensive technical material.",
+          "Practical examples and case studies.",
+          "Industry standard practices."
+        ],
+        "keyTakeaways": [
+          "Master core technical concepts.",
+          "Apply learning to real-world projects."
+        ]
+      },
+      "rating": 4.8,
+      "title": "Serverless Architecture on AWS Peter"
+    },
+    {
+      "author": "Unknown Author",
+      "category": "Technical",
+      "coverUrl": "https://images.unsplash.com/photo-1516116216624-53e697fedbea?auto=format&fit=crop&w=600&q=80",
+      "description": "A comprehensive technical guide: Step by Step Guide to Python (en). Perfect for enhancing your skills and knowledge.",
+      "downloadable": true,
+      "fileType": "file",
+      "id": "bk_tech_1787577980616_44",
+      "isbn": "ISBN-438033762",
+      "pages": 350,
       "pdfUrl": "/uploads/books/Step by Step Guide to Python (en).pdf",
-      "driveFileId": null,
-      "localPath": "/uploads/books/Step by Step Guide to Python (en).pdf",
-      "downloadable": true,
-      "rating": 4.8,
-      "pages": 350,
+      "program": "All Programs",
       "publishedYear": 2024,
       "quickSummary": {
+        "difficultyLevel": "Intermediate to Advanced",
+        "estimatedReadingTime": "12 Hours",
         "highlights": [
           "Comprehensive technical material.",
           "Practical examples and case studies.",
@@ -1379,28 +1380,27 @@
         "keyTakeaways": [
           "Master core technical concepts.",
           "Apply learning to real-world projects."
-        ],
-        "estimatedReadingTime": "12 Hours",
-        "difficultyLevel": "Intermediate to Advanced"
+        ]
       },
-      "description": "A comprehensive technical guide: Step by Step Guide to Python (en). Available via Google Drive and local library storage."
+      "rating": 4.8,
+      "title": "Step by Step Guide to Python (en)"
     },
     {
-      "id": "bk_general_46",
-      "title": "The Pyramid Web Framework (en)",
-      "author": "Sunstone Library",
-      "program": "All Programs",
+      "author": "Unknown Author",
       "category": "Technical",
       "coverUrl": "https://images.unsplash.com/photo-1516116216624-53e697fedbea?auto=format&fit=crop&w=600&q=80",
-      "fileType": "file",
-      "pdfUrl": "/uploads/books/The Pyramid Web Framework (en).pdf",
-      "driveFileId": null,
-      "localPath": "/uploads/books/The Pyramid Web Framework (en).pdf",
+      "description": "A comprehensive technical guide: The Pyramid Web Framework (en). Perfect for enhancing your skills and knowledge.",
       "downloadable": true,
-      "rating": 4.8,
+      "fileType": "file",
+      "id": "bk_tech_1787577980616_45",
+      "isbn": "ISBN-286067423",
       "pages": 350,
+      "pdfUrl": "/uploads/books/The Pyramid Web Framework (en).pdf",
+      "program": "All Programs",
       "publishedYear": 2024,
       "quickSummary": {
+        "difficultyLevel": "Intermediate to Advanced",
+        "estimatedReadingTime": "12 Hours",
         "highlights": [
           "Comprehensive technical material.",
           "Practical examples and case studies.",
@@ -1409,56 +1409,227 @@
         "keyTakeaways": [
           "Master core technical concepts.",
           "Apply learning to real-world projects."
-        ],
-        "estimatedReadingTime": "12 Hours",
-        "difficultyLevel": "Intermediate to Advanced"
+        ]
       },
-      "description": "A comprehensive technical guide: The Pyramid Web Framework (en). Available via Google Drive and local library storage."
+      "rating": 4.8,
+      "title": "The Pyramid Web Framework (en)"
+    },
+    {
+      "author": "Unknown Author",
+      "category": "Technical",
+      "coverUrl": "https://images.unsplash.com/photo-1516116216624-53e697fedbea?auto=format&fit=crop&w=600&q=80",
+      "description": "A comprehensive technical guide: [Seppe vanden Broucke, Bart Baesens] Practical Web. Perfect for enhancing your skills and knowledge.",
+      "downloadable": true,
+      "fileType": "file",
+      "id": "bk_tech_1787577980616_46",
+      "isbn": "ISBN-730647517",
+      "pages": 350,
+      "pdfUrl": "/uploads/books/[Seppe_vanden_Broucke,_Bart_Baesens]_Practical_Web.pdf",
+      "program": "All Programs",
+      "publishedYear": 2024,
+      "quickSummary": {
+        "difficultyLevel": "Intermediate to Advanced",
+        "estimatedReadingTime": "12 Hours",
+        "highlights": [
+          "Comprehensive technical material.",
+          "Practical examples and case studies.",
+          "Industry standard practices."
+        ],
+        "keyTakeaways": [
+          "Master core technical concepts.",
+          "Apply learning to real-world projects."
+        ]
+      },
+      "rating": 4.8,
+      "title": "[Seppe vanden Broucke, Bart Baesens] Practical Web"
     }
   ],
   "borrowRequests": [
     {
-      "id": "req_101",
-      "studentId": "usr_student1",
-      "studentName": "Jatin",
-      "studentEmail": "jatin@sunstone.in",
-      "studentProgram": "B.Tech CS",
+      "adminNote": "",
       "bookId": "bk_cs_1",
       "bookTitle": "Data Structures and Algorithms in Python",
-      "requestDate": "2026-08-18T14:30:00.000Z",
       "borrowType": "Physical Copy",
-      "studentMessage": "Respected Admin, I need the physical copy of this textbook for 2 weeks to prepare for the Prayas Lab hackathon and end-term exam. Kindly approve.",
+      "id": "req_101",
+      "requestDate": "2026-08-18T14:30:00.000Z",
       "status": "Pending",
-      "adminNote": ""
+      "studentEmail": "jatin@sunstone.in",
+      "studentId": "usr_student1",
+      "studentMessage": "Respected Admin, I need the physical copy of this textbook for 2 weeks to prepare for the Prayas Lab hackathon and end-term exam. Kindly approve.",
+      "studentName": "Jatin",
+      "studentProgram": "B.Tech CS"
+    },
+    {
+      "adminNote": "Currently unavailable in lab stock.",
+      "status": "Rejected",
+      "updatedAt": "2026-08-25T04:21:58.679Z"
+    },
+    {
+      "adminNote": "Approved! Access granted for Prayas Lab.",
+      "bookId": "bk_tech_1787577980616_37",
+      "bookTitle": "Python Machine Learning Case  Studies (en)",
+      "borrowType": "Physical Copy",
+      "id": "req_1787581506797",
+      "requestDate": "2026-08-24T14:25:06.798Z",
+      "status": "Approved",
+      "studentEmail": "admin@sunstone.in",
+      "studentId": "usr_admin",
+      "studentMessage": "gngxfd",
+      "studentName": "Prayas Lab Admin",
+      "studentProgram": "All Programs",
+      "updatedAt": "2026-08-24T14:25:22.086Z"
+    },
+    {
+      "adminNote": "Approved! Access granted for Prayas Lab.",
+      "bookId": "bk_tech_1787577980615_2",
+      "bookTitle": "AWS interview",
+      "borrowType": "Physical Copy",
+      "id": "req_1787584702850",
+      "requestDate": "2026-08-24T15:18:22.851Z",
+      "status": "Approved",
+      "studentEmail": "sainijatin505@gmail.com",
+      "studentId": "usr_1787584679507",
+      "studentMessage": "UYFGUKY",
+      "studentName": "Jatin Saini",
+      "studentProgram": "B.Tech & BCA",
+      "updatedAt": "2026-08-24T15:20:59.990Z"
+    },
+    {
+      "adminNote": "Approved! Access granted for Prayas Lab.",
+      "bookId": "bk_tech_1787577980615_4",
+      "bookTitle": "AWS Basic Interview Questions CloudDost Telegram",
+      "borrowType": "Physical Copy",
+      "id": "req_1787584838401",
+      "requestDate": "2026-08-24T15:20:38.401Z",
+      "status": "Approved",
+      "studentEmail": "sainijatin505@gmail.com",
+      "studentId": "usr_1787584679507",
+      "studentMessage": "1122",
+      "studentName": "Jatin Saini",
+      "studentProgram": "B.Tech & BCA",
+      "updatedAt": "2026-08-24T15:20:56.998Z"
+    },
+    {
+      "adminNote": "Approved! Access granted for Prayas Lab.",
+      "bookId": "bk_tech_1787577980614_1",
+      "bookTitle": "Automating.DevOps.with.GitLab.CI.CD.Pipelines",
+      "borrowType": "Physical Copy",
+      "id": "req_1787630815717",
+      "requestDate": "2026-08-25T04:06:55.717Z",
+      "status": "Approved",
+      "studentEmail": "atulsingh07711@gmail.com",
+      "studentId": "usr_1787630762481",
+      "studentMessage": "Fttt",
+      "studentName": "Atul",
+      "studentProgram": "B.Tech & BCA",
+      "updatedAt": "2026-08-25T04:07:53.140Z"
+    },
+    {
+      "adminNote": "Approved! Access granted for Prayas Lab.",
+      "bookId": "bk_tech_1787577980614_1",
+      "bookTitle": "Automating.DevOps.with.GitLab.CI.CD.Pipelines",
+      "borrowType": "Physical Copy",
+      "id": "req_1787630857361",
+      "requestDate": "2026-08-25T04:07:37.361Z",
+      "status": "Approved",
+      "studentEmail": "atulsingh07711@gmail.com",
+      "studentId": "usr_1787630762481",
+      "studentMessage": "Hello",
+      "studentName": "Atul",
+      "studentProgram": "B.Tech & BCA",
+      "updatedAt": "2026-08-25T04:07:54.555Z"
+    },
+    {
+      "adminNote": "Approved! Access granted for Prayas Lab.",
+      "bookId": "bk_tech_1787577980614_1",
+      "bookTitle": "Automating.DevOps.with.GitLab.CI.CD.Pipelines",
+      "borrowType": "Physical Copy",
+      "id": "req_1787631011500",
+      "requestDate": "2026-08-25T04:10:11.501Z",
+      "status": "Approved",
+      "studentEmail": "admin@sunstone.in",
+      "studentId": "usr_admin",
+      "studentMessage": "bhjj",
+      "studentName": "Prayas Lab Admin",
+      "studentProgram": "All Programs",
+      "updatedAt": "2026-08-25T04:10:39.462Z"
+    },
+    {
+      "adminNote": "Approved! Access granted for Prayas Lab.",
+      "bookId": "bk_tech_1787577980615_2",
+      "bookTitle": "AWS interview",
+      "borrowType": "Physical Copy",
+      "id": "req_1787631361248",
+      "requestDate": "2026-08-25T04:16:01.248Z",
+      "status": "Approved",
+      "studentEmail": "prince54918@gmail.com",
+      "studentId": "usr_1787631352153",
+      "studentMessage": "Hello",
+      "studentName": "Abhay",
+      "studentProgram": "B.Tech & BCA",
+      "updatedAt": "2026-08-25T04:16:28.448Z"
+    },
+    {
+      "adminNote": "Approved for 14 days",
+      "bookId": "bk_cs_1",
+      "bookTitle": "Data Structures and Algorithms",
+      "borrowType": "Physical Copy",
+      "id": "req_1788322745835",
+      "requestDate": "2026-09-02T04:19:05.835Z",
+      "status": "Approved",
+      "studentEmail": "test_student_1788322742603@sunstone.in",
+      "studentId": "usr_1788322743190",
+      "studentMessage": "Preparing for lab practicals",
+      "studentName": "Test Student",
+      "studentProgram": "B.Tech CS"
+    },
+    {
+      "adminNote": "Collect at Prayas Lab Desk",
+      "bookId": "bk_cs_1",
+      "bookTitle": "Data Structures and Algorithms in Python",
+      "borrowType": "Physical Copy",
+      "id": "req_1788323777229",
+      "requestDate": "2026-09-02T04:36:17.229Z",
+      "status": "Approved",
+      "studentEmail": "test_student_1788323766672@sunstone.in",
+      "studentId": "usr_1788323767907",
+      "studentMessage": "Need for mid-term lab project",
+      "studentName": "Priya Sharma",
+      "studentProgram": "B.Tech CS"
+    },
+    {
+      "adminNote": "Collect at Prayas Lab Desk",
+      "bookId": "bk_cs_1",
+      "bookTitle": "Data Structures and Algorithms in Python",
+      "borrowType": "Physical Copy",
+      "id": "req_1788323821761",
+      "requestDate": "2026-09-02T04:37:01.761Z",
+      "status": "Approved",
+      "studentEmail": "test_student_1788323814649@sunstone.in",
+      "studentId": "usr_1788323815842",
+      "studentMessage": "Need for mid-term lab project",
+      "studentName": "Priya Sharma",
+      "studentProgram": "B.Tech CS"
     }
   ],
   "userNotes": [
     {
-      "id": "note_1787201094206",
-      "studentId": "usr_student1",
-      "bookId": "bk_cs_1",
-      "bookTitle": "Data Structures and Algorithms in Python",
+      "bookId": "bk_tech_1787577980615_2",
+      "bookTitle": "AWS interview",
+      "createdAt": "2026-08-24T14:32:13.512Z",
+      "id": "n_1787581933512",
+      "noteText": "xrfgdxg",
       "pageNumber": 1,
-      "noteText": "this imp",
-      "createdAt": "2026-08-20T04:44:54.206Z"
+      "studentId": "usr_admin"
     },
     {
-      "id": "note_1787198956912",
-      "studentId": "usr_student1",
-      "bookId": "bk_cs_3",
-      "bookTitle": "Operating System Concepts & Distributed Computing",
-      "pageNumber": 1,
-      "noteText": ",jhkjqwhfkkakjsjdhskjSBJD",
-      "createdAt": "2026-08-20T04:09:16.912Z"
-    },
-    {
-      "id": "note_1787198945701",
-      "studentId": "usr_student1",
-      "bookId": "bk_cs_3",
-      "bookTitle": "Operating System Concepts & Distributed Computing",
-      "pageNumber": 1,
-      "noteText": "  , , ",
-      "createdAt": "2026-08-20T04:09:05.701Z"
+      "bookId": "bk_tech_1787577980615_2",
+      "bookTitle": "AWS interview",
+      "createdAt": "2026-08-25T04:25:21.959Z",
+      "id": "n_1787631921959",
+      "noteText": "  bn,n ,.m",
+      "pageNumber": "N/A",
+      "studentId": "usr_1787584679507"
     }
   ],
   "readingProgress": {}

@@ -17,7 +17,6 @@ import {
   Flame,
   Code,
   GraduationCap,
-  Server,
   Briefcase,
   Sparkles,
   BookOpenCheck,
@@ -934,16 +933,7 @@ const handleDeleteBook = async (bookId) => {
             handleSetUser(usr, usrToken);
             setShowAuthModal(false);
           }}
-          onRegisterSuccess={(usr, usrToken) => {
-            handleSetUser(usr, usrToken);
-            setStudents(prev => {
-              const newStudents = [...prev, usr];
-              try { localStorage.setItem('sunstone_students', JSON.stringify(newStudents)); } catch(e){}
-              return newStudents;
-            });
-            addStudentToFirestore(usr).catch(e => console.error(e));
-            setShowAuthModal(false);
-          }}
+          onRegisterSuccess={handleRegisterSuccess}
           onAdminLoginSuccess={(adminUsr, adminToken) => {
             handleSetUser(adminUsr, adminToken);
             setCurrentView('admin');

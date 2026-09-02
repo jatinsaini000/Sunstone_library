@@ -1,6 +1,6 @@
 import React from 'react';
 import BookCard from './BookCard.jsx';
-import { BookX, GraduationCap, Code, Server, Briefcase, Sparkles, BookOpenCheck, Layers } from 'lucide-react';
+import { BookX, GraduationCap, Code, Briefcase, Sparkles, BookOpenCheck, Layers } from 'lucide-react';
 
 export default function BookGrid({
   selectedProgram = 'All Programs',

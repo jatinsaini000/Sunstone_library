@@ -1,5 +1,5 @@
 import React, { useState } from 'react';
-import { ShieldCheck, Lock, Upload, Link as LinkIcon, Plus, CheckCircle, XCircle, MessageSquare, Users, BookOpen, Trash2, Search, Mail, Send, AlertTriangle, HardDrive, ExternalLink } from 'lucide-react';
+import { ShieldCheck, Lock, Upload, Link as LinkIcon, Plus, CheckCircle, XCircle, MessageSquare, Users, BookOpen, Trash2, HardDrive, ExternalLink } from 'lucide-react';
 import { convertGoogleDriveUrl, convertGoogleDriveImageUrl, PRAYAS_DRIVE_FOLDER_URL } from '../googleDriveHelper.js';
 
 export default function AdminConsole({
@@ -397,8 +397,8 @@ export default function AdminConsole({
                       </div>
                     </div>
 
-                    <span className={`status-badge ${req.status.toLowerCase()}`}>
-                      {req.status}
+                    <span className={`status-badge ${(req.status || 'Pending').toLowerCase()}`}>
+                      {req.status || 'Pending'}
                     </span>
                   </div>
 
@@ -732,8 +732,8 @@ export default function AdminConsole({
                       <span className="status-badge active">{st.program}</span>
                     </td>
                     <td style={{ padding: '12px' }}>
-                      <span className={`status-badge ${st.status.toLowerCase()}`}>
-                        {st.status}
+                      <span className={`status-badge ${(st.status || 'Active').toLowerCase()}`}>
+                        {st.status || 'Active'}
                       </span>
                     </td>
                     <td style={{ padding: '12px', textAlign: 'right' }}>

@@ -1,5 +1,5 @@
 import React from 'react';
-import { Search, GraduationCap, User, Tag, ShieldCheck, LogOut, Sun, Moon, MapPin, Sparkles, X } from 'lucide-react';
+import { Search, User, Tag, LogOut, Sun, Moon, MapPin, X } from 'lucide-react';
 import SunstoneLogo from './SunstoneLogo.jsx';
 
 export default function TopHeader({
