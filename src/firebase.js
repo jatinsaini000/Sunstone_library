@@ -1,7 +1,7 @@
 import { initializeApp } from 'firebase/app';
 import { getDatabase, ref, get, set, update, child, remove } from 'firebase/database';
 import { getFirestore, collection, getDocs, doc, setDoc, updateDoc, deleteDoc } from 'firebase/firestore';
-import { getAuth } from 'firebase/auth';
+import { getAuth, GoogleAuthProvider, signInWithPopup } from 'firebase/auth';
 import { getStorage } from 'firebase/storage';
 
 // Firebase configuration using your provided Realtime Database URL
@@ -21,6 +21,33 @@ export const rtdb = getDatabase(app);
 export const db = getFirestore(app);
 export const auth = getAuth(app);
 export const storage = getStorage(app);
+
+export const googleProvider = new GoogleAuthProvider();
+googleProvider.setCustomParameters({ prompt: 'select_account' });
+
+/** Launch Google Sign-In Popup */
+export async function signInWithGooglePopup() {
+  try {
+    const result = await signInWithPopup(auth, googleProvider);
+    const user = result.user;
+    return {
+      success: true,
+      user: {
+        uid: user.uid,
+        email: user.email,
+        displayName: user.displayName,
+        photoURL: user.photoURL
+      }
+    };
+  } catch (error) {
+    console.warn('Firebase Google Sign-In notice:', error.message);
+    return {
+      success: false,
+      error: error.message,
+      code: error.code
+    };
+  }
+}
 
 // --- Realtime Database & Firestore Helpers ---
 
