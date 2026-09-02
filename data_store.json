@@ -97,6 +97,25 @@
       "program": "B.Tech CS",
       "role": "student",
       "salt": "76f9ff38a0edb503663fce2697a67ce5",
+      "status": "Suspended"
+    },
+    {
+      "authProvider": "otp",
+      "createdAt": "2026-09-02T05:51:59.458Z",
+      "email": "otp_student_1788328310642@sunstone.in",
+      "id": "usr_1788328319458",
+      "name": "OTP Student User",
+      "program": "B.Tech CS",
+      "role": "student",
+      "status": "Active"
+    },
+    {
+      "createdAt": "2026-09-02T05:55:39.370Z",
+      "email": "harshilthakur82@gmail.com",
+      "id": "usr_1788328539369",
+      "name": "Harshil",
+      "program": "B.Tech & BCA",
+      "role": "student",
       "status": "Active"
     },
     {
@@ -106,6 +125,17 @@
     {
       "status": "Suspended",
       "updatedAt": "2026-08-24T14:59:50.713Z"
+    },
+    {
+      "id": "usr_1788328692490",
+      "name": "Kavita Singh",
+      "email": "kavita_1788328689213@sunstone.in",
+      "salt": "d072c2d02999bb8b3869155f9bcff5f4",
+      "passwordHash": "a7128a0e9d0c1237f6a28752d018ee9afb82b91cece4cc1bec274f1412706c10b953a54d5dce183847e6803d97b5d4813df46e39de72148c9ad890a684e49e18",
+      "role": "student",
+      "program": "MBA",
+      "status": "Active",
+      "createdAt": "2026-09-02T05:58:12.490Z"
     }
   ],
   "books": [

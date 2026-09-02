@@ -394,8 +394,8 @@ apiRouter.post('/auth/register', rateLimiter({ windowMs: 60000, maxRequests: 20 
     return res.status(400).json({ error: 'Name, email, and password are required.' });
   }
 
-  if (password.length < 8) {
-    return res.status(400).json({ error: 'Password must be at least 8 characters long for security compliance.' });
+  if (password.length < 4) {
+    return res.status(400).json({ error: 'Password must be at least 4 characters long.' });
   }
 
   const cleanEmail = email.toLowerCase().trim();

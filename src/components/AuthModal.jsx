@@ -803,13 +803,14 @@ export default function AuthModal({ onClose, onLoginSuccess, onRegisterSuccess, 
 
                   <div className="form-group">
                     <label className="form-label">
-                      <Lock size={13} /> Password *
+                      <Lock size={13} /> {isRegisterMode ? 'Create Password (min 4 chars) *' : 'Password *'}
                     </label>
                     <input
                       type="password"
                       className="form-control"
-                      placeholder="••••••••••••"
+                      placeholder={isRegisterMode ? 'Min 4 characters' : '••••••••••••'}
                       value={password}
+                      minLength={4}
                       onChange={(e) => setPassword(e.target.value)}
                       required
                     />
