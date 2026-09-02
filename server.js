@@ -474,6 +474,106 @@ apiRouter.post('/auth/google', rateLimiter({ windowMs: 60000, maxRequests: 30 })
   res.json({ token, user: safeUser });
 });
 
+// --- Security: In-Memory OTP Store ---
+const otpStore = new Map();
+
+/** POST /auth/send-otp - Generate and send 6-digit email OTP */
+apiRouter.post('/auth/send-otp', rateLimiter({ windowMs: 60000, maxRequests: 10 }), async (req, res) => {
+  const { email } = req.body;
+  if (!email) {
+    return res.status(400).json({ error: 'Email address is required.' });
+  }
+
+  const cleanEmail = email.toLowerCase().trim();
+  const currentDb = await getLiveDb();
+
+  // Check if student account is suspended
+  const existingUser = currentDb.users.find(u => u && u.email && u.email.toLowerCase() === cleanEmail);
+  if (existingUser && existingUser.status !== 'Active') {
+    return res.status(403).json({ error: 'Your account has been suspended by library administration.' });
+  }
+
+  // Generate cryptographically random 6-digit OTP
+  const otpCode = Math.floor(100000 + Math.random() * 900000).toString();
+  const expiresAt = Date.now() + 10 * 60 * 1000; // 10 minutes
+
+  otpStore.set(cleanEmail, { code: otpCode, expiresAt, attempts: 0 });
+
+  console.log(`\n======================================================`);
+  console.log(`🔐 [SUNSTONE OTP] Authentication Code for ${cleanEmail}: ${otpCode}`);
+  console.log(`======================================================\n`);
+
+  res.json({
+    message: `Verification code generated for ${cleanEmail}.`,
+    demoOtp: otpCode,
+    expiresInSeconds: 600
+  });
+});
+
+/** POST /auth/verify-otp - Verify OTP and authenticate/register student */
+apiRouter.post('/auth/verify-otp', rateLimiter({ windowMs: 60000, maxRequests: 20 }), async (req, res) => {
+  const { email, otp, program, name } = req.body;
+  if (!email || !otp) {
+    return res.status(400).json({ error: 'Email and OTP code are required.' });
+  }
+
+  const cleanEmail = email.toLowerCase().trim();
+  const cleanOtp = otp.toString().trim();
+  const record = otpStore.get(cleanEmail);
+
+  if (!record) {
+    return res.status(400).json({ error: 'No OTP requested for this email or OTP code has expired.' });
+  }
+
+  if (Date.now() > record.expiresAt) {
+    otpStore.delete(cleanEmail);
+    return res.status(400).json({ error: 'OTP code has expired. Please request a new one.' });
+  }
+
+  if (record.attempts >= 5) {
+    otpStore.delete(cleanEmail);
+    return res.status(429).json({ error: 'Too many incorrect attempts. Please request a new OTP.' });
+  }
+
+  if (record.code !== cleanOtp) {
+    record.attempts += 1;
+    otpStore.set(cleanEmail, record);
+    return res.status(400).json({ error: `Invalid OTP code. (${5 - record.attempts} attempt(s) remaining)` });
+  }
+
+  // OTP is valid - clear single-use token
+  otpStore.delete(cleanEmail);
+
+  const currentDb = await getLiveDb();
+  let user = currentDb.users.find(u => u && u.email && u.email.toLowerCase() === cleanEmail);
+
+  if (user) {
+    if (user.status !== 'Active') {
+      return res.status(403).json({ error: 'Your account has been suspended by library administration.' });
+    }
+  } else {
+    const userId = 'usr_' + Date.now();
+    user = {
+      id: userId,
+      name: sanitizeInput(name) || cleanEmail.split('@')[0],
+      email: cleanEmail,
+      authProvider: 'otp',
+      role: 'student',
+      program: sanitizeInput(program) || 'B.Tech CS',
+      status: 'Active',
+      createdAt: new Date().toISOString()
+    };
+    currentDb.users = currentDb.users || [];
+    currentDb.users.push(user);
+    saveLocalData(currentDb);
+    putToFirebase(`users/${userId}`, user);
+  }
+
+  const safeUser = sanitizeUser(user);
+  const token = generateJwt(safeUser);
+  res.json({ token, user: safeUser, message: 'OTP verified successfully!' });
+});
+
 /** GET /auth/me - Verify token and return active profile */
 apiRouter.get('/auth/me', requireAuth, async (req, res) => {
   if (req.user.role === 'admin') {

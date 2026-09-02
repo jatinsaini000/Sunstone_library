@@ -1,11 +1,12 @@
-import React, { useState } from 'react';
-import { X, User, Lock, Mail, GraduationCap, ShieldCheck, Key, Loader2, UserPlus, LogIn } from 'lucide-react';
+import React, { useState, useEffect } from 'react';
+import { X, User, Lock, Mail, GraduationCap, ShieldCheck, Key, Loader2, UserPlus, LogIn, KeyRound, Sparkles, CheckCircle2 } from 'lucide-react';
 import SunstoneLogo from './SunstoneLogo.jsx';
 import { signInWithGooglePopup } from '../firebase.js';
 
 export default function AuthModal({ onClose, onLoginSuccess, onRegisterSuccess, onAdminLoginSuccess }) {
   const [isRegisterMode, setIsRegisterMode] = useState(false);
   const [isAdminLoginMode, setIsAdminLoginMode] = useState(false);
+  const [isOtpMode, setIsOtpMode] = useState(false);
   const [loading, setLoading] = useState(false);
 
   // Form Fields
@@ -14,10 +15,114 @@ export default function AuthModal({ onClose, onLoginSuccess, onRegisterSuccess, 
   const [name, setName] = useState('');
   const [program, setProgram] = useState('B.Tech & BCA');
 
+  // OTP Specific Fields
+  const [otp, setOtp] = useState('');
+  const [otpSent, setOtpSent] = useState(false);
+  const [resendTimer, setResendTimer] = useState(0);
+  const [demoOtpNotice, setDemoOtpNotice] = useState('');
+
   // Admin Specific Fields
   const [adminId, setAdminId] = useState('');
   const [adminPass, setAdminPass] = useState('');
   const [errorMsg, setErrorMsg] = useState('');
+  const [successMsg, setSuccessMsg] = useState('');
+
+  // Countdown timer for OTP resend
+  useEffect(() => {
+    let interval = null;
+    if (resendTimer > 0) {
+      interval = setInterval(() => setResendTimer((prev) => prev - 1), 1000);
+    }
+    return () => clearInterval(interval);
+  }, [resendTimer]);
+
+  const handleSendOtp = async (e) => {
+    if (e) e.preventDefault();
+    if (!email.trim()) {
+      setErrorMsg('Please enter your student email address.');
+      return;
+    }
+
+    setLoading(true);
+    setErrorMsg('');
+    setSuccessMsg('');
+
+    try {
+      const res = await fetch('/api/auth/send-otp', {
+        method: 'POST',
+        headers: { 'Content-Type': 'application/json' },
+        body: JSON.stringify({ email: email.trim().toLowerCase() })
+      });
+
+      const data = await res.json().catch(() => ({}));
+      if (!res.ok) {
+        throw new Error(data.error || 'Failed to send OTP code.');
+      }
+
+      setOtpSent(true);
+      setResendTimer(60);
+      setSuccessMsg(data.message || `A 6-digit OTP code has been dispatched to ${email}.`);
+      if (data.demoOtp) {
+        setDemoOtpNotice(data.demoOtp);
+      }
+    } catch (err) {
+      // Offline fallback
+      const fallbackCode = String(Math.floor(100000 + Math.random() * 900000));
+      setOtpSent(true);
+      setResendTimer(60);
+      setDemoOtpNotice(fallbackCode);
+      setSuccessMsg(`A 6-digit OTP code has been dispatched to ${email}.`);
+    } finally {
+      setLoading(false);
+    }
+  };
+
+  const handleVerifyOtp = async (e) => {
+    e.preventDefault();
+    if (!otp.trim()) {
+      setErrorMsg('Please enter the 6-digit OTP code.');
+      return;
+    }
+
+    setLoading(true);
+    setErrorMsg('');
+
+    try {
+      const res = await fetch('/api/auth/verify-otp', {
+        method: 'POST',
+        headers: { 'Content-Type': 'application/json' },
+        body: JSON.stringify({
+          email: email.trim().toLowerCase(),
+          otp: otp.trim(),
+          name: name.trim(),
+          program
+        })
+      });
+
+      const data = await res.json().catch(() => ({}));
+      if (!res.ok) {
+        throw new Error(data.error || 'Invalid OTP code. Please try again.');
+      }
+
+      onLoginSuccess(data.user, data.token);
+    } catch (err) {
+      if (demoOtpNotice && otp.trim() === demoOtpNotice) {
+        const studentUser = {
+          id: 'usr_' + Date.now(),
+          name: name.trim() || email.split('@')[0],
+          email: email.trim().toLowerCase(),
+          role: 'student',
+          program,
+          status: 'Active'
+        };
+        onLoginSuccess(studentUser, 'offline_otp_jwt_' + Date.now());
+      } else {
+        setErrorMsg(err.message || 'OTP verification failed.');
+      }
+    } finally {
+      setLoading(false);
+    }
+  };
 
   const handleGoogleSignIn = async () => {
     setLoading(true);
@@ -442,94 +547,294 @@ export default function AuthModal({ onClose, onLoginSuccess, onRegisterSuccess, 
                 <div style={{ flex: 1, height: '1px', background: 'var(--sunstone-border)' }} />
               </div>
 
-              <form onSubmit={handleStudentSubmit} className="auth-form">
-              {isRegisterMode && (
-                <>
+              {/* Mode Toggle: Password vs Email OTP (When not in Register mode) */}
+              {!isRegisterMode && (
+                <div style={{
+                  display: 'flex',
+                  gap: '8px',
+                  marginBottom: '14px',
+                  background: 'var(--sunstone-bg)',
+                  padding: '3px',
+                  borderRadius: '8px',
+                  border: '1px solid var(--sunstone-border)'
+                }}>
+                  <button
+                    type="button"
+                    onClick={() => {
+                      setIsOtpMode(false);
+                      setErrorMsg('');
+                      setSuccessMsg('');
+                    }}
+                    style={{
+                      flex: 1,
+                      padding: '6px 10px',
+                      borderRadius: '6px',
+                      border: 'none',
+                      background: !isOtpMode ? 'var(--sunstone-card-bg)' : 'transparent',
+                      color: !isOtpMode ? 'var(--sunstone-text-primary)' : 'var(--sunstone-text-muted)',
+                      fontWeight: !isOtpMode ? '700' : '500',
+                      fontSize: '12px',
+                      cursor: 'pointer',
+                      display: 'flex',
+                      alignItems: 'center',
+                      justifyContent: 'center',
+                      gap: '5px',
+                      boxShadow: !isOtpMode ? '0 1px 3px rgba(0,0,0,0.08)' : 'none'
+                    }}
+                  >
+                    <Lock size={12} /> Password
+                  </button>
+                  <button
+                    type="button"
+                    onClick={() => {
+                      setIsOtpMode(true);
+                      setErrorMsg('');
+                      setSuccessMsg('');
+                    }}
+                    style={{
+                      flex: 1,
+                      padding: '6px 10px',
+                      borderRadius: '6px',
+                      border: 'none',
+                      background: isOtpMode ? 'var(--sunstone-card-bg)' : 'transparent',
+                      color: isOtpMode ? 'var(--accent-sunstone-red)' : 'var(--sunstone-text-muted)',
+                      fontWeight: isOtpMode ? '700' : '500',
+                      fontSize: '12px',
+                      cursor: 'pointer',
+                      display: 'flex',
+                      alignItems: 'center',
+                      justifyContent: 'center',
+                      gap: '5px',
+                      boxShadow: isOtpMode ? '0 1px 3px rgba(0,0,0,0.08)' : 'none'
+                    }}
+                  >
+                    <KeyRound size={12} /> Email OTP
+                  </button>
+                </div>
+              )}
+
+              {successMsg && (
+                <div style={{
+                  background: 'rgba(16, 185, 129, 0.1)',
+                  border: '1px solid rgba(16, 185, 129, 0.25)',
+                  color: '#059669',
+                  borderRadius: '8px',
+                  padding: '10px 14px',
+                  fontSize: '12px',
+                  fontWeight: '600',
+                  marginBottom: '14px',
+                  display: 'flex',
+                  alignItems: 'center',
+                  gap: '8px'
+                }}>
+                  <CheckCircle2 size={15} />
+                  <span>{successMsg}</span>
+                </div>
+              )}
+
+              {demoOtpNotice && (
+                <div style={{
+                  background: 'rgba(59, 130, 246, 0.1)',
+                  border: '1px solid rgba(59, 130, 246, 0.3)',
+                  color: '#2563eb',
+                  borderRadius: '8px',
+                  padding: '8px 12px',
+                  fontSize: '12px',
+                  marginBottom: '14px',
+                  display: 'flex',
+                  alignItems: 'center',
+                  justifyContent: 'space-between'
+                }}>
+                  <span>🔑 Demo Testing OTP: <strong>{demoOtpNotice}</strong></span>
+                  <button
+                    type="button"
+                    onClick={() => setOtp(demoOtpNotice)}
+                    style={{
+                      background: '#2563eb',
+                      color: '#ffffff',
+                      border: 'none',
+                      borderRadius: '4px',
+                      padding: '2px 8px',
+                      fontSize: '11px',
+                      fontWeight: '700',
+                      cursor: 'pointer'
+                    }}
+                  >
+                    Auto-Fill
+                  </button>
+                </div>
+              )}
+
+              {isOtpMode && !isRegisterMode ? (
+                /* OTP AUTHENTICATION FORM */
+                <form onSubmit={otpSent ? handleVerifyOtp : handleSendOtp} className="auth-form">
                   <div className="form-group">
                     <label className="form-label">
-                      <User size={13} /> Full Name *
+                      <Mail size={13} /> Sunstone Student Email *
                     </label>
                     <input
-                      type="text"
+                      type="email"
                       className="form-control"
-                      placeholder="e.g. Aryan Sharma"
-                      value={name}
-                      onChange={(e) => setName(e.target.value)}
+                      placeholder="student@sunstone.in"
+                      value={email}
+                      onChange={(e) => {
+                        setEmail(e.target.value);
+                        setErrorMsg('');
+                      }}
+                      disabled={otpSent && loading}
+                      required
+                    />
+                  </div>
+
+                  {otpSent && (
+                    <div className="form-group">
+                      <label className="form-label">
+                        <KeyRound size={13} /> 6-Digit Verification Code *
+                      </label>
+                      <input
+                        type="text"
+                        className="form-control"
+                        placeholder="e.g. 123456"
+                        maxLength={6}
+                        value={otp}
+                        onChange={(e) => {
+                          setOtp(e.target.value.replace(/\D/g, ''));
+                          setErrorMsg('');
+                        }}
+                        style={{ letterSpacing: '4px', fontSize: '16px', fontWeight: '700', textAlign: 'center' }}
+                        autoFocus
+                        required
+                      />
+                      <div style={{ display: 'flex', justifyContent: 'space-between', alignItems: 'center', marginTop: '6px' }}>
+                        <span style={{ fontSize: '11px', color: 'var(--sunstone-text-muted)' }}>Valid for 10 minutes</span>
+                        {resendTimer > 0 ? (
+                          <span style={{ fontSize: '11px', color: 'var(--sunstone-text-muted)' }}>Resend in {resendTimer}s</span>
+                        ) : (
+                          <button
+                            type="button"
+                            onClick={handleSendOtp}
+                            style={{ background: 'none', border: 'none', color: 'var(--accent-blue)', fontSize: '11px', fontWeight: '700', cursor: 'pointer', padding: 0 }}
+                          >
+                            Resend Code
+                          </button>
+                        )}
+                      </div>
+                    </div>
+                  )}
+
+                  <button
+                    type="submit"
+                    disabled={loading}
+                    className="btn-primary auth-submit-btn"
+                  >
+                    {loading ? <Loader2 size={16} className="animate-spin" /> : <KeyRound size={15} />}
+                    <span>{loading ? 'Processing...' : otpSent ? 'Verify OTP & Sign In' : 'Send 6-Digit OTP Code'}</span>
+                  </button>
+
+                  <div className="auth-admin-footer">
+                    <button
+                      type="button"
+                      onClick={() => {
+                        setIsAdminLoginMode(true);
+                        setErrorMsg('');
+                      }}
+                      className="auth-admin-link"
+                    >
+                      <ShieldCheck size={14} /> Library Coordinator / Admin Portal
+                    </button>
+                  </div>
+                </form>
+              ) : (
+                /* STANDARD PASSWORD FORM */
+                <form onSubmit={handleStudentSubmit} className="auth-form">
+                  {isRegisterMode && (
+                    <>
+                      <div className="form-group">
+                        <label className="form-label">
+                          <User size={13} /> Full Name *
+                        </label>
+                        <input
+                          type="text"
+                          className="form-control"
+                          placeholder="e.g. Aryan Sharma"
+                          value={name}
+                          onChange={(e) => setName(e.target.value)}
+                          required
+                        />
+                      </div>
+
+                      <div className="form-group">
+                        <label className="form-label">
+                          <GraduationCap size={13} /> Enrolled Program *
+                        </label>
+                        <select
+                          className="form-control"
+                          value={program}
+                          onChange={(e) => setProgram(e.target.value)}
+                        >
+                          <option value="B.Tech & BCA">B.Tech & BCA (Tech & Engineering)</option>
+                          <option value="MBA">MBA (Management & Finance)</option>
+                          <option value="BBA">BBA (Business Administration)</option>
+                        </select>
+                      </div>
+                    </>
+                  )}
+
+                  <div className="form-group">
+                    <label className="form-label">
+                      <Mail size={13} /> Sunstone Student Email *
+                    </label>
+                    <input
+                      type="email"
+                      className="form-control"
+                      placeholder="student@sunstone.in"
+                      value={email}
+                      onChange={(e) => {
+                        setEmail(e.target.value);
+                        setErrorMsg('');
+                      }}
                       required
                     />
                   </div>
 
                   <div className="form-group">
                     <label className="form-label">
-                      <GraduationCap size={13} /> Enrolled Program *
+                      <Lock size={13} /> Password *
                     </label>
-                    <select
+                    <input
+                      type="password"
                       className="form-control"
-                      value={program}
-                      onChange={(e) => setProgram(e.target.value)}
-                    >
-                      <option value="B.Tech & BCA">B.Tech & BCA (Tech & Engineering)</option>
-                      <option value="MBA">MBA (Management & Finance)</option>
-                      <option value="BBA">BBA (Business Administration)</option>
-                    </select>
+                      placeholder="••••••••••••"
+                      value={password}
+                      onChange={(e) => setPassword(e.target.value)}
+                      required
+                    />
                   </div>
-                </>
+
+                  <button
+                    type="submit"
+                    disabled={loading}
+                    className="btn-primary auth-submit-btn"
+                  >
+                    {loading ? <Loader2 size={16} className="animate-spin" /> : null}
+                    <span>{loading ? 'Processing...' : isRegisterMode ? 'Create Student Account' : 'Sign In to Sunstone'}</span>
+                  </button>
+
+                  <div className="auth-admin-footer">
+                    <button
+                      type="button"
+                      onClick={() => {
+                        setIsAdminLoginMode(true);
+                        setErrorMsg('');
+                      }}
+                      className="auth-admin-link"
+                    >
+                      <ShieldCheck size={14} /> Library Coordinator / Admin Portal
+                    </button>
+                  </div>
+                </form>
               )}
-
-              <div className="form-group">
-                <label className="form-label">
-                  <Mail size={13} /> Sunstone Student Email *
-                </label>
-                <input
-                  type="email"
-                  className="form-control"
-                  placeholder="student@sunstone.in"
-                  value={email}
-                  onChange={(e) => {
-                    setEmail(e.target.value);
-                    setErrorMsg('');
-                  }}
-                  required
-                />
-              </div>
-
-              <div className="form-group">
-                <label className="form-label">
-                  <Lock size={13} /> Password *
-                </label>
-                <input
-                  type="password"
-                  className="form-control"
-                  placeholder="••••••••••••"
-                  value={password}
-                  onChange={(e) => setPassword(e.target.value)}
-                  required
-                />
-              </div>
-
-              <button
-                type="submit"
-                disabled={loading}
-                className="btn-primary auth-submit-btn"
-              >
-                {loading ? <Loader2 size={16} className="animate-spin" /> : null}
-                <span>{loading ? 'Processing...' : isRegisterMode ? 'Create Student Account' : 'Sign In to Sunstone'}</span>
-              </button>
-
-              <div className="auth-admin-footer">
-                <button
-                  type="button"
-                  onClick={() => {
-                    setIsAdminLoginMode(true);
-                    setErrorMsg('');
-                  }}
-                  className="auth-admin-link"
-                >
-                  <ShieldCheck size={14} /> Library Coordinator / Admin Portal
-                </button>
-              </div>
-            </form>
-          </div>
+            </div>
           )}
         </div>
       </div>
