@@ -1,19 +1,12 @@
 import React, { useState } from 'react';
-import { X, User, Lock, Mail, GraduationCap, ShieldCheck, Key, Loader2, UserPlus, LogIn } from 'lucide-react';
+import { X, Lock, Mail, ShieldCheck, Key, Loader2 } from 'lucide-react';
 import SunstoneLogo from './SunstoneLogo.jsx';
 import { signInWithGooglePopup, addStudentToFirestore } from '../firebase.js';
 
 export default function AuthModal({ onClose, onLoginSuccess, onRegisterSuccess, onAdminLoginSuccess }) {
-  const [isRegisterMode, setIsRegisterMode] = useState(false);
   const [isAdminLoginMode, setIsAdminLoginMode] = useState(false);
   const [googleLoading, setGoogleLoading] = useState(false);
   const [formLoading, setFormLoading] = useState(false);
-
-  // Form Fields
-  const [email, setEmail] = useState('');
-  const [password, setPassword] = useState('');
-  const [name, setName] = useState('');
-  const [program, setProgram] = useState('B.Tech & BCA');
 
   // Admin Specific Fields
   const [adminId, setAdminId] = useState('');
@@ -35,26 +28,26 @@ export default function AuthModal({ onClose, onLoginSuccess, onRegisterSuccess, 
       }
 
       const { email: gEmail, displayName: gName, photoURL: gPhoto, uid: gUid } = res.user;
-
       const cleanEmail = gEmail.toLowerCase().trim();
+
       let authenticatedUser = {
         id: 'usr_' + (gUid ? gUid.substring(0, 16) : Date.now()),
         name: gName || cleanEmail.split('@')[0],
         email: cleanEmail,
         photoUrl: gPhoto,
-        role: cleanEmail === 'admin@sunstone.in' ? 'admin' : 'student',
-        program,
+        role: 'student',
+        program: 'B.Tech & BCA',
         status: 'Active',
         authProvider: 'google',
         createdAt: new Date().toISOString()
       };
       let authToken = null;
 
-      // Sync with server if available (with 5-second timeout)
+      // Sync with server (server determines the role, including admin)
       try {
         const controller = new AbortController();
-        const timeoutId = setTimeout(() => controller.abort(), 5000);
-        
+        const timeoutId = setTimeout(() => controller.abort(), 10000);
+
         const serverRes = await fetch('/api/auth/google', {
           method: 'POST',
           headers: { 'Content-Type': 'application/json' },
@@ -63,7 +56,7 @@ export default function AuthModal({ onClose, onLoginSuccess, onRegisterSuccess, 
             name: gName || cleanEmail.split('@')[0],
             photoUrl: gPhoto,
             googleId: gUid,
-            program
+            program: 'B.Tech & BCA'
           }),
           signal: controller.signal
         });
@@ -89,7 +82,12 @@ export default function AuthModal({ onClose, onLoginSuccess, onRegisterSuccess, 
         console.warn('Firebase sync notice:', e.message);
       }
 
-      onLoginSuccess(authenticatedUser, authToken);
+      // Route based on role returned by server
+      if (authenticatedUser.role === 'admin') {
+        onAdminLoginSuccess(authenticatedUser, authToken);
+      } else {
+        onLoginSuccess(authenticatedUser, authToken);
+      }
     } catch (err) {
       console.error('Google Sign-In Error:', err);
       setErrorMsg(err.message || 'Google Authentication failed.');
@@ -98,77 +96,10 @@ export default function AuthModal({ onClose, onLoginSuccess, onRegisterSuccess, 
     }
   };
 
-  const handleStudentSubmit = async (e) => {
-    e.preventDefault();
-    if (!email || !password) {
-      setErrorMsg('Please enter both email and password.');
-      return;
-    }
-
-    setFormLoading(true);
-    setErrorMsg('');
-
-    try {
-      if (isRegisterMode) {
-        if (!name.trim()) {
-          setErrorMsg('Please enter your full name.');
-          setFormLoading(false);
-          return;
-        }
-
-        const res = await fetch('/api/auth/register', {
-          method: 'POST',
-          headers: { 'Content-Type': 'application/json' },
-          body: JSON.stringify({
-            name: name.trim(),
-            email: email.trim().toLowerCase(),
-            password,
-            program
-          })
-        });
-
-        const data = await res.json().catch(() => ({}));
-        if (!res.ok) {
-          setErrorMsg(data.error || 'Registration failed. Please check your details.');
-          setFormLoading(false);
-          return;
-        }
-
-        onRegisterSuccess(data.user, data.token);
-      } else {
-        const res = await fetch('/api/auth/login', {
-          method: 'POST',
-          headers: { 'Content-Type': 'application/json' },
-          body: JSON.stringify({
-            email: email.trim().toLowerCase(),
-            password
-          })
-        });
-
-        const data = await res.json().catch(() => ({}));
-        if (!res.ok) {
-          setErrorMsg(data.error || 'Invalid email or password.');
-          setFormLoading(false);
-          return;
-        }
-
-        if (data.user.role === 'admin') {
-          onAdminLoginSuccess(data.user, data.token);
-        } else {
-          onLoginSuccess(data.user, data.token);
-        }
-      }
-    } catch (err) {
-      setErrorMsg('Connection error. Please try again.');
-    } finally {
-      setFormLoading(false);
-    }
-  };
-
   const handleAdminSubmit = async (e) => {
     e.preventDefault();
     if (!adminId || !adminPass) {
-      setErrorMsg('Please enter both Admin ID and Security Key.');
+      setErrorMsg('Please enter both Admin Email and Security Key.');
       return;
     }
 
@@ -193,7 +124,7 @@ export default function AuthModal({ onClose, onLoginSuccess, onRegisterSuccess, 
 
       setErrorMsg(data.error || 'Invalid administrative credentials. Access restricted.');
     } catch (err) {
-      setErrorMsg('Invalid administrative credentials. Please verify your password.');
+      setErrorMsg('Connection error. Please check your network and try again.');
     } finally {
       setFormLoading(false);
     }
@@ -219,11 +150,7 @@ export default function AuthModal({ onClose, onLoginSuccess, onRegisterSuccess, 
               )}
             </div>
             <h3 className="auth-title">
-              {isAdminLoginMode
-                ? 'Prayas Admin Portal'
-                : isRegisterMode
-                ? 'Student Registration'
-                : 'Student Sign In'}
+              {isAdminLoginMode ? 'Prayas Admin Portal' : 'Student Sign In'}
             </h3>
             <p className="auth-subtitle">
               {isAdminLoginMode
@@ -231,71 +158,6 @@ export default function AuthModal({ onClose, onLoginSuccess, onRegisterSuccess, 
                 : 'Sunstone Prayas Lab Knowledge Portal'}
             </p>
           </div>
-
-          {/* Mode Switcher */}
-          {!isAdminLoginMode && (
-            <div style={{
-              display: 'flex',
-              background: 'var(--sunstone-border-light)',
-              padding: '4px',
-              borderRadius: '12px',
-              marginBottom: '18px',
-              gap: '4px'
-            }}>
-              <button
-                type="button"
-                onClick={() => {
-                  setIsRegisterMode(false);
-                  setErrorMsg('');
-                }}
-                style={{
-                  flex: 1,
-                  padding: '10px 14px',
-                  borderRadius: '9px',
-                  border: 'none',
-                  background: !isRegisterMode ? 'var(--sunstone-card-bg)' : 'transparent',
-                  color: !isRegisterMode ? 'var(--sunstone-text-primary)' : 'var(--sunstone-text-secondary)',
-                  fontWeight: !isRegisterMode ? '700' : '500',
-                  fontSize: '13px',
-                  cursor: 'pointer',
-                  display: 'flex',
-                  alignItems: 'center',
-                  justifyContent: 'center',
-                  gap: '6px',
-                  boxShadow: !isRegisterMode ? '0 2px 6px rgba(0,0,0,0.1)' : 'none',
-                  transition: 'all 0.2s ease'
-                }}
-              >
-                <LogIn size={15} /> Sign In
-              </button>
-              <button
-                type="button"
-                onClick={() => {
-                  setIsRegisterMode(true);
-                  setErrorMsg('');
-                }}
-                style={{
-                  flex: 1,
-                  padding: '10px 14px',
-                  borderRadius: '9px',
-                  border: 'none',
-                  background: isRegisterMode ? 'var(--sunstone-card-bg)' : 'transparent',
-                  color: isRegisterMode ? 'var(--sunstone-text-primary)' : 'var(--sunstone-text-secondary)',
-                  fontWeight: isRegisterMode ? '700' : '500',
-                  fontSize: '13px',
-                  cursor: 'pointer',
-                  display: 'flex',
-                  alignItems: 'center',
-                  justifyContent: 'center',
-                  gap: '6px',
-                  boxShadow: isRegisterMode ? '0 2px 6px rgba(0,0,0,0.1)' : 'none',
-                  transition: 'all 0.2s ease'
-                }}
-              >
-                <UserPlus size={15} /> Register
-              </button>
-            </div>
-          )}
 
           {errorMsg && (
             <div className="auth-error-banner">
@@ -308,12 +170,12 @@ export default function AuthModal({ onClose, onLoginSuccess, onRegisterSuccess, 
             <form onSubmit={handleAdminSubmit} className="auth-form">
               <div className="form-group">
                 <label className="form-label">
-                  <Key size={13} /> Admin Master Email
+                  <Mail size={13} /> Admin Email
                 </label>
                 <input
                   type="email"
                   className="form-control"
-                  placeholder="admin@sunstone.in"
+                  placeholder="admin@example.com"
                   value={adminId}
                   onChange={(e) => {
                     setAdminId(e.target.value);
@@ -363,9 +225,9 @@ export default function AuthModal({ onClose, onLoginSuccess, onRegisterSuccess, 
               </div>
             </form>
           ) : (
-            /* STUDENT LOGIN / REGISTRATION */
+            /* STUDENT GOOGLE LOGIN ONLY */
             <div className="auth-form-wrapper">
-              {/* Google Sign In Button - REAL GOOGLE AUTH ONLY */}
+              {/* Google Sign In Button */}
               <button
                 type="button"
                 onClick={handleGoogleSignIn}
@@ -373,19 +235,19 @@ export default function AuthModal({ onClose, onLoginSuccess, onRegisterSuccess, 
                 className="btn-google-auth"
                 style={{
                   width: '100%',
-                  padding: '11px 16px',
+                  padding: '14px 16px',
                   borderRadius: '10px',
                   border: '1px solid var(--sunstone-border)',
                   background: 'var(--sunstone-card-bg)',
                   color: 'var(--sunstone-text-primary)',
                   fontWeight: '700',
-                  fontSize: '13px',
+                  fontSize: '14px',
                   display: 'flex',
                   alignItems: 'center',
                   justifyContent: 'center',
                   gap: '10px',
                   cursor: googleLoading ? 'wait' : 'pointer',
-                  marginBottom: googleLoading ? '8px' : '16px',
+                  marginBottom: googleLoading ? '8px' : '24px',
                   boxShadow: '0 1px 3px rgba(0,0,0,0.06)',
                   transition: 'all 0.2s ease'
                 }}
@@ -400,7 +262,7 @@ export default function AuthModal({ onClose, onLoginSuccess, onRegisterSuccess, 
                     <path fill="#EA4335" d="M12 4.75c1.77 0 3.35.61 4.6 1.8l3.42-3.42C17.95 1.19 15.24 0 12 0 7.34 0 3.26 2.64 1.25 6.58l4.03 3.15c.95-2.83 3.6-4.98 6.72-4.98z"/>
                   </svg>
                 )}
-                <span>{googleLoading ? 'Opening Google Sign-In...' : isRegisterMode ? 'Sign up with Google' : 'Continue with Google'}</span>
+                <span>{googleLoading ? 'Opening Google Sign-In...' : 'Continue with Google'}</span>
               </button>
 
               {googleLoading && (
@@ -426,100 +288,18 @@ export default function AuthModal({ onClose, onLoginSuccess, onRegisterSuccess, 
                 </div>
               )}
 
-              <div style={{ display: 'flex', alignItems: 'center', gap: '12px', marginBottom: '16px' }}>
-                <div style={{ flex: 1, height: '1px', background: 'var(--sunstone-border)' }} />
-                <span style={{ fontSize: '11px', fontWeight: '700', color: 'var(--sunstone-text-muted)', textTransform: 'uppercase', letterSpacing: '0.05em' }}>or with student email</span>
-                <div style={{ flex: 1, height: '1px', background: 'var(--sunstone-border)' }} />
-              </div>
-
-              <form onSubmit={handleStudentSubmit} className="auth-form">
-                {isRegisterMode && (
-                  <>
-                    <div className="form-group">
-                      <label className="form-label">
-                        <User size={13} /> Full Name *
-                      </label>
-                      <input
-                        type="text"
-                        className="form-control"
-                        placeholder="e.g. Aryan Sharma"
-                        value={name}
-                        onChange={(e) => setName(e.target.value)}
-                        required
-                      />
-                    </div>
-
-                    <div className="form-group">
-                      <label className="form-label">
-                        <GraduationCap size={13} /> Enrolled Program *
-                      </label>
-                      <select
-                        className="form-control"
-                        value={program}
-                        onChange={(e) => setProgram(e.target.value)}
-                      >
-                        <option value="B.Tech & BCA">B.Tech & BCA (Tech & Engineering)</option>
-                        <option value="MBA">MBA (Management & Finance)</option>
-                        <option value="BBA">BBA (Business Administration)</option>
-                      </select>
-                    </div>
-                  </>
-                )}
-
-                <div className="form-group">
-                  <label className="form-label">
-                    <Mail size={13} /> Sunstone Student Email *
-                  </label>
-                  <input
-                    type="email"
-                    className="form-control"
-                    placeholder="student@sunstone.in"
-                    value={email}
-                    onChange={(e) => {
-                      setEmail(e.target.value);
-                      setErrorMsg('');
-                    }}
-                    required
-                  />
-                </div>
-
-                <div className="form-group">
-                  <label className="form-label">
-                    <Lock size={13} /> {isRegisterMode ? 'Create Password (min 4 chars) *' : 'Password *'}
-                  </label>
-                  <input
-                    type="password"
-                    className="form-control"
-                    placeholder={isRegisterMode ? 'Min 4 characters' : '••••••••••••'}
-                    value={password}
-                    minLength={4}
-                    onChange={(e) => setPassword(e.target.value)}
-                    required
-                  />
-                </div>
-
+              <div className="auth-admin-footer">
                 <button
-                  type="submit"
-                  disabled={formLoading}
-                  className="btn-primary auth-submit-btn"
+                  type="button"
+                  onClick={() => {
+                    setIsAdminLoginMode(true);
+                    setErrorMsg('');
+                  }}
+                  className="auth-admin-link"
                 >
-                  {formLoading ? <Loader2 size={16} className="animate-spin" /> : null}
-                  <span>{formLoading ? 'Processing...' : isRegisterMode ? 'Create Student Account' : 'Sign In to Sunstone'}</span>
+                  <ShieldCheck size={14} /> Library Coordinator / Admin Portal
                 </button>
-
-                <div className="auth-admin-footer">
-                  <button
-                    type="button"
-                    onClick={() => {
-                      setIsAdminLoginMode(true);
-                      setErrorMsg('');
-                    }}
-                    className="auth-admin-link"
-                  >
-                    <ShieldCheck size={14} /> Library Coordinator / Admin Portal
-                  </button>
-                </div>
-              </form>
+              </div>
             </div>
           )}
         </div>

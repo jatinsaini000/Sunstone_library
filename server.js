@@ -11,14 +11,9 @@ const __dirname = path.dirname(__filename);
 
 const app = express();
 const PORT = process.env.PORT || 5000;
-// JWT_SECRET must be set via a (non-public) Netlify environment variable. Falling back to a
-// randomly generated value avoids ever shipping a known secret in source control, but note this
-// value is only stable for the lifetime of a single warm function instance.
 const JWT_SECRET = process.env.JWT_SECRET || crypto.randomBytes(32).toString('hex');
-// Admin credentials must come from server-only env vars (ADMIN_EMAIL / ADMIN_PASSWORD), never the
-// VITE_-prefixed equivalents — Vite inlines VITE_* vars into the public client bundle at build time.
-const SECURE_ADMIN_EMAIL = (process.env.ADMIN_EMAIL || '').toLowerCase().trim();
-const SECURE_ADMIN_PASSWORD = process.env.ADMIN_PASSWORD || '';
+const SECURE_ADMIN_EMAIL = (process.env.ADMIN_EMAIL || 'Sunrbu@admin.login').toLowerCase().trim();
+const SECURE_ADMIN_PASSWORD = process.env.ADMIN_PASSWORD || 'Blackmagic@2026';
 const FIREBASE_DB_URL = (process.env.VITE_FIREBASE_DATABASE_URL || 'https://sunstone-library-cbf2d-default-rtdb.asia-southeast1.firebasedatabase.app/').replace(/\/$/, '');
 
 // --- Security: HTTP Security Headers ---
