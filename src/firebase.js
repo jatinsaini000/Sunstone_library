@@ -6,7 +6,7 @@ import { getStorage } from 'firebase/storage';
 
 // Firebase configuration using your provided Realtime Database URL
 const firebaseConfig = {
-  apiKey: import.meta.env.VITE_FIREBASE_API_KEY,
+  apiKey: import.meta.env.VITE_FIREBASE_API_KEY || "AIzaSyCvmjYePXRpAbahhOCtqrz5z6-jEhvjZH0",
   authDomain: import.meta.env.VITE_FIREBASE_AUTH_DOMAIN || "sunstone-library-cbf2d.firebaseapp.com",
   databaseURL: import.meta.env.VITE_FIREBASE_DATABASE_URL || "https://sunstone-library-cbf2d-default-rtdb.asia-southeast1.firebasedatabase.app/",
   projectId: import.meta.env.VITE_FIREBASE_PROJECT_ID || "sunstone-library-cbf2d",
