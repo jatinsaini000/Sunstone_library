@@ -34,7 +34,11 @@ googleProvider.setCustomParameters({ prompt: 'select_account' });
 /** Launch Google Sign-In Popup */
 export async function signInWithGooglePopup() {
   try {
-    const result = await signInWithPopup(auth, googleProvider);
+    const popupPromise = signInWithPopup(auth, googleProvider);
+    const timeoutPromise = new Promise((_, reject) =>
+      setTimeout(() => reject(new Error('Google Sign-In window timed out. Please check if the popup was blocked by your browser.')), 45000)
+    );
+    const result = await Promise.race([popupPromise, timeoutPromise]);
     const user = result.user;
     return {
       success: true,
@@ -47,9 +51,17 @@ export async function signInWithGooglePopup() {
     };
   } catch (error) {
     console.warn('Firebase Google Sign-In notice:', error.message);
+    let friendlyError = error.message;
+    if (error.code === 'auth/popup-blocked') {
+      friendlyError = 'Pop-up window was blocked by your browser. Please click the pop-up icon in your browser address bar and allow popups.';
+    } else if (error.code === 'auth/cancelled-popup-request') {
+      friendlyError = 'Previous sign-in request was cancelled. Please try again.';
+    } else if (error.code === 'auth/network-request-failed') {
+      friendlyError = 'Network connection error. Please check your internet connection.';
+    }
     return {
       success: false,
-      error: error.message,
+      error: friendlyError,
       code: error.code
     };
   }

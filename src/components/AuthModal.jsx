@@ -6,7 +6,8 @@ import { signInWithGooglePopup, addStudentToFirestore } from '../firebase.js';
 export default function AuthModal({ onClose, onLoginSuccess, onRegisterSuccess, onAdminLoginSuccess }) {
   const [isRegisterMode, setIsRegisterMode] = useState(false);
   const [isAdminLoginMode, setIsAdminLoginMode] = useState(false);
-  const [loading, setLoading] = useState(false);
+  const [googleLoading, setGoogleLoading] = useState(false);
+  const [formLoading, setFormLoading] = useState(false);
 
   // Form Fields
   const [email, setEmail] = useState('');
@@ -20,14 +21,14 @@ export default function AuthModal({ onClose, onLoginSuccess, onRegisterSuccess, 
   const [errorMsg, setErrorMsg] = useState('');
 
   const handleGoogleSignIn = async () => {
-    setLoading(true);
+    setGoogleLoading(true);
     setErrorMsg('');
 
     try {
       const res = await signInWithGooglePopup();
       if (!res.success) {
         if (res.code === 'auth/popup-closed-by-user') {
-          setLoading(false);
+          setGoogleLoading(false);
           return;
         }
         throw new Error(res.error || 'Google Sign-In failed. Please try again.');
@@ -83,7 +84,7 @@ export default function AuthModal({ onClose, onLoginSuccess, onRegisterSuccess, 
       console.error('Google Sign-In Error:', err);
       setErrorMsg(err.message || 'Google Authentication failed.');
     } finally {
-      setLoading(false);
+      setGoogleLoading(false);
     }
   };
 
@@ -94,14 +95,14 @@ export default function AuthModal({ onClose, onLoginSuccess, onRegisterSuccess, 
       return;
     }
 
-    setLoading(true);
+    setFormLoading(true);
     setErrorMsg('');
 
     try {
       if (isRegisterMode) {
         if (!name.trim()) {
           setErrorMsg('Please enter your full name.');
-          setLoading(false);
+          setFormLoading(false);
           return;
         }
 
@@ -119,7 +120,7 @@ export default function AuthModal({ onClose, onLoginSuccess, onRegisterSuccess, 
         const data = await res.json().catch(() => ({}));
         if (!res.ok) {
           setErrorMsg(data.error || 'Registration failed. Please check your details.');
-          setLoading(false);
+          setFormLoading(false);
           return;
         }
 
@@ -137,7 +138,7 @@ export default function AuthModal({ onClose, onLoginSuccess, onRegisterSuccess, 
         const data = await res.json().catch(() => ({}));
         if (!res.ok) {
           setErrorMsg(data.error || 'Invalid email or password.');
-          setLoading(false);
+          setFormLoading(false);
           return;
         }
 
@@ -150,7 +151,7 @@ export default function AuthModal({ onClose, onLoginSuccess, onRegisterSuccess, 
     } catch (err) {
       setErrorMsg('Connection error. Please try again.');
     } finally {
-      setLoading(false);
+      setFormLoading(false);
     }
   };
 
@@ -161,7 +162,7 @@ export default function AuthModal({ onClose, onLoginSuccess, onRegisterSuccess, 
       return;
     }
 
-    setLoading(true);
+    setFormLoading(true);
     setErrorMsg('');
 
     try {
@@ -184,7 +185,7 @@ export default function AuthModal({ onClose, onLoginSuccess, onRegisterSuccess, 
     } catch (err) {
       setErrorMsg('Invalid administrative credentials. Please verify your password.');
     } finally {
-      setLoading(false);
+      setFormLoading(false);
     }
   };
 
@@ -331,11 +332,11 @@ export default function AuthModal({ onClose, onLoginSuccess, onRegisterSuccess, 
 
               <button
                 type="submit"
-                disabled={loading}
+                disabled={formLoading}
                 className="btn-primary auth-submit-btn admin-theme"
               >
-                {loading ? <Loader2 size={16} className="animate-spin" /> : <ShieldCheck size={16} />}
-                <span>{loading ? 'Authenticating...' : 'Authenticate Admin Access'}</span>
+                {formLoading ? <Loader2 size={16} className="animate-spin" /> : <ShieldCheck size={16} />}
+                <span>{formLoading ? 'Authenticating...' : 'Authenticate Admin Access'}</span>
               </button>
 
               <div className="auth-mode-toggle">
@@ -358,7 +359,7 @@ export default function AuthModal({ onClose, onLoginSuccess, onRegisterSuccess, 
               <button
                 type="button"
                 onClick={handleGoogleSignIn}
-                disabled={loading}
+                disabled={googleLoading}
                 className="btn-google-auth"
                 style={{
                   width: '100%',
@@ -373,13 +374,13 @@ export default function AuthModal({ onClose, onLoginSuccess, onRegisterSuccess, 
                   alignItems: 'center',
                   justifyContent: 'center',
                   gap: '10px',
-                  cursor: loading ? 'not-allowed' : 'pointer',
-                  marginBottom: '16px',
+                  cursor: googleLoading ? 'wait' : 'pointer',
+                  marginBottom: googleLoading ? '8px' : '16px',
                   boxShadow: '0 1px 3px rgba(0,0,0,0.06)',
                   transition: 'all 0.2s ease'
                 }}
               >
-                {loading ? (
+                {googleLoading ? (
                   <Loader2 size={18} className="animate-spin" />
                 ) : (
                   <svg width="18" height="18" viewBox="0 0 24 24">
@@ -389,8 +390,31 @@ export default function AuthModal({ onClose, onLoginSuccess, onRegisterSuccess, 
                     <path fill="#EA4335" d="M12 4.75c1.77 0 3.35.61 4.6 1.8l3.42-3.42C17.95 1.19 15.24 0 12 0 7.34 0 3.26 2.64 1.25 6.58l4.03 3.15c.95-2.83 3.6-4.98 6.72-4.98z"/>
                   </svg>
                 )}
-                <span>{loading ? 'Opening Google Sign-In...' : isRegisterMode ? 'Sign up with Google' : 'Continue with Google'}</span>
+                <span>{googleLoading ? 'Opening Google Sign-In...' : isRegisterMode ? 'Sign up with Google' : 'Continue with Google'}</span>
               </button>
+
+              {googleLoading && (
+                <div style={{ textAlign: 'center', marginBottom: '14px', fontSize: '12px', color: 'var(--sunstone-text-secondary)', lineHeight: '1.4' }}>
+                  Please select your Google account in the popup window.
+                  <br />
+                  <button
+                    type="button"
+                    onClick={() => setGoogleLoading(false)}
+                    style={{
+                      background: 'none',
+                      border: 'none',
+                      color: '#2563eb',
+                      fontWeight: '700',
+                      cursor: 'pointer',
+                      textDecoration: 'underline',
+                      marginTop: '4px',
+                      fontSize: '12px'
+                    }}
+                  >
+                    Window didn't appear? Click here to Cancel / Retry
+                  </button>
+                </div>
+              )}
 
               <div style={{ display: 'flex', alignItems: 'center', gap: '12px', marginBottom: '16px' }}>
                 <div style={{ flex: 1, height: '1px', background: 'var(--sunstone-border)' }} />
@@ -466,11 +490,11 @@ export default function AuthModal({ onClose, onLoginSuccess, onRegisterSuccess, 
 
                 <button
                   type="submit"
-                  disabled={loading}
+                  disabled={formLoading}
                   className="btn-primary auth-submit-btn"
                 >
-                  {loading ? <Loader2 size={16} className="animate-spin" /> : null}
-                  <span>{loading ? 'Processing...' : isRegisterMode ? 'Create Student Account' : 'Sign In to Sunstone'}</span>
+                  {formLoading ? <Loader2 size={16} className="animate-spin" /> : null}
+                  <span>{formLoading ? 'Processing...' : isRegisterMode ? 'Create Student Account' : 'Sign In to Sunstone'}</span>
                 </button>
 
                 <div className="auth-admin-footer">
