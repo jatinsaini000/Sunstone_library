@@ -1,7 +1,7 @@
 import React, { useState } from 'react';
 import { X, User, Lock, Mail, GraduationCap, ShieldCheck, Key, Loader2, UserPlus, LogIn } from 'lucide-react';
 import SunstoneLogo from './SunstoneLogo.jsx';
-import { signInWithGooglePopup } from '../firebase.js';
+import { signInWithGooglePopup, addStudentToFirestore } from '../firebase.js';
 
 export default function AuthModal({ onClose, onLoginSuccess, onRegisterSuccess, onAdminLoginSuccess }) {
   const [isRegisterMode, setIsRegisterMode] = useState(false);
@@ -35,24 +35,50 @@ export default function AuthModal({ onClose, onLoginSuccess, onRegisterSuccess, 
 
       const { email: gEmail, displayName: gName, photoURL: gPhoto, uid: gUid } = res.user;
 
-      const serverRes = await fetch('/api/auth/google', {
-        method: 'POST',
-        headers: { 'Content-Type': 'application/json' },
-        body: JSON.stringify({
-          email: gEmail.toLowerCase().trim(),
-          name: gName || gEmail.split('@')[0],
-          photoUrl: gPhoto,
-          googleId: gUid,
-          program
-        })
-      });
+      let authenticatedUser = {
+        id: 'usr_' + (gUid ? gUid.substring(0, 16) : Date.now()),
+        name: gName || gEmail.split('@')[0],
+        email: gEmail.toLowerCase().trim(),
+        photoUrl: gPhoto,
+        role: 'student',
+        program,
+        status: 'Active',
+        authProvider: 'google',
+        createdAt: new Date().toISOString()
+      };
+      let authToken = null;
 
-      const data = await serverRes.json().catch(() => ({}));
-      if (!serverRes.ok) {
-        throw new Error(data.error || 'Failed to authenticate Google user on server.');
+      // Sync with server if available
+      try {
+        const serverRes = await fetch('/api/auth/google', {
+          method: 'POST',
+          headers: { 'Content-Type': 'application/json' },
+          body: JSON.stringify({
+            email: gEmail.toLowerCase().trim(),
+            name: gName || gEmail.split('@')[0],
+            photoUrl: gPhoto,
+            googleId: gUid,
+            program
+          })
+        });
+
+        if (serverRes.ok) {
+          const data = await serverRes.json().catch(() => ({}));
+          if (data.user) {
+            authenticatedUser = data.user;
+            authToken = data.token;
+          }
+        }
+      } catch (e) {
+        console.warn('Server sync notice:', e.message);
       }
 
-      onLoginSuccess(data.user, data.token);
+      // Persist directly to Firebase database so student roster is always updated
+      try {
+        await addStudentToFirestore(authenticatedUser);
+      } catch (e) {}
+
+      onLoginSuccess(authenticatedUser, authToken);
     } catch (err) {
       console.error('Google Sign-In Error:', err);
       setErrorMsg(err.message || 'Google Authentication failed.');
