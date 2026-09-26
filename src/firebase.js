@@ -5,14 +5,20 @@ import { getAuth, GoogleAuthProvider, signInWithPopup } from 'firebase/auth';
 import { getStorage } from 'firebase/storage';
 
 // Firebase configuration using your provided Realtime Database URL
+const FIREBASE_WEB_API_KEY = "AIzaSyCvmjYePXRpAbahhOCtqrz5z6-jEhvjZH0";
+const rawEnvKey = import.meta.env.VITE_FIREBASE_API_KEY;
+const resolvedApiKey = (typeof rawEnvKey === 'string' && rawEnvKey.startsWith('AIzaSy'))
+  ? rawEnvKey
+  : FIREBASE_WEB_API_KEY;
+
 const firebaseConfig = {
-  apiKey: import.meta.env.VITE_FIREBASE_API_KEY || "AIzaSyCvmjYePXRpAbahhOCtqrz5z6-jEhvjZH0",
-  authDomain: import.meta.env.VITE_FIREBASE_AUTH_DOMAIN || "sunstone-library-cbf2d.firebaseapp.com",
-  databaseURL: import.meta.env.VITE_FIREBASE_DATABASE_URL || "https://sunstone-library-cbf2d-default-rtdb.asia-southeast1.firebasedatabase.app/",
-  projectId: import.meta.env.VITE_FIREBASE_PROJECT_ID || "sunstone-library-cbf2d",
-  storageBucket: import.meta.env.VITE_FIREBASE_STORAGE_BUCKET || "sunstone-library-cbf2d.firebasestorage.app",
-  messagingSenderId: import.meta.env.VITE_FIREBASE_MESSAGING_SENDER_ID || "862348491959",
-  appId: import.meta.env.VITE_FIREBASE_APP_ID || "1:862348491959:web:f5b5342535fa7dde59a132"
+  apiKey: resolvedApiKey,
+  authDomain: "sunstone-library-cbf2d.firebaseapp.com",
+  databaseURL: "https://sunstone-library-cbf2d-default-rtdb.asia-southeast1.firebasedatabase.app/",
+  projectId: "sunstone-library-cbf2d",
+  storageBucket: "sunstone-library-cbf2d.firebasestorage.app",
+  messagingSenderId: "862348491959",
+  appId: "1:862348491959:web:f5b5342535fa7dde59a132"
 };
 
 // Initialize Firebase App & Services

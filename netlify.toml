@@ -6,10 +6,14 @@
 # Public build configuration (Secrets are loaded securely from Netlify Environment Variables)
 [build.environment]
   NODE_VERSION = "20"
+  VITE_FIREBASE_API_KEY = "AIzaSyCvmjYePXRpAbahhOCtqrz5z6-jEhvjZH0"
   VITE_FIREBASE_AUTH_DOMAIN = "sunstone-library-cbf2d.firebaseapp.com"
   VITE_FIREBASE_DATABASE_URL = "https://sunstone-library-cbf2d-default-rtdb.asia-southeast1.firebasedatabase.app/"
   VITE_FIREBASE_PROJECT_ID = "sunstone-library-cbf2d"
-  VITE_FIREBASE_STORAGE_BUCKET = "sunstone-library-cbf2d.appspot.com"
+  VITE_FIREBASE_STORAGE_BUCKET = "sunstone-library-cbf2d.firebasestorage.app"
+  VITE_FIREBASE_MESSAGING_SENDER_ID = "862348491959"
+  VITE_FIREBASE_APP_ID = "1:862348491959:web:f5b5342535fa7dde59a132"
+  VITE_FIREBASE_MEASUREMENT_ID = "G-NFJD7964BL"
 
 # Route all /api calls directly to the Netlify Serverless Function
 [[redirects]]
