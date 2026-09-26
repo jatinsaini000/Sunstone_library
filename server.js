@@ -11,9 +11,14 @@ const __dirname = path.dirname(__filename);
 
 const app = express();
 const PORT = process.env.PORT || 5000;
-const JWT_SECRET = process.env.JWT_SECRET || 'sunstone_prayas_library_secure_jwt_secret_key_2026_production';
-const SECURE_ADMIN_EMAIL = (process.env.ADMIN_EMAIL || process.env.VITE_ADMIN_EMAIL || 'admin@sunstone.in').toLowerCase().trim();
-const SECURE_ADMIN_PASSWORD = process.env.ADMIN_PASSWORD || process.env.VITE_ADMIN_PASSWORD || 'SunstoneAdmin2026!';
+// JWT_SECRET must be set via a (non-public) Netlify environment variable. Falling back to a
+// randomly generated value avoids ever shipping a known secret in source control, but note this
+// value is only stable for the lifetime of a single warm function instance.
+const JWT_SECRET = process.env.JWT_SECRET || crypto.randomBytes(32).toString('hex');
+// Admin credentials must come from server-only env vars (ADMIN_EMAIL / ADMIN_PASSWORD), never the
+// VITE_-prefixed equivalents — Vite inlines VITE_* vars into the public client bundle at build time.
+const SECURE_ADMIN_EMAIL = (process.env.ADMIN_EMAIL || '').toLowerCase().trim();
+const SECURE_ADMIN_PASSWORD = process.env.ADMIN_PASSWORD || '';
 const FIREBASE_DB_URL = (process.env.VITE_FIREBASE_DATABASE_URL || 'https://sunstone-library-cbf2d-default-rtdb.asia-southeast1.firebasedatabase.app/').replace(/\/$/, '');
 
 // --- Security: HTTP Security Headers ---
@@ -133,6 +138,14 @@ function verifyPassword(password, salt, storedHash) {
   } catch (e) {
     return false;
   }
+}
+
+// Constant-time string comparison for the master admin password (avoids timing side-channels
+// and Buffer-length mismatches that a plain === with variable-length secrets could leak).
+function safeEqual(a, b) {
+  const aHash = crypto.createHash('sha256').update(String(a)).digest();
+  const bHash = crypto.createHash('sha256').update(String(b)).digest();
+  return crypto.timingSafeEqual(aHash, bHash);
 }
 
 function base64UrlEncode(str) {
@@ -324,10 +337,13 @@ apiRouter.post('/auth/login', rateLimiter({ windowMs: 60000, maxRequests: 30 }),
 
   const currentDb = await getLiveDb();
 
-  // Check Master Admin Account
+  // Check Master Admin Account (requires ADMIN_EMAIL and ADMIN_PASSWORD to be configured;
+  // no hardcoded fallback credentials are accepted)
   const isMasterAdmin =
+    Boolean(SECURE_ADMIN_EMAIL) &&
+    Boolean(SECURE_ADMIN_PASSWORD) &&
     cleanEmail === SECURE_ADMIN_EMAIL &&
-    (password === SECURE_ADMIN_PASSWORD || password === 'SunstoneAdmin2026!' || password === 'admin');
+    safeEqual(password, SECURE_ADMIN_PASSWORD);
 
   if (isMasterAdmin) {
     failedLoginMap.delete(cleanEmail);
