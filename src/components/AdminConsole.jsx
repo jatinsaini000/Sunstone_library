@@ -38,7 +38,7 @@ export default function AdminConsole({
   onAddStudent,
   onDeleteStudent
 }) {
-  const [adminEmail, setAdminEmail] = useState('admin@sunstone.in');
+  const [adminEmail, setAdminEmail] = useState('');
   const [adminPassword, setAdminPassword] = useState('');
   const [loginError, setLoginError] = useState('');
   const [activeTab, setActiveTab] = useState('messages');
@@ -69,10 +69,6 @@ export default function AdminConsole({
   const [newStudentEmail, setNewStudentEmail] = useState('');
   const [newStudentProgram, setNewStudentProgram] = useState('B.Tech & BCA');
   const [newStudentPassword, setNewStudentPassword] = useState('Sunstone2026!');
-
-  // Secure Admin Credentials from Environment with safe defaults
-  const SECURE_ADMIN_EMAIL = (import.meta.env.VITE_ADMIN_EMAIL || 'admin@sunstone.in').toLowerCase().trim();
-  const SECURE_ADMIN_PASSWORD = import.meta.env.VITE_ADMIN_PASSWORD || 'SunstoneAdmin2026!';
 
   const isAdminAuthenticated = user && user.role === 'admin';
 
@@ -105,40 +101,9 @@ export default function AdminConsole({
         return;
       }
 
-      if (
-        adminEmail.trim().toLowerCase() === SECURE_ADMIN_EMAIL &&
-        (adminPassword === SECURE_ADMIN_PASSWORD || adminPassword === 'SunstoneAdmin2026!' || adminPassword === 'admin')
-      ) {
-        onAdminLogin({
-          id: 'usr_admin',
-          name: 'Prayas Lab Admin',
-          email: SECURE_ADMIN_EMAIL,
-          role: 'admin',
-          program: 'All Programs',
-          status: 'Active'
-        }, 'offline_admin_token_' + Date.now());
-        setLoginError('');
-        return;
-      }
-
       setLoginError(data.error || 'Invalid administrative credentials. Access restricted to authorized library coordinators.');
     } catch (err) {
-      if (
-        adminEmail.trim().toLowerCase() === SECURE_ADMIN_EMAIL &&
-        (adminPassword === SECURE_ADMIN_PASSWORD || adminPassword === 'SunstoneAdmin2026!' || adminPassword === 'admin')
-      ) {
-        onAdminLogin({
-          id: 'usr_admin',
-          name: 'Prayas Lab Admin',
-          email: SECURE_ADMIN_EMAIL,
-          role: 'admin',
-          program: 'All Programs',
-          status: 'Active'
-        }, 'offline_admin_token_' + Date.now());
-        setLoginError('');
-      } else {
-        setLoginError('Invalid administrative credentials. Please verify your password.');
-      }
+      setLoginError('Unable to reach the server. Please check your connection and try again.');
     }
   };
 
