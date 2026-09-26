@@ -1,5 +1,5 @@
 import React from 'react';
-import { BookOpen, Zap, Bookmark, Star, Send, FileText } from 'lucide-react';
+import { BookOpen, Zap, Bookmark, Star, Send, FileText, Clock } from 'lucide-react';
 import { getDriveFileIdForFilename } from '../driveBookMap.js';
 
 export default function BookCard({
@@ -10,8 +10,11 @@ export default function BookCard({
   onOpenBorrowModal,
   isSaved,
   onToggleSave,
-  isBorrowed = false
+  isBorrowed = false,
+  activeLoan = null
 }) {
+  const isLoanedToOther = Boolean(activeLoan && !isBorrowed);
+
   const localFilename = book?.localPath
     ? book.localPath.split('/').pop()
     : (book?.pdfUrl && book.pdfUrl.includes('/uploads/') ? book.pdfUrl.split('/').pop() : book ? `${book.title}.pdf` : null);
@@ -22,12 +25,12 @@ export default function BookCard({
     : book.coverUrl;
 
   return (
-    <div className="netflix-card">
-      {/* Poster Image Container - Clicking directly opens Reader */}
+    <div className={`netflix-card ${isLoanedToOther ? 'card-on-loan' : ''}`}>
+      {/* Poster Image Container */}
       <div
         className="poster-box"
         onClick={() => onOpenSnippets(book)}
-        style={{ cursor: 'pointer' }}
+        style={{ cursor: 'pointer', position: 'relative' }}
         title="Click image to read chapter snippets"
       >
         <img
@@ -41,6 +44,46 @@ export default function BookCard({
         />
         <div className="poster-badge">{book.program}</div>
 
+        {/* Live Availability Badge */}
+        {isBorrowed ? (
+          <div style={{
+            position: 'absolute',
+            top: '8px',
+            right: '8px',
+            background: 'rgba(16, 185, 129, 0.9)',
+            color: '#ffffff',
+            fontSize: '10px',
+            fontWeight: '800',
+            padding: '3px 8px',
+            borderRadius: '20px',
+            backdropFilter: 'blur(4px)',
+            boxShadow: '0 2px 6px rgba(0,0,0,0.3)',
+            display: 'flex',
+            alignItems: 'center',
+            gap: '3px'
+          }}>
+            ✓ Borrowed
+          </div>
+        ) : isLoanedToOther ? (
+          <div style={{
+            position: 'absolute',
+            top: '8px',
+            right: '8px',
+            background: 'rgba(239, 68, 68, 0.9)',
+            color: '#ffffff',
+            fontSize: '10px',
+            fontWeight: '800',
+            padding: '3px 8px',
+            borderRadius: '20px',
+            backdropFilter: 'blur(4px)',
+            boxShadow: '0 2px 6px rgba(0,0,0,0.3)',
+            display: 'flex',
+            alignItems: 'center',
+            gap: '3px'
+          }}>
+            <Clock size={10} /> On Loan
+          </div>
+        ) : null}
 
         {/* Quick Summary Badge Button */}
         <button
@@ -120,12 +163,13 @@ export default function BookCard({
           {!isBorrowed && (
             <button
               type="button"
-              className="btn-secondary card-action-btn borrow"
+              className={`btn-secondary card-action-btn ${isLoanedToOther ? 'borrowed-other' : 'borrow'}`}
               onClick={() => onOpenBorrowModal(book)}
-              title="Borrow Physical or Digital Copy"
+              title={isLoanedToOther ? 'Currently on loan to another student (1 borrower limit)' : 'Borrow Physical or Digital Copy'}
+              style={isLoanedToOther ? { opacity: 0.85, color: '#dc2626', borderColor: 'rgba(239,68,68,0.3)' } : {}}
             >
-              <Send size={12} />
-              <span>Borrow</span>
+              {isLoanedToOther ? <Clock size={12} /> : <Send size={12} />}
+              <span>{isLoanedToOther ? 'On Loan' : 'Borrow'}</span>
             </button>
           )}
         </div>

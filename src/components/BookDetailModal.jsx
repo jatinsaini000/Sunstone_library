@@ -8,11 +8,14 @@ export default function BookDetailModal({
   onOpenSnippets,
   onOpenBorrowModal,
   initialTab = 'summary',
-  isBorrowed = false
+  isBorrowed = false,
+  activeLoan = null
 }) {
   const [activeTab, setActiveTab] = useState(initialTab);
 
   if (!book) return null;
+
+  const isLoanedToOther = Boolean(activeLoan && !isBorrowed);
 
   const quickSummary = book.quickSummary || {
     highlights: [
@@ -58,6 +61,10 @@ export default function BookDetailModal({
               {isBorrowed ? (
                 <span className="status-badge borrowed-status">
                   <Unlock size={11} /> Unlocked
+                </span>
+              ) : isLoanedToOther ? (
+                <span className="status-badge rejected" style={{ display: 'inline-flex', alignItems: 'center', gap: '4px' }}>
+                  <Clock size={11} /> On Loan (1-Borrower Limit)
                 </span>
               ) : (
                 <span className="status-badge locked-status">
@@ -108,12 +115,14 @@ export default function BookDetailModal({
                 <button
                   type="button"
                   className="btn-secondary"
+                  style={isLoanedToOther ? { color: '#dc2626', borderColor: 'rgba(239,68,68,0.4)', background: 'rgba(239,68,68,0.06)' } : {}}
                   onClick={() => {
                     onClose();
                     onOpenBorrowModal(book);
                   }}
                 >
-                  <Send size={16} /> Borrow Full Book
+                  {isLoanedToOther ? <Clock size={16} /> : <Send size={16} />}
+                  <span>{isLoanedToOther ? 'Currently On Loan' : 'Borrow Full Book'}</span>
                 </button>
               )}
             </div>
@@ -248,13 +257,14 @@ export default function BookDetailModal({
             <button
               type="button"
               className="btn-secondary mobile-action-sub borrow"
+              style={isLoanedToOther ? { color: '#dc2626', borderColor: 'rgba(239,68,68,0.4)' } : {}}
               onClick={() => {
                 onClose();
                 onOpenBorrowModal(book);
               }}
             >
-              <Send size={16} />
-              <span>Borrow</span>
+              {isLoanedToOther ? <Clock size={16} /> : <Send size={16} />}
+              <span>{isLoanedToOther ? 'On Loan' : 'Borrow'}</span>
             </button>
           )}
         </div>

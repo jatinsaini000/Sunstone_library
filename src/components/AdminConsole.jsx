@@ -1,5 +1,26 @@
 import React, { useState } from 'react';
-import { ShieldCheck, Lock, Upload, Link as LinkIcon, Plus, CheckCircle, XCircle, MessageSquare, Users, BookOpen, Trash2, HardDrive, ExternalLink } from 'lucide-react';
+import {
+  ShieldCheck,
+  Lock,
+  Upload,
+  Link as LinkIcon,
+  Plus,
+  CheckCircle,
+  XCircle,
+  MessageSquare,
+  Users,
+  BookOpen,
+  Trash2,
+  HardDrive,
+  ExternalLink,
+  Edit3,
+  Clock,
+  AlertTriangle,
+  Search,
+  UserPlus,
+  X,
+  RotateCcw
+} from 'lucide-react';
 import { convertGoogleDriveUrl, convertGoogleDriveImageUrl, PRAYAS_DRIVE_FOLDER_URL } from '../googleDriveHelper.js';
 
 export default function AdminConsole({
@@ -7,16 +28,22 @@ export default function AdminConsole({
   onAdminLogin,
   allBooks = [],
   onUploadBook,
+  onEditBook,
   onDeleteBook,
   borrowRequests = [],
   onUpdateBorrowStatus,
+  onDeleteBorrowRequest,
   students = [],
-  onToggleStudentStatus
+  onToggleStudentStatus,
+  onAddStudent,
+  onDeleteStudent
 }) {
   const [adminEmail, setAdminEmail] = useState('admin@sunstone.in');
   const [adminPassword, setAdminPassword] = useState('');
   const [loginError, setLoginError] = useState('');
   const [activeTab, setActiveTab] = useState('messages');
+  const [messagesFilter, setMessagesFilter] = useState('All'); // 'All', 'Pending', 'Approved', 'Returned', 'Rejected'
+  const [catalogSearch, setCatalogSearch] = useState('');
 
   // Book Upload Form State
   const [uploadMode, setUploadMode] = useState('file'); // 'file' or 'url'
@@ -33,11 +60,29 @@ export default function AdminConsole({
   const [chapterSnippetsText, setChapterSnippetsText] = useState('');
   const [uploadSuccessMsg, setUploadSuccessMsg] = useState('');
 
+  // Edit Book Modal State
+  const [editingBook, setEditingBook] = useState(null);
+
+  // Add Student Modal State
+  const [showAddStudentModal, setShowAddStudentModal] = useState(false);
+  const [newStudentName, setNewStudentName] = useState('');
+  const [newStudentEmail, setNewStudentEmail] = useState('');
+  const [newStudentProgram, setNewStudentProgram] = useState('B.Tech & BCA');
+  const [newStudentPassword, setNewStudentPassword] = useState('Sunstone2026!');
+
   // Secure Admin Credentials from Environment with safe defaults
   const SECURE_ADMIN_EMAIL = (import.meta.env.VITE_ADMIN_EMAIL || 'admin@sunstone.in').toLowerCase().trim();
   const SECURE_ADMIN_PASSWORD = import.meta.env.VITE_ADMIN_PASSWORD || 'SunstoneAdmin2026!';
 
   const isAdminAuthenticated = user && user.role === 'admin';
+
+  // Compute active loans by book ID (Status === 'Approved')
+  const activeLoansByBookId = {};
+  (borrowRequests || []).forEach((r) => {
+    if (r && r.status === 'Approved') {
+      activeLoansByBookId[r.bookId] = r;
+    }
+  });
 
   const handleAdminLoginFormSubmit = async (e) => {
     e.preventDefault();
@@ -53,14 +98,13 @@ export default function AdminConsole({
         })
       });
 
-      const data = await res.json();
+      const data = await res.json().catch(() => ({}));
       if (res.ok && data.user && data.user.role === 'admin') {
         onAdminLogin(data.user, data.token);
         setLoginError('');
         return;
       }
-      
-      // Fallback check
+
       if (
         adminEmail.trim().toLowerCase() === SECURE_ADMIN_EMAIL &&
         (adminPassword === SECURE_ADMIN_PASSWORD || adminPassword === 'SunstoneAdmin2026!' || adminPassword === 'admin')
@@ -79,7 +123,6 @@ export default function AdminConsole({
 
       setLoginError(data.error || 'Invalid administrative credentials. Access restricted to authorized library coordinators.');
     } catch (err) {
-      // Offline fallback
       if (
         adminEmail.trim().toLowerCase() === SECURE_ADMIN_EMAIL &&
         (adminPassword === SECURE_ADMIN_PASSWORD || adminPassword === 'SunstoneAdmin2026!' || adminPassword === 'admin')
@@ -145,6 +188,49 @@ export default function AdminConsole({
     setTimeout(() => setUploadSuccessMsg(''), 4000);
   };
 
+  const handleSaveEditedBook = async (e) => {
+    e.preventDefault();
+    if (!editingBook) return;
+
+    if (onEditBook) {
+      await onEditBook(editingBook.id, {
+        title: editingBook.title,
+        author: editingBook.author,
+        program: editingBook.program,
+        category: editingBook.category,
+        description: editingBook.description,
+        pdfUrl: convertGoogleDriveUrl(editingBook.pdfUrl),
+        coverUrl: convertGoogleDriveImageUrl(editingBook.coverUrl)
+      });
+    }
+    setEditingBook(null);
+  };
+
+  const handleAddStudentSubmit = async (e) => {
+    e.preventDefault();
+    if (!newStudentName.trim() || !newStudentEmail.trim()) {
+      alert('Please enter student name and email.');
+      return;
+    }
+
+    if (onAddStudent) {
+      await onAddStudent({
+        id: 'usr_' + Date.now(),
+        name: newStudentName.trim(),
+        email: newStudentEmail.trim().toLowerCase(),
+        program: newStudentProgram,
+        password: newStudentPassword,
+        role: 'student',
+        status: 'Active',
+        createdAt: new Date().toISOString()
+      });
+    }
+
+    setNewStudentName('');
+    setNewStudentEmail('');
+    setShowAddStudentModal(false);
+  };
+
   // If Admin is NOT logged in, show Admin Security Card
   if (!isAdminAuthenticated) {
     return (
@@ -175,7 +261,7 @@ export default function AdminConsole({
           Prayas Lab Admin Console
         </h2>
         <p style={{ color: 'var(--sunstone-text-secondary)', fontSize: '13px', marginBottom: '24px' }}>
-          Official Sunstone Admin Portal. Authenticate to manage books, student messages, and permissions.
+          Official Sunstone Admin Portal. Authenticate to manage books, student loans, and permissions.
         </p>
 
         {loginError && (
@@ -217,7 +303,19 @@ export default function AdminConsole({
     );
   }
 
-  const pendingRequestsCount = borrowRequests.filter(r => r.status === 'Pending').length;
+  const pendingRequestsCount = borrowRequests.filter((r) => r.status === 'Pending').length;
+  const activeLoansCount = Object.keys(activeLoansByBookId).length;
+
+  const filteredBorrowRequests = borrowRequests.filter((req) => {
+    if (messagesFilter === 'All') return true;
+    return req.status === messagesFilter;
+  });
+
+  const filteredCatalog = allBooks.filter((b) => {
+    if (!catalogSearch) return true;
+    const q = catalogSearch.toLowerCase();
+    return b.title.toLowerCase().includes(q) || b.author.toLowerCase().includes(q) || b.program.toLowerCase().includes(q);
+  });
 
   return (
     <div style={{ maxWidth: '1200px', margin: '0 auto', display: 'flex', flexDirection: 'column', gap: '24px' }}>
@@ -230,7 +328,9 @@ export default function AdminConsole({
         padding: '24px',
         display: 'flex',
         alignItems: 'center',
-        justifyContent: 'space-between'
+        justifyContent: 'space-between',
+        flexWrap: 'wrap',
+        gap: '16px'
       }}>
         <div style={{ display: 'flex', alignItems: 'center', gap: '16px' }}>
           <div style={{ width: '48px', height: '48px', borderRadius: '12px', background: 'var(--sunstone-navy-dark)', color: 'white', display: 'flex', alignItems: 'center', justifyContent: 'center' }}>
@@ -238,38 +338,51 @@ export default function AdminConsole({
           </div>
           <div>
             <h2 style={{ fontSize: '20px', fontWeight: '800', color: 'var(--sunstone-text-primary)' }}>Prayas Lab Admin Portal</h2>
-            <p style={{ color: 'var(--sunstone-text-secondary)', fontSize: '13px' }}>Book Upload Curation, Student Borrow Messages & Access Roster</p>
+            <p style={{ color: 'var(--sunstone-text-secondary)', fontSize: '13px' }}>Full Management: Books, 1-Borrower Loan Controls, Students & Inventory</p>
           </div>
         </div>
 
-        <span className="status-badge active">Admin Session Active</span>
+        <span className="status-badge active" style={{ display: 'inline-flex', alignItems: 'center', gap: '6px' }}>
+          <span style={{ width: '8px', height: '8px', borderRadius: '50%', background: '#10b981', display: 'inline-block' }}></span>
+          Admin Session Active
+        </span>
       </div>
 
       {/* Stats Counter Cards */}
-      <div style={{ display: 'grid', gridTemplateColumns: 'repeat(auto-fit, minmax(220px, 1fr))', gap: '16px' }}>
-        <div style={{ background: 'var(--sunstone-card-bg)', border: '1px solid var(--sunstone-border)', borderRadius: 'var(--radius-md)', padding: '20px', display: 'flex', alignItems: 'center', gap: '16px', boxShadow: 'var(--shadow-card)' }}>
-          <div style={{ width: '48px', height: '48px', borderRadius: '12px', background: 'rgba(255, 77, 90, 0.1)', color: 'var(--accent-sunstone-red)', display: 'flex', alignItems: 'center', justifyContent: 'center' }}>
-            <BookOpen size={24} />
+      <div style={{ display: 'grid', gridTemplateColumns: 'repeat(auto-fit, minmax(200px, 1fr))', gap: '16px' }}>
+        <div style={{ background: 'var(--sunstone-card-bg)', border: '1px solid var(--sunstone-border)', borderRadius: 'var(--radius-md)', padding: '18px', display: 'flex', alignItems: 'center', gap: '14px', boxShadow: 'var(--shadow-card)' }}>
+          <div style={{ width: '44px', height: '44px', borderRadius: '10px', background: 'rgba(255, 77, 90, 0.1)', color: 'var(--accent-sunstone-red)', display: 'flex', alignItems: 'center', justifyContent: 'center' }}>
+            <BookOpen size={22} />
           </div>
           <div>
             <div style={{ fontSize: '22px', fontWeight: '800', color: 'var(--sunstone-text-primary)' }}>{allBooks.length}</div>
-            <div style={{ fontSize: '12px', color: 'var(--sunstone-text-muted)', fontWeight: '600' }}>Total Books in Catalog</div>
+            <div style={{ fontSize: '12px', color: 'var(--sunstone-text-muted)', fontWeight: '600' }}>Total Books</div>
           </div>
         </div>
 
-        <div style={{ background: 'var(--sunstone-card-bg)', border: '1px solid var(--sunstone-border)', borderRadius: 'var(--radius-md)', padding: '20px', display: 'flex', alignItems: 'center', gap: '16px', boxShadow: 'var(--shadow-card)' }}>
-          <div style={{ width: '48px', height: '48px', borderRadius: '12px', background: 'rgba(245, 158, 11, 0.1)', color: '#d97706', display: 'flex', alignItems: 'center', justifyContent: 'center' }}>
-            <MessageSquare size={24} />
+        <div style={{ background: 'var(--sunstone-card-bg)', border: '1px solid var(--sunstone-border)', borderRadius: 'var(--radius-md)', padding: '18px', display: 'flex', alignItems: 'center', gap: '14px', boxShadow: 'var(--shadow-card)' }}>
+          <div style={{ width: '44px', height: '44px', borderRadius: '10px', background: 'rgba(245, 158, 11, 0.1)', color: '#d97706', display: 'flex', alignItems: 'center', justifyContent: 'center' }}>
+            <Clock size={22} />
+          </div>
+          <div>
+            <div style={{ fontSize: '22px', fontWeight: '800', color: 'var(--sunstone-text-primary)' }}>{activeLoansCount}</div>
+            <div style={{ fontSize: '12px', color: 'var(--sunstone-text-muted)', fontWeight: '600' }}>Active Loans (On Loan)</div>
+          </div>
+        </div>
+
+        <div style={{ background: 'var(--sunstone-card-bg)', border: '1px solid var(--sunstone-border)', borderRadius: 'var(--radius-md)', padding: '18px', display: 'flex', alignItems: 'center', gap: '14px', boxShadow: 'var(--shadow-card)' }}>
+          <div style={{ width: '44px', height: '44px', borderRadius: '10px', background: 'rgba(59, 130, 246, 0.1)', color: '#2563eb', display: 'flex', alignItems: 'center', justifyContent: 'center' }}>
+            <MessageSquare size={22} />
           </div>
           <div>
             <div style={{ fontSize: '22px', fontWeight: '800', color: 'var(--sunstone-text-primary)' }}>{pendingRequestsCount}</div>
-            <div style={{ fontSize: '12px', color: 'var(--sunstone-text-muted)', fontWeight: '600' }}>Pending Borrow Messages</div>
+            <div style={{ fontSize: '12px', color: 'var(--sunstone-text-muted)', fontWeight: '600' }}>Pending Requests</div>
           </div>
         </div>
 
-        <div style={{ background: 'var(--sunstone-card-bg)', border: '1px solid var(--sunstone-border)', borderRadius: 'var(--radius-md)', padding: '20px', display: 'flex', alignItems: 'center', gap: '16px', boxShadow: 'var(--shadow-card)' }}>
-          <div style={{ width: '48px', height: '48px', borderRadius: '12px', background: 'rgba(37, 99, 235, 0.1)', color: 'var(--accent-blue)', display: 'flex', alignItems: 'center', justifyContent: 'center' }}>
-            <Users size={24} />
+        <div style={{ background: 'var(--sunstone-card-bg)', border: '1px solid var(--sunstone-border)', borderRadius: 'var(--radius-md)', padding: '18px', display: 'flex', alignItems: 'center', gap: '14px', boxShadow: 'var(--shadow-card)' }}>
+          <div style={{ width: '44px', height: '44px', borderRadius: '10px', background: 'rgba(16, 185, 129, 0.1)', color: '#10b981', display: 'flex', alignItems: 'center', justifyContent: 'center' }}>
+            <Users size={22} />
           </div>
           <div>
             <div style={{ fontSize: '22px', fontWeight: '800', color: 'var(--sunstone-text-primary)' }}>{students.length}</div>
@@ -278,16 +391,14 @@ export default function AdminConsole({
         </div>
       </div>
 
-      {/* Sunstone Admin Navigation Pills - Responsive Scrollable Bar */}
+      {/* Admin Navigation Pills */}
       <div
         className="admin-tabs-scroller"
         style={{
           display: 'flex',
           gap: '10px',
           overflowX: 'auto',
-          paddingBottom: '6px',
-          WebkitOverflowScrolling: 'touch',
-          scrollbarWidth: 'none'
+          paddingBottom: '4px'
         }}
       >
         <button
@@ -304,11 +415,10 @@ export default function AdminConsole({
             display: 'flex',
             alignItems: 'center',
             gap: '8px',
-            flexShrink: 0,
-            whiteSpace: 'nowrap'
+            flexShrink: 0
           }}
         >
-          <MessageSquare size={16} /> Borrow Messages ({pendingRequestsCount})
+          <MessageSquare size={16} /> Borrow Messages & Loans ({borrowRequests.length})
         </button>
 
         <button
@@ -325,32 +435,10 @@ export default function AdminConsole({
             display: 'flex',
             alignItems: 'center',
             gap: '8px',
-            flexShrink: 0,
-            whiteSpace: 'nowrap'
+            flexShrink: 0
           }}
         >
-          <Plus size={16} /> Upload Book (File / URL)
-        </button>
-
-        <button
-          onClick={() => setActiveTab('students')}
-          style={{
-            padding: '10px 18px',
-            borderRadius: '30px',
-            border: activeTab === 'students' ? '2px solid var(--sunstone-navy-dark)' : '1px solid var(--sunstone-border)',
-            background: activeTab === 'students' ? 'var(--sunstone-navy-dark)' : 'var(--sunstone-card-bg)',
-            color: activeTab === 'students' ? '#ffffff' : 'var(--sunstone-text-primary)',
-            fontSize: '13px',
-            fontWeight: '700',
-            cursor: 'pointer',
-            display: 'flex',
-            alignItems: 'center',
-            gap: '8px',
-            flexShrink: 0,
-            whiteSpace: 'nowrap'
-          }}
-        >
-          <Users size={16} /> Student Access ({students.length})
+          <Plus size={16} /> Upload Book
         </button>
 
         <button
@@ -367,102 +455,226 @@ export default function AdminConsole({
             display: 'flex',
             alignItems: 'center',
             gap: '8px',
-            flexShrink: 0,
-            whiteSpace: 'nowrap'
+            flexShrink: 0
           }}
         >
           <BookOpen size={16} /> Manage Catalog ({allBooks.length})
         </button>
+
+        <button
+          onClick={() => setActiveTab('students')}
+          style={{
+            padding: '10px 18px',
+            borderRadius: '30px',
+            border: activeTab === 'students' ? '2px solid var(--sunstone-navy-dark)' : '1px solid var(--sunstone-border)',
+            background: activeTab === 'students' ? 'var(--sunstone-navy-dark)' : 'var(--sunstone-card-bg)',
+            color: activeTab === 'students' ? '#ffffff' : 'var(--sunstone-text-primary)',
+            fontSize: '13px',
+            fontWeight: '700',
+            cursor: 'pointer',
+            display: 'flex',
+            alignItems: 'center',
+            gap: '8px',
+            flexShrink: 0
+          }}
+        >
+          <Users size={16} /> Student Access ({students.length})
+        </button>
       </div>
 
-      {/* TAB 1: BORROW MESSAGES INBOX */}
+      {/* TAB 1: BORROW MESSAGES & ACTIVE LOANS (ENFORCES 1-BORROWER RULE) */}
       {activeTab === 'messages' && (
-        <div style={{ background: 'var(--sunstone-card-bg)', border: '1px solid var(--sunstone-border)', borderRadius: 'var(--radius-lg)', padding: '28px', boxShadow: 'var(--shadow-card)' }}>
-          <h3 style={{ fontSize: '18px', fontWeight: '800', marginBottom: '16px', color: 'var(--sunstone-text-primary)' }}>Student Borrowing Requests & Messages</h3>
-          {borrowRequests.length === 0 ? (
-            <p style={{ color: 'var(--sunstone-text-secondary)', fontSize: '14px' }}>No student borrowing messages received yet.</p>
+        <div style={{ background: 'var(--sunstone-card-bg)', border: '1px solid var(--sunstone-border)', borderRadius: 'var(--radius-lg)', padding: '24px', boxShadow: 'var(--shadow-card)' }}>
+          <div style={{ display: 'flex', justifyContent: 'space-between', alignItems: 'center', marginBottom: '16px', flexWrap: 'wrap', gap: '12px' }}>
+            <div>
+              <h3 style={{ fontSize: '18px', fontWeight: '800', color: 'var(--sunstone-text-primary)', margin: 0 }}>
+                Borrow Requests & Active Loans
+              </h3>
+              <p style={{ color: 'var(--sunstone-text-secondary)', fontSize: '12px', margin: '4px 0 0' }}>
+                Only one student can borrow a book at a time. Active loans lock the book until marked as Returned.
+              </p>
+            </div>
+
+            {/* Sub-Filters */}
+            <div style={{ display: 'flex', gap: '6px', flexWrap: 'wrap' }}>
+              {['All', 'Pending', 'Approved', 'Returned', 'Rejected'].map((statusKey) => (
+                <button
+                  key={statusKey}
+                  type="button"
+                  onClick={() => setMessagesFilter(statusKey)}
+                  style={{
+                    padding: '6px 12px',
+                    borderRadius: '20px',
+                    fontSize: '12px',
+                    fontWeight: '700',
+                    border: '1px solid var(--sunstone-border)',
+                    background: messagesFilter === statusKey ? 'var(--sunstone-navy-dark)' : 'var(--sunstone-bg)',
+                    color: messagesFilter === statusKey ? '#ffffff' : 'var(--sunstone-text-secondary)',
+                    cursor: 'pointer'
+                  }}
+                >
+                  {statusKey === 'Approved' ? 'Active Loans' : statusKey}
+                </button>
+              ))}
+            </div>
+          </div>
+
+          {filteredBorrowRequests.length === 0 ? (
+            <p style={{ color: 'var(--sunstone-text-secondary)', fontSize: '14px', padding: '20px 0', textAlign: 'center' }}>
+              No borrow messages matching "{messagesFilter}".
+            </p>
           ) : (
             <div style={{ display: 'flex', flexDirection: 'column', gap: '16px' }}>
-              {borrowRequests.map((req) => (
-                <div key={req.id} style={{ background: 'var(--sunstone-bg)', border: '1px solid var(--sunstone-border)', borderRadius: 'var(--radius-md)', padding: '20px' }}>
-                  <div style={{ display: 'flex', justifyContent: 'space-between', alignItems: 'flex-start', marginBottom: '12px', flexWrap: 'wrap', gap: '10px' }}>
-                    <div>
-                      <div style={{ display: 'flex', alignItems: 'center', gap: '10px', marginBottom: '4px' }}>
-                        <h4 style={{ fontSize: '16px', fontWeight: '800', color: 'var(--sunstone-text-primary)' }}>{req.studentName}</h4>
-                        <span className="status-badge active">{req.studentProgram}</span>
-                        <span style={{ fontSize: '12px', color: 'var(--sunstone-text-muted)' }}>({req.studentEmail})</span>
+              {filteredBorrowRequests.map((req) => {
+                const currentActiveLoan = activeLoansByBookId[req.bookId];
+                const isConflict = currentActiveLoan && currentActiveLoan.id !== req.id && req.status === 'Pending';
+
+                return (
+                  <div key={req.id} style={{
+                    background: 'var(--sunstone-bg)',
+                    border: '1px solid var(--sunstone-border)',
+                    borderRadius: 'var(--radius-md)',
+                    padding: '18px',
+                    position: 'relative'
+                  }}>
+                    <div style={{ display: 'flex', justifyContent: 'space-between', alignItems: 'flex-start', marginBottom: '10px', flexWrap: 'wrap', gap: '10px' }}>
+                      <div>
+                        <div style={{ display: 'flex', alignItems: 'center', gap: '10px', marginBottom: '4px' }}>
+                          <h4 style={{ fontSize: '16px', fontWeight: '800', color: 'var(--sunstone-text-primary)', margin: 0 }}>{req.studentName}</h4>
+                          <span className="status-badge active">{req.studentProgram}</span>
+                          <span style={{ fontSize: '12px', color: 'var(--sunstone-text-muted)' }}>({req.studentEmail})</span>
+                        </div>
+                        <div style={{ fontSize: '14px', color: 'var(--accent-sunstone-red)', fontWeight: '700' }}>
+                          Book: "{req.bookTitle}" • <span style={{ color: 'var(--sunstone-text-secondary)' }}>{req.borrowType}</span>
+                        </div>
                       </div>
-                      <div style={{ fontSize: '14px', color: 'var(--accent-sunstone-red)', fontWeight: '700' }}>
-                        Book Requested: "{req.bookTitle}" ({req.borrowType})
+
+                      <div style={{ display: 'flex', alignItems: 'center', gap: '8px' }}>
+                        <span className={`status-badge ${(req.status || 'Pending').toLowerCase()}`}>
+                          {req.status === 'Approved' ? 'Active Loan' : (req.status || 'Pending')}
+                        </span>
+                        {onDeleteBorrowRequest && (
+                          <button
+                            type="button"
+                            onClick={() => {
+                              if (window.confirm('Delete this borrow request record?')) {
+                                onDeleteBorrowRequest(req.id);
+                              }
+                            }}
+                            style={{
+                              background: 'transparent',
+                              border: 'none',
+                              color: 'var(--sunstone-text-muted)',
+                              cursor: 'pointer',
+                              padding: '4px'
+                            }}
+                            title="Delete Request Record"
+                          >
+                            <Trash2 size={15} />
+                          </button>
+                        )}
                       </div>
                     </div>
 
-                    <span className={`status-badge ${(req.status || 'Pending').toLowerCase()}`}>
-                      {req.status || 'Pending'}
-                    </span>
-                  </div>
-
-                  <div style={{ background: 'var(--sunstone-card-bg)', border: '1px solid var(--sunstone-border)', borderLeft: '4px solid var(--accent-blue)', padding: '14px', borderRadius: '8px', marginBottom: '14px', fontSize: '13px', lineHeight: 1.5 }}>
-                    <strong style={{ color: 'var(--accent-blue)' }}>Student Message:</strong> "{req.studentMessage}"
-                  </div>
-
-                  {req.adminNote && (
-                    <div style={{ fontSize: '12px', color: 'var(--sunstone-text-secondary)', marginBottom: '12px' }}>
-                      <strong>Your Reply:</strong> {req.adminNote}
+                    <div style={{ background: 'var(--sunstone-card-bg)', border: '1px solid var(--sunstone-border)', borderLeft: '4px solid var(--accent-blue)', padding: '12px', borderRadius: '8px', marginBottom: '12px', fontSize: '13px', lineHeight: 1.5 }}>
+                      <strong style={{ color: 'var(--accent-blue)' }}>Student Reason:</strong> "{req.studentMessage}"
                     </div>
-                  )}
 
-                  <div style={{ display: 'flex', alignItems: 'center', gap: '10px' }}>
-                    {req.status === 'Pending' && (
-                      <>
-                        <button
-                          className="btn-primary"
-                          style={{ padding: '6px 14px', fontSize: '12px', background: '#10b981' }}
-                          onClick={() => {
-                            const note = prompt('Optional Admin Reply message to student:', 'Approved! Access granted for Prayas Lab.');
-                            if (note !== null) {
-                              onUpdateBorrowStatus(req.id, 'Approved', note || 'Approved! Access granted.');
-                            }
-                          }}
-                        >
-                          <CheckCircle size={14} /> Approve Request
-                        </button>
+                    {req.adminNote && (
+                      <div style={{ fontSize: '12px', color: 'var(--sunstone-text-secondary)', marginBottom: '12px' }}>
+                        <strong>Admin Reply:</strong> {req.adminNote}
+                      </div>
+                    )}
+
+                    {/* Single-Borrower Conflict Alert */}
+                    {isConflict && (
+                      <div style={{
+                        background: 'rgba(239, 68, 68, 0.08)',
+                        border: '1px solid rgba(239, 68, 68, 0.3)',
+                        borderRadius: '8px',
+                        padding: '10px 12px',
+                        marginBottom: '12px',
+                        display: 'flex',
+                        alignItems: 'center',
+                        gap: '8px',
+                        fontSize: '12px',
+                        color: '#dc2626'
+                      }}>
+                        <AlertTriangle size={16} />
+                        <span>
+                          <strong>1-Borrower Conflict:</strong> This textbook is currently on loan to <strong>{currentActiveLoan.studentName}</strong> ({currentActiveLoan.studentEmail}). The active loan must be marked as Returned before approving this student.
+                        </span>
+                      </div>
+                    )}
+
+                    {/* Action Controls */}
+                    <div style={{ display: 'flex', alignItems: 'center', gap: '10px', flexWrap: 'wrap' }}>
+                      {req.status === 'Pending' && (
+                        <>
+                          <button
+                            className="btn-primary"
+                            disabled={Boolean(isConflict)}
+                            style={{
+                              padding: '6px 14px',
+                              fontSize: '12px',
+                              background: isConflict ? '#9ca3af' : '#10b981',
+                              cursor: isConflict ? 'not-allowed' : 'pointer'
+                            }}
+                            onClick={() => {
+                              if (isConflict) return;
+                              const note = prompt('Optional Admin Reply message to student:', 'Approved! Access granted for Prayas Lab.');
+                              if (note !== null) {
+                                onUpdateBorrowStatus(req.id, 'Approved', note || 'Approved! Access granted.');
+                              }
+                            }}
+                            title={isConflict ? 'Cannot approve: book is already loaned to another student' : 'Approve Request'}
+                          >
+                            <CheckCircle size={14} /> Approve Loan
+                          </button>
+
+                          <button
+                            className="btn-secondary"
+                            style={{ padding: '6px 14px', fontSize: '12px', color: '#ef4444', borderColor: 'rgba(239,68,68,0.3)' }}
+                            onClick={() => {
+                              const note = prompt('Reason for declining request:', 'Currently unavailable or reserved.');
+                              if (note !== null) {
+                                onUpdateBorrowStatus(req.id, 'Rejected', note || 'Declined');
+                              }
+                            }}
+                          >
+                            <XCircle size={14} /> Reject Request
+                          </button>
+                        </>
+                      )}
+
+                      {req.status === 'Approved' && (
                         <button
                           className="btn-secondary"
-                          style={{ padding: '6px 14px', fontSize: '12px', color: '#ef4444', borderColor: 'rgba(239,68,68,0.3)' }}
-                          onClick={() => {
-                            const note = prompt('Reason for declining request:', 'Currently unavailable in lab stock.');
-                            if (note !== null) {
-                              onUpdateBorrowStatus(req.id, 'Rejected', note || 'Declined');
-                            }
-                          }}
+                          style={{ padding: '6px 14px', fontSize: '12px', background: 'rgba(16,185,129,0.1)', color: '#059669', borderColor: 'rgba(16,185,129,0.4)', fontWeight: '700' }}
+                          onClick={() => onUpdateBorrowStatus(req.id, 'Returned', 'Book returned to Prayas Lab counter.')}
                         >
-                          <XCircle size={14} /> Reject Request
+                          <RotateCcw size={14} /> Mark as Returned (Release Book)
                         </button>
-                      </>
-                    )}
+                      )}
 
-                    {req.status === 'Approved' && (
-                      <button
-                        className="btn-secondary"
-                        style={{ padding: '6px 14px', fontSize: '12px' }}
-                        onClick={() => onUpdateBorrowStatus(req.id, 'Returned', 'Book returned to lab.')}
-                      >
-                        Mark as Returned
-                      </button>
-                    )}
+                      {req.status === 'Returned' && (
+                        <span style={{ fontSize: '12px', color: '#10b981', fontWeight: '700' }}>
+                          ✓ Book has been returned and is available in catalog.
+                        </span>
+                      )}
+                    </div>
                   </div>
-                </div>
-              ))}
+                );
+              })}
             </div>
           )}
         </div>
       )}
 
-      {/* TAB 2: DAILY BOOK UPLOADER (FILE OR URL) */}
+      {/* TAB 2: UPLOAD BOOK */}
       {activeTab === 'upload' && (
         <div style={{ background: 'var(--sunstone-card-bg)', border: '1px solid var(--sunstone-border)', borderRadius: 'var(--radius-lg)', padding: '28px', boxShadow: 'var(--shadow-card)' }}>
-          <h3 style={{ fontSize: '18px', fontWeight: '800', marginBottom: '6px', color: 'var(--sunstone-text-primary)' }}>Upload & Publish New Book Daily</h3>
+          <h3 style={{ fontSize: '18px', fontWeight: '800', marginBottom: '6px', color: 'var(--sunstone-text-primary)' }}>Upload & Publish New Book</h3>
           <p style={{ color: 'var(--sunstone-text-secondary)', fontSize: '13px', marginBottom: '20px' }}>
             Add new academic textbooks, lab manuals, or journals. Upload PDF files directly or link files from your designated Google Drive repository folder.
           </p>
@@ -591,8 +803,7 @@ export default function AdminConsole({
                   onChange={(e) => setProgram(e.target.value)}
                 >
                   <option value="MBA">MBA</option>
-                  <option value="B.Tech CS">B.Tech CS</option>
-                  <option value="BCA">BCA</option>
+                  <option value="B.Tech & BCA">B.Tech & BCA</option>
                   <option value="BBA">BBA</option>
                   <option value="Special Collections">Special Collections</option>
                   <option value="Journals">Journals & Research</option>
@@ -600,11 +811,11 @@ export default function AdminConsole({
               </div>
 
               <div className="form-group">
-                <label className="form-label">Category / Subject Tag</label>
+                <label className="form-label">Category</label>
                 <input
                   type="text"
                   className="form-control"
-                  placeholder="e.g. Data Science, Finance, Marketing"
+                  placeholder="e.g. Computer Science, Finance, Marketing"
                   value={category}
                   onChange={(e) => setCategory(e.target.value)}
                 />
@@ -613,89 +824,46 @@ export default function AdminConsole({
 
             {uploadMode === 'file' ? (
               <div className="form-group">
-                <label className="form-label">Select PDF File from Device *</label>
+                <label className="form-label">Select PDF Document (.pdf) *</label>
                 <input
                   type="file"
-                  accept="application/pdf"
                   className="form-control"
+                  accept="application/pdf"
                   onChange={(e) => setPdfFile(e.target.files[0])}
+                  required
                 />
               </div>
             ) : (
               <div className="form-group">
-                <label className="form-label">📁 Google Drive Share Link OR Direct PDF Web URL *</label>
+                <label className="form-label">Google Drive Share Link or Direct PDF URL *</label>
                 <input
                   type="url"
                   className="form-control"
-                  placeholder="Paste Google Drive link (e.g. https://drive.google.com/file/d/...) or any PDF URL"
+                  placeholder="https://drive.google.com/file/d/.../view or https://example.com/book.pdf"
                   value={pdfUrl}
                   onChange={(e) => setPdfUrl(e.target.value)}
+                  required
                 />
-                <div style={{ fontSize: '11px', color: 'var(--sunstone-text-muted)', marginTop: '4px' }}>
-                  💡 Tip: Set your Google Drive file permission to "Anyone with the link can view". It will automatically open in the PDF reader!
-                </div>
               </div>
             )}
 
             <div className="form-group">
-              <label className="form-label">Cover Image URL (Optional)</label>
+              <label className="form-label">Cover Image URL (or Google Drive Image Link)</label>
               <input
                 type="url"
                 className="form-control"
-                placeholder="https://images.unsplash.com/photo-..."
+                placeholder="https://images.unsplash.com/... or Google Drive share link"
                 value={coverUrl}
                 onChange={(e) => setCoverUrl(e.target.value)}
               />
             </div>
 
-            <div style={{ background: 'var(--sunstone-bg)', border: '1px solid var(--sunstone-border)', padding: '18px', borderRadius: '12px', margin: '20px 0' }}>
-              <h4 style={{ fontSize: '14px', fontWeight: '800', color: 'var(--accent-blue)', marginBottom: '12px' }}>
-                ⚡ Quick Summary & Key Takeaways (Helps students decide whether to read)
-              </h4>
-
-              <div className="form-group">
-                <label className="form-label">Book Highlights (One bullet per line)</label>
-                <textarea
-                  className="form-control"
-                  rows="3"
-                  placeholder="• Covers neural networks and deep learning fundamentals&#10;• Includes Python PyTorch code samples&#10;• Mapped to semester lab exams"
-                  value={highlightsText}
-                  onChange={(e) => setHighlightsText(e.target.value)}
-                />
-              </div>
-
-              <div className="form-group">
-                <label className="form-label">Key Learning Takeaways (One bullet per line)</label>
-                <textarea
-                  className="form-control"
-                  rows="3"
-                  placeholder="• Master CNN and RNN architectures&#10;• Deploy AI models to cloud endpoints"
-                  value={takeawaysText}
-                  onChange={(e) => setTakeawaysText(e.target.value)}
-                />
-              </div>
-
-              <div className="form-group" style={{ marginTop: '12px' }}>
-                <label className="form-label">📖 Chapter-Wise Snippets / Summaries (Available for free preview without borrowing)</label>
-                <textarea
-                  className="form-control"
-                  rows="4"
-                  placeholder="Chapter 1: Foundational Principles&#10;Detailed chapter summary and key formulas here...&#10;&#10;Chapter 2: Advanced Implementations&#10;Summary of chapter 2 methodologies and case studies..."
-                  value={chapterSnippetsText}
-                  onChange={(e) => setChapterSnippetsText(e.target.value)}
-                />
-                <div style={{ fontSize: '11px', color: 'var(--sunstone-text-muted)', marginTop: '4px' }}>
-                  Students can read these chapter snippets for free. Full book PDF reading is restricted until borrowed.
-                </div>
-              </div>
-            </div>
-
             <div className="form-group">
-              <label className="form-label">Full Book Description</label>
+              <label className="form-label">Book Description & Syllabus Context</label>
               <textarea
                 className="form-control"
                 rows="3"
-                placeholder="Detailed background summary of the book contents..."
+                placeholder="Explain the book context and why it's recommended..."
                 value={description}
                 onChange={(e) => setDescription(e.target.value)}
               />
@@ -708,51 +876,232 @@ export default function AdminConsole({
         </div>
       )}
 
-      {/* TAB 3: MANAGE STUDENT ACCESS */}
+      {/* TAB 3: MANAGE CATALOG (LIVE AVAILABILITY, EDIT, DELETE) */}
+      {activeTab === 'catalog' && (
+        <div style={{ background: 'var(--sunstone-card-bg)', border: '1px solid var(--sunstone-border)', borderRadius: 'var(--radius-lg)', padding: '24px', boxShadow: 'var(--shadow-card)' }}>
+          <div style={{ display: 'flex', justifyContent: 'space-between', alignItems: 'center', marginBottom: '16px', flexWrap: 'wrap', gap: '12px' }}>
+            <div>
+              <h3 style={{ fontSize: '18px', fontWeight: '800', color: 'var(--sunstone-text-primary)', margin: 0 }}>
+                Manage Catalog & Availability ({allBooks.length})
+              </h3>
+              <p style={{ color: 'var(--sunstone-text-secondary)', fontSize: '12px', margin: '4px 0 0' }}>
+                Track live loan availability, edit metadata, or remove books.
+              </p>
+            </div>
+
+            <div style={{ position: 'relative', width: '280px' }}>
+              <Search size={16} style={{ position: 'absolute', left: '12px', top: '50%', transform: 'translateY(-50%)', color: 'var(--sunstone-text-muted)' }} />
+              <input
+                type="text"
+                className="form-control"
+                placeholder="Search catalog..."
+                value={catalogSearch}
+                onChange={(e) => setCatalogSearch(e.target.value)}
+                style={{ paddingLeft: '36px' }}
+              />
+            </div>
+          </div>
+
+          <div style={{ display: 'flex', flexDirection: 'column', gap: '10px' }}>
+            {filteredCatalog.map((b) => {
+              const activeLoan = activeLoansByBookId[b.id];
+
+              return (
+                <div key={b.id} style={{
+                  display: 'flex',
+                  alignItems: 'center',
+                  justifyContent: 'space-between',
+                  padding: '12px 16px',
+                  background: 'var(--sunstone-bg)',
+                  borderRadius: 'var(--radius-md)',
+                  border: '1px solid var(--sunstone-border)',
+                  flexWrap: 'wrap',
+                  gap: '12px'
+                }}>
+                  <div style={{ display: 'flex', alignItems: 'center', gap: '14px', flex: 1, minWidth: '260px' }}>
+                    <img
+                      src={b.coverUrl}
+                      alt={b.title}
+                      style={{ width: '38px', height: '52px', objectFit: 'cover', borderRadius: '4px', flexShrink: 0 }}
+                      onError={(e) => {
+                        e.target.src = 'https://images.unsplash.com/photo-1544716278-ca5e3f4abd8c?auto=format&fit=crop&w=600&q=80';
+                      }}
+                    />
+                    <div>
+                      <div style={{ fontWeight: '800', fontSize: '14px', color: 'var(--sunstone-text-primary)' }}>{b.title}</div>
+                      <div style={{ fontSize: '12px', color: 'var(--sunstone-text-muted)' }}>
+                        By {b.author} • <span style={{ color: 'var(--accent-blue)', fontWeight: '700' }}>{b.program}</span>
+                      </div>
+                    </div>
+                  </div>
+
+                  {/* Loan Availability Status */}
+                  <div style={{ display: 'flex', alignItems: 'center', gap: '10px' }}>
+                    {activeLoan ? (
+                      <div style={{ display: 'flex', alignItems: 'center', gap: '8px' }}>
+                        <span className="status-badge rejected" style={{ display: 'inline-flex', alignItems: 'center', gap: '4px', fontSize: '11px' }}>
+                          <Clock size={11} /> On Loan to {activeLoan.studentName || 'Student'}
+                        </span>
+                        <button
+                          type="button"
+                          className="btn-secondary"
+                          style={{ padding: '4px 10px', fontSize: '11px', color: '#10b981', borderColor: 'rgba(16,185,129,0.3)' }}
+                          onClick={() => onUpdateBorrowStatus(activeLoan.id, 'Returned', 'Book returned to Prayas Lab.')}
+                          title="Mark loan as returned to release book"
+                        >
+                          <RotateCcw size={12} /> Return
+                        </button>
+                      </div>
+                    ) : (
+                      <span className="status-badge active" style={{ fontSize: '11px' }}>
+                        ✓ Available
+                      </span>
+                    )}
+
+                    {/* Edit Book Button */}
+                    <button
+                      type="button"
+                      onClick={() => setEditingBook({ ...b })}
+                      style={{
+                        background: 'rgba(37, 99, 235, 0.08)',
+                        border: '1px solid rgba(37, 99, 235, 0.25)',
+                        borderRadius: '6px',
+                        color: 'var(--accent-blue)',
+                        cursor: 'pointer',
+                        padding: '6px 10px',
+                        display: 'flex',
+                        alignItems: 'center',
+                        gap: '4px',
+                        fontSize: '12px',
+                        fontWeight: '700'
+                      }}
+                      title="Edit Book Details"
+                    >
+                      <Edit3 size={13} />
+                      <span>Edit</span>
+                    </button>
+
+                    {/* Delete Book Button */}
+                    <button
+                      type="button"
+                      onClick={() => {
+                        if (window.confirm(`Are you sure you want to delete "${b.title}" from the Sunstone catalog?`)) {
+                          onDeleteBook(b.id);
+                        }
+                      }}
+                      style={{
+                        background: 'rgba(239, 68, 68, 0.08)',
+                        border: '1px solid rgba(239, 68, 68, 0.25)',
+                        borderRadius: '6px',
+                        color: '#ef4444',
+                        cursor: 'pointer',
+                        padding: '6px 10px',
+                        display: 'flex',
+                        alignItems: 'center',
+                        gap: '4px',
+                        fontSize: '12px',
+                        fontWeight: '700'
+                      }}
+                      title="Delete Book"
+                    >
+                      <Trash2 size={13} />
+                      <span>Delete</span>
+                    </button>
+                  </div>
+                </div>
+              );
+            })}
+          </div>
+        </div>
+      )}
+
+      {/* TAB 4: MANAGE STUDENT ACCESS & ROSTER */}
       {activeTab === 'students' && (
-        <div style={{ background: 'var(--sunstone-card-bg)', border: '1px solid var(--sunstone-border)', borderRadius: 'var(--radius-lg)', padding: '28px', boxShadow: 'var(--shadow-card)' }}>
-          <h3 style={{ fontSize: '18px', fontWeight: '800', marginBottom: '16px', color: 'var(--sunstone-text-primary)' }}>Student Roster & Access Controls</h3>
+        <div style={{ background: 'var(--sunstone-card-bg)', border: '1px solid var(--sunstone-border)', borderRadius: 'var(--radius-lg)', padding: '24px', boxShadow: 'var(--shadow-card)' }}>
+          <div style={{ display: 'flex', justifyContent: 'space-between', alignItems: 'center', marginBottom: '16px', flexWrap: 'wrap', gap: '12px' }}>
+            <div>
+              <h3 style={{ fontSize: '18px', fontWeight: '800', color: 'var(--sunstone-text-primary)', margin: 0 }}>
+                Student Roster & Access Controls ({students.length})
+              </h3>
+              <p style={{ color: 'var(--sunstone-text-secondary)', fontSize: '12px', margin: '4px 0 0' }}>
+                Manage student enrollment, suspend or activate accounts, and add new scholars.
+              </p>
+            </div>
+
+            <button
+              type="button"
+              className="btn-primary"
+              onClick={() => setShowAddStudentModal(true)}
+              style={{ fontSize: '12px', padding: '8px 14px', background: 'var(--sunstone-navy-dark)' }}
+            >
+              <UserPlus size={14} /> Add New Student
+            </button>
+          </div>
+
           <div style={{ overflowX: 'auto' }}>
-            <table style={{ width: '100%', borderCollapse: 'collapse', fontSize: '14px' }}>
+            <table style={{ width: '100%', borderCollapse: 'collapse', fontSize: '13px' }}>
               <thead>
                 <tr style={{ borderBottom: '1px solid var(--sunstone-border)', textAlign: 'left', color: 'var(--sunstone-text-muted)' }}>
-                  <th style={{ padding: '12px' }}>Student Name</th>
-                  <th style={{ padding: '12px' }}>Email</th>
-                  <th style={{ padding: '12px' }}>Program</th>
-                  <th style={{ padding: '12px' }}>Status</th>
-                  <th style={{ padding: '12px', textAlign: 'right' }}>Access Control</th>
+                  <th style={{ padding: '10px' }}>Student Name</th>
+                  <th style={{ padding: '10px' }}>Email</th>
+                  <th style={{ padding: '10px' }}>Program</th>
+                  <th style={{ padding: '10px' }}>Status</th>
+                  <th style={{ padding: '10px', textAlign: 'right' }}>Actions</th>
                 </tr>
               </thead>
               <tbody>
                 {students.map((st) => (
                   <tr key={st.id} style={{ borderBottom: '1px solid var(--sunstone-border)' }}>
-                    <td style={{ padding: '12px', fontWeight: '700', color: 'var(--sunstone-text-primary)' }}>{st.name}</td>
-                    <td style={{ padding: '12px', color: 'var(--sunstone-text-secondary)' }}>{st.email}</td>
-                    <td style={{ padding: '12px' }}>
+                    <td style={{ padding: '10px', fontWeight: '700', color: 'var(--sunstone-text-primary)' }}>{st.name}</td>
+                    <td style={{ padding: '10px', color: 'var(--sunstone-text-secondary)' }}>{st.email}</td>
+                    <td style={{ padding: '10px' }}>
                       <span className="status-badge active">{st.program}</span>
                     </td>
-                    <td style={{ padding: '12px' }}>
+                    <td style={{ padding: '10px' }}>
                       <span className={`status-badge ${(st.status || 'Active').toLowerCase()}`}>
                         {st.status || 'Active'}
                       </span>
                     </td>
-                    <td style={{ padding: '12px', textAlign: 'right' }}>
-                      <button
-                        className="btn-secondary"
-                        style={{
-                          padding: '6px 14px',
-                          fontSize: '12px',
-                          fontWeight: '700',
-                          color: st.status === 'Active' ? '#ef4444' : '#10b981',
-                          borderColor: st.status === 'Active' ? 'rgba(239,68,68,0.4)' : 'rgba(16,185,129,0.4)',
-                          background: st.status === 'Active' ? 'rgba(239,68,68,0.08)' : 'rgba(16,185,129,0.08)',
-                          cursor: 'pointer',
-                          borderRadius: '20px'
-                        }}
-                        onClick={() => onToggleStudentStatus(st.id, st.status === 'Active' ? 'Suspended' : 'Active')}
-                      >
-                        {st.status === 'Active' ? '🚫 Suspend Account' : '✓ Activate Account'}
-                      </button>
+                    <td style={{ padding: '10px', textAlign: 'right' }}>
+                      <div style={{ display: 'inline-flex', gap: '8px', alignItems: 'center' }}>
+                        <button
+                          className="btn-secondary"
+                          style={{
+                            padding: '4px 10px',
+                            fontSize: '11px',
+                            fontWeight: '700',
+                            color: st.status === 'Active' ? '#ef4444' : '#10b981',
+                            borderColor: st.status === 'Active' ? 'rgba(239,68,68,0.4)' : 'rgba(16,185,129,0.4)',
+                            background: st.status === 'Active' ? 'rgba(239,68,68,0.08)' : 'rgba(16,185,129,0.08)',
+                            cursor: 'pointer',
+                            borderRadius: '16px'
+                          }}
+                          onClick={() => onToggleStudentStatus(st.id, st.status === 'Active' ? 'Suspended' : 'Active')}
+                        >
+                          {st.status === 'Active' ? '🚫 Suspend' : '✓ Activate'}
+                        </button>
+
+                        {onDeleteStudent && (
+                          <button
+                            type="button"
+                            onClick={() => {
+                              if (window.confirm(`Remove student account for "${st.name}"?`)) {
+                                onDeleteStudent(st.id);
+                              }
+                            }}
+                            style={{
+                              background: 'transparent',
+                              border: 'none',
+                              color: 'var(--sunstone-text-muted)',
+                              cursor: 'pointer',
+                              padding: '4px'
+                            }}
+                            title="Delete Student"
+                          >
+                            <Trash2 size={15} />
+                          </button>
+                        )}
+                      </div>
                     </td>
                   </tr>
                 ))}
@@ -762,49 +1111,247 @@ export default function AdminConsole({
         </div>
       )}
 
-      {/* TAB 4: CATALOG MANAGEMENT */}
-      {activeTab === 'catalog' && (
-        <div style={{ background: 'var(--sunstone-card-bg)', border: '1px solid var(--sunstone-border)', borderRadius: 'var(--radius-lg)', padding: '28px', boxShadow: 'var(--shadow-card)' }}>
-          <h3 style={{ fontSize: '18px', fontWeight: '800', marginBottom: '16px', color: 'var(--sunstone-text-primary)' }}>Uploaded Books Catalog ({allBooks.length})</h3>
-          <div style={{ display: 'flex', flexDirection: 'column', gap: '12px' }}>
-            {allBooks.map((b) => (
-              <div key={b.id} style={{ display: 'flex', alignItems: 'center', justifyContent: 'space-between', padding: '14px 18px', background: 'var(--sunstone-bg)', borderRadius: 'var(--radius-md)', border: '1px solid var(--sunstone-border)' }}>
-                <div style={{ display: 'flex', alignItems: 'center', gap: '14px' }}>
-                  <img src={b.coverUrl} alt={b.title} style={{ width: '40px', height: '54px', objectFit: 'cover', borderRadius: '4px' }} />
-                  <div>
-                    <div style={{ fontWeight: '800', fontSize: '15px', color: 'var(--sunstone-text-primary)' }}>{b.title}</div>
-                    <div style={{ fontSize: '12px', color: 'var(--sunstone-text-muted)' }}>
-                      By {b.author} • <span style={{ color: 'var(--accent-blue)', fontWeight: '700' }}>{b.program}</span>
-                    </div>
-                  </div>
+      {/* MODAL: EDIT BOOK DETAILS */}
+      {editingBook && (
+        <div style={{
+          position: 'fixed',
+          inset: 0,
+          background: 'rgba(0,0,0,0.65)',
+          backdropFilter: 'blur(4px)',
+          display: 'flex',
+          alignItems: 'center',
+          justifyContent: 'center',
+          zIndex: 9999,
+          padding: '16px'
+        }}>
+          <div style={{
+            background: 'var(--sunstone-card-bg)',
+            border: '1px solid var(--sunstone-border)',
+            borderRadius: '16px',
+            width: '100%',
+            maxWidth: '520px',
+            padding: '24px',
+            boxShadow: '0 20px 40px rgba(0,0,0,0.3)',
+            maxHeight: '90vh',
+            overflowY: 'auto'
+          }}>
+            <div style={{ display: 'flex', justifyContent: 'space-between', alignItems: 'center', marginBottom: '16px' }}>
+              <h3 style={{ fontSize: '17px', fontWeight: '800', color: 'var(--sunstone-text-primary)', margin: 0 }}>
+                Edit Book: {editingBook.title}
+              </h3>
+              <button
+                type="button"
+                onClick={() => setEditingBook(null)}
+                style={{ background: 'none', border: 'none', color: 'var(--sunstone-text-muted)', cursor: 'pointer' }}
+              >
+                <X size={18} />
+              </button>
+            </div>
+
+            <form onSubmit={handleSaveEditedBook}>
+              <div className="form-group">
+                <label className="form-label">Book Title</label>
+                <input
+                  type="text"
+                  className="form-control"
+                  value={editingBook.title}
+                  onChange={(e) => setEditingBook({ ...editingBook, title: e.target.value })}
+                  required
+                />
+              </div>
+
+              <div className="form-group">
+                <label className="form-label">Author Name</label>
+                <input
+                  type="text"
+                  className="form-control"
+                  value={editingBook.author}
+                  onChange={(e) => setEditingBook({ ...editingBook, author: e.target.value })}
+                  required
+                />
+              </div>
+
+              <div style={{ display: 'grid', gridTemplateColumns: '1fr 1fr', gap: '12px' }}>
+                <div className="form-group">
+                  <label className="form-label">Program</label>
+                  <select
+                    className="form-control"
+                    value={editingBook.program}
+                    onChange={(e) => setEditingBook({ ...editingBook, program: e.target.value })}
+                  >
+                    <option value="MBA">MBA</option>
+                    <option value="B.Tech & BCA">B.Tech & BCA</option>
+                    <option value="BBA">BBA</option>
+                    <option value="Special Collections">Special Collections</option>
+                    <option value="Journals">Journals</option>
+                  </select>
                 </div>
 
+                <div className="form-group">
+                  <label className="form-label">Category</label>
+                  <input
+                    type="text"
+                    className="form-control"
+                    value={editingBook.category || ''}
+                    onChange={(e) => setEditingBook({ ...editingBook, category: e.target.value })}
+                  />
+                </div>
+              </div>
+
+              <div className="form-group">
+                <label className="form-label">PDF URL or Drive Link</label>
+                <input
+                  type="text"
+                  className="form-control"
+                  value={editingBook.pdfUrl || ''}
+                  onChange={(e) => setEditingBook({ ...editingBook, pdfUrl: e.target.value })}
+                />
+              </div>
+
+              <div className="form-group">
+                <label className="form-label">Cover Image URL</label>
+                <input
+                  type="text"
+                  className="form-control"
+                  value={editingBook.coverUrl || ''}
+                  onChange={(e) => setEditingBook({ ...editingBook, coverUrl: e.target.value })}
+                />
+              </div>
+
+              <div className="form-group">
+                <label className="form-label">Description</label>
+                <textarea
+                  className="form-control"
+                  rows="3"
+                  value={editingBook.description || ''}
+                  onChange={(e) => setEditingBook({ ...editingBook, description: e.target.value })}
+                />
+              </div>
+
+              <div style={{ display: 'flex', gap: '10px', marginTop: '16px' }}>
                 <button
-                  onClick={() => {
-                    if (window.confirm(`Are you sure you want to delete "${b.title}" from the Sunstone catalog?`)) {
-                      onDeleteBook(b.id);
-                    }
-                  }}
-                  style={{
-                    background: 'rgba(239, 68, 68, 0.1)',
-                    border: '1px solid rgba(239, 68, 68, 0.25)',
-                    borderRadius: '8px',
-                    color: '#ef4444',
-                    cursor: 'pointer',
-                    padding: '8px 12px',
-                    display: 'flex',
-                    alignItems: 'center',
-                    gap: '6px',
-                    fontSize: '12px',
-                    fontWeight: '700'
-                  }}
-                  title="Delete Book"
+                  type="button"
+                  onClick={() => setEditingBook(null)}
+                  className="btn-secondary"
+                  style={{ flex: 1, padding: '10px', justifyContent: 'center' }}
                 >
-                  <Trash2 size={15} />
-                  <span>Delete</span>
+                  Cancel
+                </button>
+                <button
+                  type="submit"
+                  className="btn-primary"
+                  style={{ flex: 1, padding: '10px', justifyContent: 'center', background: 'var(--sunstone-navy-dark)' }}
+                >
+                  Save Changes
                 </button>
               </div>
-            ))}
+            </form>
+          </div>
+        </div>
+      )}
+
+      {/* MODAL: ADD NEW STUDENT */}
+      {showAddStudentModal && (
+        <div style={{
+          position: 'fixed',
+          inset: 0,
+          background: 'rgba(0,0,0,0.65)',
+          backdropFilter: 'blur(4px)',
+          display: 'flex',
+          alignItems: 'center',
+          justifyContent: 'center',
+          zIndex: 9999,
+          padding: '16px'
+        }}>
+          <div style={{
+            background: 'var(--sunstone-card-bg)',
+            border: '1px solid var(--sunstone-border)',
+            borderRadius: '16px',
+            width: '100%',
+            maxWidth: '440px',
+            padding: '24px',
+            boxShadow: '0 20px 40px rgba(0,0,0,0.3)'
+          }}>
+            <div style={{ display: 'flex', justifyContent: 'space-between', alignItems: 'center', marginBottom: '16px' }}>
+              <h3 style={{ fontSize: '17px', fontWeight: '800', color: 'var(--sunstone-text-primary)', margin: 0 }}>
+                Enroll New Student
+              </h3>
+              <button
+                type="button"
+                onClick={() => setShowAddStudentModal(false)}
+                style={{ background: 'none', border: 'none', color: 'var(--sunstone-text-muted)', cursor: 'pointer' }}
+              >
+                <X size={18} />
+              </button>
+            </div>
+
+            <form onSubmit={handleAddStudentSubmit}>
+              <div className="form-group">
+                <label className="form-label">Full Name *</label>
+                <input
+                  type="text"
+                  className="form-control"
+                  placeholder="e.g. Vikramaditya Rao"
+                  value={newStudentName}
+                  onChange={(e) => setNewStudentName(e.target.value)}
+                  required
+                />
+              </div>
+
+              <div className="form-group">
+                <label className="form-label">Student Email *</label>
+                <input
+                  type="email"
+                  className="form-control"
+                  placeholder="student@sunstone.in"
+                  value={newStudentEmail}
+                  onChange={(e) => setNewStudentEmail(e.target.value)}
+                  required
+                />
+              </div>
+
+              <div className="form-group">
+                <label className="form-label">Enrolled Program</label>
+                <select
+                  className="form-control"
+                  value={newStudentProgram}
+                  onChange={(e) => setNewStudentProgram(e.target.value)}
+                >
+                  <option value="B.Tech & BCA">B.Tech & BCA</option>
+                  <option value="MBA">MBA</option>
+                  <option value="BBA">BBA</option>
+                </select>
+              </div>
+
+              <div className="form-group">
+                <label className="form-label">Initial Password</label>
+                <input
+                  type="text"
+                  className="form-control"
+                  value={newStudentPassword}
+                  onChange={(e) => setNewStudentPassword(e.target.value)}
+                  required
+                />
+              </div>
+
+              <div style={{ display: 'flex', gap: '10px', marginTop: '16px' }}>
+                <button
+                  type="button"
+                  onClick={() => setShowAddStudentModal(false)}
+                  className="btn-secondary"
+                  style={{ flex: 1, padding: '10px', justifyContent: 'center' }}
+                >
+                  Cancel
+                </button>
+                <button
+                  type="submit"
+                  className="btn-primary"
+                  style={{ flex: 1, padding: '10px', justifyContent: 'center', background: 'var(--sunstone-navy-dark)' }}
+                >
+                  Register Student
+                </button>
+              </div>
+            </form>
           </div>
         </div>
       )}

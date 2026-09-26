@@ -11,7 +11,8 @@ export default function BookGrid({
   onOpenBorrowModal,
   savedBookIds = [],
   onToggleSave,
-  borrowedBookIds = []
+  borrowedBookIds = [],
+  activeLoans = {}
 }) {
   const programDetails = {
     'MBA': {
@@ -96,6 +97,7 @@ export default function BookGrid({
               isSaved={savedBookIds.includes(book.id)}
               onToggleSave={onToggleSave}
               isBorrowed={borrowedBookIds.includes(book.id)}
+              activeLoan={activeLoans[book.id]}
             />
           ))}
         </div>

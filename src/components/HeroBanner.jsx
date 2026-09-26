@@ -1,14 +1,17 @@
 import React from 'react';
-import { BookOpen, Sparkles, FileText, Send } from 'lucide-react';
+import { BookOpen, Sparkles, FileText, Send, Clock } from 'lucide-react';
 
 export default function HeroBanner({
   book,
   onOpenReader,
   onOpenSnippets,
   onOpenBorrowModal,
-  isBorrowed = false
+  isBorrowed = false,
+  activeLoan = null
 }) {
   if (!book) return null;
+
+  const isLoanedToOther = Boolean(activeLoan && !isBorrowed);
 
   return (
     <div className="hero-billboard">
@@ -17,7 +20,7 @@ export default function HeroBanner({
         alt={book.title}
         className="billboard-bg-img"
         style={{ cursor: 'pointer' }}
-        onClick={() => onOpenReader(book)}
+        onClick={() => onOpenSnippets(book)}
         onError={(e) => {
           e.target.src = 'https://images.unsplash.com/photo-1515879218367-8466d910aaa4?auto=format&fit=crop&w=1200&q=80';
         }}
@@ -25,14 +28,27 @@ export default function HeroBanner({
       <div className="billboard-overlay"></div>
 
       <div className="billboard-content">
-        <div className="billboard-tag">
+        <div className="billboard-tag" style={{ display: 'inline-flex', alignItems: 'center', gap: '8px' }}>
           <Sparkles size={12} />
           <span>FEATURED IN PRAYAS LAB • {book.program}</span>
+          {isLoanedToOther && (
+            <span style={{
+              background: '#ef4444',
+              color: '#ffffff',
+              fontSize: '10px',
+              fontWeight: '800',
+              padding: '2px 8px',
+              borderRadius: '20px',
+              marginLeft: '6px'
+            }}>
+              On Loan (1-Borrower Limit)
+            </span>
+          )}
         </div>
         <h2
           className="billboard-title"
           style={{ cursor: 'pointer' }}
-          onClick={() => onOpenReader(book)}
+          onClick={() => onOpenSnippets(book)}
         >
           {book.title}
         </h2>
@@ -66,9 +82,10 @@ export default function HeroBanner({
               type="button"
               className="btn-info-netflix"
               onClick={() => onOpenBorrowModal(book)}
+              style={isLoanedToOther ? { background: 'rgba(239, 68, 68, 0.25)', borderColor: 'rgba(239, 68, 68, 0.5)' } : {}}
             >
-              <Send size={16} />
-              <span>Borrow Copy</span>
+              {isLoanedToOther ? <Clock size={16} /> : <Send size={16} />}
+              <span>{isLoanedToOther ? 'Currently On Loan' : 'Borrow Copy'}</span>
             </button>
           )}
         </div>

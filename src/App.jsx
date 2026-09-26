@@ -29,15 +29,18 @@ import {
   getBooksFromFirestore,
   getBorrowRequestsFromFirestore,
   addBookToFirestore,
+  updateBookInFirestore,
   deleteBookFromFirestore,
   addBorrowRequestToFirestore,
   updateBorrowStatusInFirestore,
+  deleteBorrowRequestFromFirestore,
   getNotesFromFirestore,
   addNoteToFirestore,
   deleteNoteFromFirestore,
   getStudentsFromFirestore,
   addStudentToFirestore,
-  updateStudentStatusInFirestore
+  updateStudentStatusInFirestore,
+  deleteStudentFromFirestore
 } from './firebase.js';
 
 export default function App() {
@@ -143,6 +146,14 @@ export default function App() {
   const [activeSnippetBook, setActiveSnippetBook] = useState(null);
   const [activeReaderBook, setActiveReaderBook] = useState(null);
   const [activeBorrowBook, setActiveBorrowBook] = useState(null);
+
+  // Single-Borrower Rule: map of bookId -> active loan (status === 'Approved')
+  const activeLoansByBookId = {};
+  (borrowRequests || []).forEach((r) => {
+    if (r && r.status === 'Approved') {
+      activeLoansByBookId[r.bookId] = r;
+    }
+  });
 
   const borrowedBookIds = borrowRequests
     .filter((r) => user && (r.studentId === user.id || r.studentEmail === user.email) && r.status === 'Approved')
@@ -365,6 +376,13 @@ export default function App() {
 
   // Submit Borrow Request (Linked to Active Student Profile)
   const handleSubmitBorrowRequest = async (requestPayload) => {
+    // ENFORCE SINGLE BORROWER RULE:
+    const activeLoan = activeLoansByBookId[requestPayload.bookId];
+    if (activeLoan && activeLoan.studentId !== user?.id && activeLoan.studentEmail?.toLowerCase() !== user?.email?.toLowerCase()) {
+      triggerToast('This book is currently on loan to another student. Only one student can borrow it at a time.', 'error');
+      return;
+    }
+
     const studentId = user ? user.id : ('usr_' + Date.now());
     const studentName = user ? user.name : 'Student Scholar';
     const studentEmail = user ? user.email : 'student@sunstone.in';
@@ -439,6 +457,62 @@ export default function App() {
     } catch (e) {}
 
     triggerToast(`Borrow request marked as ${status}.`);
+  };
+
+  // Admin Deletes Borrow Request
+  const handleDeleteBorrowRequest = async (requestId) => {
+    setBorrowRequests((prev) => {
+      const next = prev.filter((r) => r.id !== requestId);
+      try {
+        localStorage.setItem('sunstone_borrow_requests', JSON.stringify(next));
+      } catch (e) {}
+      return next;
+    });
+
+    try {
+      await deleteBorrowRequestFromFirestore(requestId);
+    } catch (e) {}
+
+    try {
+      if (token) {
+        await fetch(`/api/borrow-requests/${requestId}`, {
+          method: 'DELETE',
+          headers: { Authorization: `Bearer ${token}` }
+        });
+      }
+    } catch (e) {}
+
+    triggerToast('Borrow request deleted.');
+  };
+
+  // Admin Edits Book
+  const handleEditBook = async (bookId, updatedFields) => {
+    setBooks((prev) => {
+      const next = prev.map((b) => (b.id === bookId ? { ...b, ...updatedFields } : b));
+      try {
+        localStorage.setItem('sunstone_books', JSON.stringify(next));
+      } catch (e) {}
+      return next;
+    });
+
+    try {
+      await updateBookInFirestore(bookId, updatedFields);
+    } catch (e) {}
+
+    try {
+      if (token) {
+        await fetch(`/api/books/${bookId}`, {
+          method: 'PUT',
+          headers: {
+            'Content-Type': 'application/json',
+            Authorization: `Bearer ${token}`
+          },
+          body: JSON.stringify(updatedFields)
+        });
+      }
+    } catch (e) {}
+
+    triggerToast(`Book "${updatedFields.title || 'Textbook'}" updated successfully!`);
   };
 
   // Admin Uploads New Book (Direct File / Google Drive Link / Web PDF)
@@ -607,6 +681,62 @@ const handleDeleteBook = async (bookId) => {
     triggerToast(`Student status updated to ${newStatus}.`);
   };
 
+  // Admin Adds New Student
+  const handleAddStudent = async (newStudent) => {
+    setStudents((prev) => {
+      const next = [newStudent, ...prev];
+      try {
+        localStorage.setItem('sunstone_students', JSON.stringify(next));
+      } catch (e) {}
+      return next;
+    });
+
+    try {
+      await addStudentToFirestore(newStudent);
+    } catch (e) {}
+
+    try {
+      if (token) {
+        await fetch('/api/students', {
+          method: 'POST',
+          headers: {
+            'Content-Type': 'application/json',
+            Authorization: `Bearer ${token}`
+          },
+          body: JSON.stringify(newStudent)
+        });
+      }
+    } catch (e) {}
+
+    triggerToast(`Student ${newStudent.name} registered successfully!`);
+  };
+
+  // Admin Deletes Student Account
+  const handleDeleteStudent = async (studentId) => {
+    setStudents((prev) => {
+      const next = prev.filter((s) => s.id !== studentId);
+      try {
+        localStorage.setItem('sunstone_students', JSON.stringify(next));
+      } catch (e) {}
+      return next;
+    });
+
+    try {
+      await deleteStudentFromFirestore(studentId);
+    } catch (e) {}
+
+    try {
+      if (token) {
+        await fetch(`/api/students/${studentId}`, {
+          method: 'DELETE',
+          headers: { Authorization: `Bearer ${token}` }
+        });
+      }
+    } catch (e) {}
+
+    triggerToast('Student account removed.');
+  };
+
   // Handler for New Student Registration
   const handleRegisterSuccess = async (newUser, userToken) => {
     handleSetUser(newUser, userToken);
@@ -725,12 +855,12 @@ const handleDeleteBook = async (bookId) => {
                 book={featuredBook}
                 onOpenReader={(b) => setActiveReaderBook(b)}
                 onOpenSnippets={(b) => setActiveSnippetBook(b)}
-                onOpenQuickSummary={(b) => setSelectedQuickSummaryBook(b)}
                 onOpenBorrowModal={(b) => {
                   if (!user) setShowAuthModal(true);
                   else setActiveBorrowBook(b);
                 }}
                 isBorrowed={borrowedBookIds.includes(featuredBook?.id)}
+                activeLoan={activeLoansByBookId[featuredBook?.id]}
               />
             )}
 
@@ -757,6 +887,7 @@ const handleDeleteBook = async (bookId) => {
                   savedBookIds={savedBookIds}
                   onToggleSave={handleToggleSaveBook}
                   borrowedBookIds={borrowedBookIds}
+                  activeLoans={activeLoansByBookId}
                 />
               </main>
             ) : (
@@ -775,6 +906,7 @@ const handleDeleteBook = async (bookId) => {
                   savedBookIds={savedBookIds}
                   onToggleSave={handleToggleSaveBook}
                   borrowedBookIds={borrowedBookIds}
+                  activeLoans={activeLoansByBookId}
                 />
 
                 <NetflixRow
@@ -791,6 +923,7 @@ const handleDeleteBook = async (bookId) => {
                   savedBookIds={savedBookIds}
                   onToggleSave={handleToggleSaveBook}
                   borrowedBookIds={borrowedBookIds}
+                  activeLoans={activeLoansByBookId}
                 />
 
                 <NetflixRow
@@ -807,6 +940,7 @@ const handleDeleteBook = async (bookId) => {
                   savedBookIds={savedBookIds}
                   onToggleSave={handleToggleSaveBook}
                   borrowedBookIds={borrowedBookIds}
+                  activeLoans={activeLoansByBookId}
                 />
 
                 <NetflixRow
@@ -823,6 +957,7 @@ const handleDeleteBook = async (bookId) => {
                   savedBookIds={savedBookIds}
                   onToggleSave={handleToggleSaveBook}
                   borrowedBookIds={borrowedBookIds}
+                  activeLoans={activeLoansByBookId}
                 />
 
                 <NetflixRow
@@ -839,6 +974,7 @@ const handleDeleteBook = async (bookId) => {
                   savedBookIds={savedBookIds}
                   onToggleSave={handleToggleSaveBook}
                   borrowedBookIds={borrowedBookIds}
+                  activeLoans={activeLoansByBookId}
                 />
 
                 <NetflixRow
@@ -855,6 +991,7 @@ const handleDeleteBook = async (bookId) => {
                   savedBookIds={savedBookIds}
                   onToggleSave={handleToggleSaveBook}
                   borrowedBookIds={borrowedBookIds}
+                  activeLoans={activeLoansByBookId}
                 />
               </div>
             )}
@@ -894,11 +1031,15 @@ const handleDeleteBook = async (bookId) => {
               onAdminLogin={(adminUser, adminToken) => handleSetUser(adminUser, adminToken)}
               allBooks={books}
               onUploadBook={handleUploadBook}
+              onEditBook={handleEditBook}
               onDeleteBook={handleDeleteBook}
               borrowRequests={borrowRequests}
               onUpdateBorrowStatus={handleUpdateBorrowStatus}
+              onDeleteBorrowRequest={handleDeleteBorrowRequest}
               students={students}
               onToggleStudentStatus={handleToggleStudentStatus}
+              onAddStudent={handleAddStudent}
+              onDeleteStudent={handleDeleteStudent}
             />
           </main>
         )}
@@ -954,6 +1095,7 @@ const handleDeleteBook = async (bookId) => {
           }}
           initialTab="summary"
           isBorrowed={borrowedBookIds.includes(selectedQuickSummaryBook.id)}
+          activeLoan={activeLoansByBookId[selectedQuickSummaryBook.id]}
         />
       )}
 
@@ -967,6 +1109,7 @@ const handleDeleteBook = async (bookId) => {
           }}
           onOpenReader={(b) => setActiveReaderBook(b)}
           isBorrowed={borrowedBookIds.includes(activeSnippetBook.id)}
+          activeLoan={activeLoansByBookId[activeSnippetBook.id]}
         />
       )}
 
@@ -995,8 +1138,10 @@ const handleDeleteBook = async (bookId) => {
           user={user}
           onClose={() => setActiveBorrowBook(null)}
           onSubmitBorrowRequest={handleSubmitBorrowRequest}
+          activeLoan={activeLoansByBookId[activeBorrowBook.id]}
         />
       )}
+
     </div>
   );
 }

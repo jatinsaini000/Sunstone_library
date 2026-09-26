@@ -474,106 +474,6 @@ apiRouter.post('/auth/google', rateLimiter({ windowMs: 60000, maxRequests: 30 })
   res.json({ token, user: safeUser });
 });
 
-// --- Security: In-Memory OTP Store ---
-const otpStore = new Map();
-
-/** POST /auth/send-otp - Generate and send 6-digit email OTP */
-apiRouter.post('/auth/send-otp', rateLimiter({ windowMs: 60000, maxRequests: 10 }), async (req, res) => {
-  const { email } = req.body;
-  if (!email) {
-    return res.status(400).json({ error: 'Email address is required.' });
-  }
-
-  const cleanEmail = email.toLowerCase().trim();
-  const currentDb = await getLiveDb();
-
-  // Check if student account is suspended
-  const existingUser = currentDb.users.find(u => u && u.email && u.email.toLowerCase() === cleanEmail);
-  if (existingUser && existingUser.status !== 'Active') {
-    return res.status(403).json({ error: 'Your account has been suspended by library administration.' });
-  }
-
-  // Generate cryptographically random 6-digit OTP
-  const otpCode = Math.floor(100000 + Math.random() * 900000).toString();
-  const expiresAt = Date.now() + 10 * 60 * 1000; // 10 minutes
-
-  otpStore.set(cleanEmail, { code: otpCode, expiresAt, attempts: 0 });
-
-  console.log(`\n======================================================`);
-  console.log(`🔐 [SUNSTONE OTP] Authentication Code for ${cleanEmail}: ${otpCode}`);
-  console.log(`======================================================\n`);
-
-  res.json({
-    message: `Verification code generated for ${cleanEmail}.`,
-    demoOtp: otpCode,
-    expiresInSeconds: 600
-  });
-});
-
-/** POST /auth/verify-otp - Verify OTP and authenticate/register student */
-apiRouter.post('/auth/verify-otp', rateLimiter({ windowMs: 60000, maxRequests: 20 }), async (req, res) => {
-  const { email, otp, program, name } = req.body;
-  if (!email || !otp) {
-    return res.status(400).json({ error: 'Email and OTP code are required.' });
-  }
-
-  const cleanEmail = email.toLowerCase().trim();
-  const cleanOtp = otp.toString().trim();
-  const record = otpStore.get(cleanEmail);
-
-  if (!record) {
-    return res.status(400).json({ error: 'No OTP requested for this email or OTP code has expired.' });
-  }
-
-  if (Date.now() > record.expiresAt) {
-    otpStore.delete(cleanEmail);
-    return res.status(400).json({ error: 'OTP code has expired. Please request a new one.' });
-  }
-
-  if (record.attempts >= 5) {
-    otpStore.delete(cleanEmail);
-    return res.status(429).json({ error: 'Too many incorrect attempts. Please request a new OTP.' });
-  }
-
-  if (record.code !== cleanOtp) {
-    record.attempts += 1;
-    otpStore.set(cleanEmail, record);
-    return res.status(400).json({ error: `Invalid OTP code. (${5 - record.attempts} attempt(s) remaining)` });
-  }
-
-  // OTP is valid - clear single-use token
-  otpStore.delete(cleanEmail);
-
-  const currentDb = await getLiveDb();
-  let user = currentDb.users.find(u => u && u.email && u.email.toLowerCase() === cleanEmail);
-
-  if (user) {
-    if (user.status !== 'Active') {
-      return res.status(403).json({ error: 'Your account has been suspended by library administration.' });
-    }
-  } else {
-    const userId = 'usr_' + Date.now();
-    user = {
-      id: userId,
-      name: sanitizeInput(name) || cleanEmail.split('@')[0],
-      email: cleanEmail,
-      authProvider: 'otp',
-      role: 'student',
-      program: sanitizeInput(program) || 'B.Tech CS',
-      status: 'Active',
-      createdAt: new Date().toISOString()
-    };
-    currentDb.users = currentDb.users || [];
-    currentDb.users.push(user);
-    saveLocalData(currentDb);
-    putToFirebase(`users/${userId}`, user);
-  }
-
-  const safeUser = sanitizeUser(user);
-  const token = generateJwt(safeUser);
-  res.json({ token, user: safeUser, message: 'OTP verified successfully!' });
-});
-
 /** GET /auth/me - Verify token and return active profile */
 apiRouter.get('/auth/me', requireAuth, async (req, res) => {
   if (req.user.role === 'admin') {
@@ -729,6 +629,45 @@ apiRouter.delete('/books/:id', requireAdmin, async (req, res) => {
   res.json({ message: 'Book deleted successfully.' });
 });
 
+/** PUT /books/:id - Protected: Edit book details (Admin Only) */
+apiRouter.put('/books/:id', requireAdmin, async (req, res) => {
+  const currentDb = await getLiveDb();
+  const bookId = req.params.id;
+  const bookIndex = currentDb.books.findIndex(b => b.id === bookId);
+
+  if (bookIndex === -1) {
+    return res.status(404).json({ error: 'Book not found.' });
+  }
+
+  const existingBook = currentDb.books[bookIndex];
+  const {
+    title, author, program, category, description,
+    pdfUrl, coverUrl, downloadable, isbn, pages, publishedYear
+  } = req.body;
+
+  const updatedBook = {
+    ...existingBook,
+    title: title ? title.trim() : existingBook.title,
+    author: author ? author.trim() : existingBook.author,
+    program: program || existingBook.program,
+    category: category || existingBook.category,
+    description: description !== undefined ? description : existingBook.description,
+    pdfUrl: pdfUrl || existingBook.pdfUrl,
+    coverUrl: coverUrl || existingBook.coverUrl,
+    downloadable: downloadable !== undefined ? downloadable : existingBook.downloadable,
+    isbn: isbn || existingBook.isbn,
+    pages: pages ? parseInt(pages) : existingBook.pages,
+    publishedYear: publishedYear ? parseInt(publishedYear) : existingBook.publishedYear,
+    updatedAt: new Date().toISOString()
+  };
+
+  currentDb.books[bookIndex] = updatedBook;
+  saveLocalData(currentDb);
+  putToFirebase(`books/${bookId}`, updatedBook);
+
+  res.json({ message: 'Book updated successfully.', book: updatedBook });
+});
+
 // --- Borrow Requests Routes ---
 
 /** GET /borrow-requests - Protected: Admins see all, students see their own */
@@ -748,6 +687,31 @@ apiRouter.post('/borrow-requests', requireAuth, rateLimiter({ windowMs: 60000, m
 
   if (!bookId || !bookTitle) {
     return res.status(400).json({ error: 'Book details are required.' });
+  }
+
+  // ENFORCE SINGLE BORROWER RULE:
+  // Check if book is currently on loan (has an Approved active loan)
+  const activeLoan = (currentDb.borrowRequests || []).find(
+    r => r && r.bookId === bookId && r.status === 'Approved'
+  );
+
+  if (activeLoan) {
+    const isMe = activeLoan.studentId === req.user.id || activeLoan.studentEmail?.toLowerCase() === req.user.email?.toLowerCase();
+    if (isMe) {
+      return res.status(400).json({ error: 'You have already borrowed this book. You can read it directly from your shelf.' });
+    }
+    return res.status(409).json({
+      error: `This book is currently on loan to another student. Only one user can borrow a book at a time. It will become available once returned.`
+    });
+  }
+
+  // Check if this student already submitted a pending request for this book
+  const existingPending = (currentDb.borrowRequests || []).find(
+    r => r && r.bookId === bookId && (r.studentId === req.user.id || r.studentEmail?.toLowerCase() === req.user.email?.toLowerCase()) && r.status === 'Pending'
+  );
+
+  if (existingPending) {
+    return res.status(400).json({ error: 'You already have a pending borrow request for this textbook awaiting admin approval.' });
   }
 
   const reqId = 'req_' + Date.now();
@@ -774,7 +738,7 @@ apiRouter.post('/borrow-requests', requireAuth, rateLimiter({ windowMs: 60000, m
   res.json({ message: 'Borrow request submitted successfully.', request: newRequest });
 });
 
-/** PUT /borrow-requests/:id - Protected: Update borrow status / approve / reject (Admin Only) */
+/** PUT /borrow-requests/:id - Protected: Update borrow status / approve / reject / return (Admin Only) */
 apiRouter.put('/borrow-requests/:id', requireAdmin, async (req, res) => {
   const currentDb = await getLiveDb();
   const { status, adminNote } = req.body;
@@ -784,13 +748,47 @@ apiRouter.put('/borrow-requests/:id', requireAdmin, async (req, res) => {
     return res.status(404).json({ error: 'Borrow request not found.' });
   }
 
+  // ENFORCE SINGLE BORROWER RULE:
+  // If admin is approving this loan, verify that NO OTHER student currently has an Approved loan on this book!
+  if (status === 'Approved') {
+    const conflictingLoan = (currentDb.borrowRequests || []).find(
+      r => r && r.id !== reqItem.id && r.bookId === reqItem.bookId && r.status === 'Approved'
+    );
+    if (conflictingLoan) {
+      return res.status(409).json({
+        error: `Cannot approve: Book is currently on loan to ${conflictingLoan.studentName || conflictingLoan.studentEmail}. Please mark the active loan as Returned before issuing to another student.`
+      });
+    }
+    reqItem.approvedAt = new Date().toISOString();
+  }
+
+  if (status === 'Returned') {
+    reqItem.returnedAt = new Date().toISOString();
+  }
+
   if (status) reqItem.status = sanitizeInput(status);
   if (adminNote !== undefined) reqItem.adminNote = sanitizeInput(adminNote);
+  reqItem.updatedAt = new Date().toISOString();
 
   saveLocalData(currentDb);
   putToFirebase(`borrowRequests/${req.params.id}`, reqItem);
 
   res.json({ message: 'Borrow request updated successfully.', request: reqItem });
+});
+
+/** DELETE /borrow-requests/:id - Protected: Delete borrow request record (Admin Only) */
+apiRouter.delete('/borrow-requests/:id', requireAdmin, async (req, res) => {
+  const currentDb = await getLiveDb();
+  const reqId = req.params.id;
+
+  currentDb.borrowRequests = (currentDb.borrowRequests || []).filter(r => r && r.id !== reqId);
+  saveLocalData(currentDb);
+
+  try {
+    await fetch(`${FIREBASE_DB_URL}/borrowRequests/${reqId}.json`, { method: 'DELETE' });
+  } catch (e) {}
+
+  res.json({ message: 'Borrow request deleted successfully.' });
 });
 
 // --- Students Management (Admin Only) ---
@@ -802,6 +800,43 @@ apiRouter.get('/students', requireAdmin, async (req, res) => {
     .filter(u => u && u.role === 'student')
     .map(sanitizeUser);
   res.json(students);
+});
+
+/** POST /students - Protected: Add new student from Admin Console */
+apiRouter.post('/students', requireAdmin, async (req, res) => {
+  const { name, email, password, program } = req.body;
+  if (!name || !email) {
+    return res.status(400).json({ error: 'Name and email are required.' });
+  }
+
+  const cleanEmail = email.toLowerCase().trim();
+  const currentDb = await getLiveDb();
+
+  if (currentDb.users.some(u => u && u.email && u.email.toLowerCase() === cleanEmail)) {
+    return res.status(400).json({ error: 'A student account with this email already exists.' });
+  }
+
+  const studentPass = password || 'Sunstone2026!';
+  const { salt, hash } = hashPassword(studentPass);
+  const userId = 'usr_' + Date.now();
+
+  const newStudent = {
+    id: userId,
+    name: sanitizeInput(name),
+    email: cleanEmail,
+    salt,
+    passwordHash: hash,
+    role: 'student',
+    program: sanitizeInput(program) || 'B.Tech & BCA',
+    status: 'Active',
+    createdAt: new Date().toISOString()
+  };
+
+  currentDb.users.push(newStudent);
+  saveLocalData(currentDb);
+  putToFirebase(`users/${userId}`, newStudent);
+
+  res.json({ message: 'Student registered successfully.', student: sanitizeUser(newStudent) });
 });
 
 /** PUT /students/:id/status - Protected: Toggle student account status (Admin Only) */
@@ -820,6 +855,22 @@ apiRouter.put('/students/:id/status', requireAdmin, async (req, res) => {
 
   res.json({ message: 'Student status updated.', student: sanitizeUser(student) });
 });
+
+/** DELETE /students/:id - Protected: Remove student account (Admin Only) */
+apiRouter.delete('/students/:id', requireAdmin, async (req, res) => {
+  const currentDb = await getLiveDb();
+  const studentId = req.params.id;
+
+  currentDb.users = (currentDb.users || []).filter(u => u && u.id !== studentId);
+  saveLocalData(currentDb);
+
+  try {
+    await fetch(`${FIREBASE_DB_URL}/users/${studentId}.json`, { method: 'DELETE' });
+  } catch (e) {}
+
+  res.json({ message: 'Student account deleted successfully.' });
+});
+
 
 // --- Study Notes Routes ---
 

@@ -6,13 +6,13 @@ import { getStorage } from 'firebase/storage';
 
 // Firebase configuration using your provided Realtime Database URL
 const firebaseConfig = {
-  apiKey: import.meta.env.VITE_FIREBASE_API_KEY || "AIzaSyDemoConfigKeyForSunstoneLibraryProject",
+  apiKey: import.meta.env.VITE_FIREBASE_API_KEY,
   authDomain: import.meta.env.VITE_FIREBASE_AUTH_DOMAIN || "sunstone-library-cbf2d.firebaseapp.com",
   databaseURL: import.meta.env.VITE_FIREBASE_DATABASE_URL || "https://sunstone-library-cbf2d-default-rtdb.asia-southeast1.firebasedatabase.app/",
   projectId: import.meta.env.VITE_FIREBASE_PROJECT_ID || "sunstone-library-cbf2d",
-  storageBucket: import.meta.env.VITE_FIREBASE_STORAGE_BUCKET || "sunstone-library-cbf2d.appspot.com",
-  messagingSenderId: import.meta.env.VITE_FIREBASE_MESSAGING_SENDER_ID || "123456789012",
-  appId: import.meta.env.VITE_FIREBASE_APP_ID || "1:123456789012:web:abc123def456789"
+  storageBucket: import.meta.env.VITE_FIREBASE_STORAGE_BUCKET || "sunstone-library-cbf2d.firebasestorage.app",
+  messagingSenderId: import.meta.env.VITE_FIREBASE_MESSAGING_SENDER_ID || "862348491959",
+  appId: import.meta.env.VITE_FIREBASE_APP_ID || "1:862348491959:web:f5b5342535fa7dde59a132"
 };
 
 // Initialize Firebase App & Services
@@ -111,6 +111,17 @@ export async function deleteBookFromFirestore(bookId) {
   } catch (e) {}
 }
 
+/** Update an existing book in Firebase */
+export async function updateBookInFirestore(bookId, updatedFields) {
+  try {
+    await update(ref(rtdb, 'books/' + bookId), updatedFields);
+  } catch (e) {}
+
+  try {
+    await updateDoc(doc(db, 'books', bookId), updatedFields);
+  } catch (e) {}
+}
+
 /** Fetch all borrow requests from Firebase */
 export async function getBorrowRequestsFromFirestore() {
   try {
@@ -160,6 +171,17 @@ export async function updateBorrowStatusInFirestore(reqId, status, adminNote = '
 
   try {
     await updateDoc(doc(db, 'borrowRequests', reqId), updates);
+  } catch (error) {}
+}
+
+/** Delete borrow request from Firebase */
+export async function deleteBorrowRequestFromFirestore(reqId) {
+  try {
+    await remove(ref(rtdb, 'borrowRequests/' + reqId));
+  } catch (error) {}
+
+  try {
+    await deleteDoc(doc(db, 'borrowRequests', reqId));
   } catch (error) {}
 }
 
@@ -264,6 +286,17 @@ export async function updateStudentStatusInFirestore(studentId, status) {
 
   try {
     await updateDoc(doc(db, 'users', studentId), updates);
+  } catch (e) {}
+}
+
+/** Delete student account from Firebase */
+export async function deleteStudentFromFirestore(studentId) {
+  try {
+    await remove(ref(rtdb, 'users/' + studentId));
+  } catch (e) {}
+
+  try {
+    await deleteDoc(doc(db, 'users', studentId));
   } catch (e) {}
 }
 

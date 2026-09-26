@@ -12,7 +12,8 @@ export default function NetflixRow({
   onOpenBorrowModal,
   savedBookIds = [],
   onToggleSave,
-  borrowedBookIds = []
+  borrowedBookIds = [],
+  activeLoans = {}
 }) {
   const rowRef = useRef(null);
   const [isDragging, setIsDragging] = useState(false);
@@ -30,7 +31,6 @@ export default function NetflixRow({
 
   const handleMouseDown = (e) => {
     if (!rowRef.current) return;
-    // Don't drag if clicking buttons inside
     if (e.target.closest('button')) return;
     setIsDragging(true);
     setStartX(e.pageX - rowRef.current.offsetLeft);
@@ -100,6 +100,7 @@ export default function NetflixRow({
             isSaved={savedBookIds.includes(book.id)}
             onToggleSave={onToggleSave}
             isBorrowed={borrowedBookIds.includes(book.id)}
+            activeLoan={activeLoans[book.id]}
           />
         ))}
       </div>

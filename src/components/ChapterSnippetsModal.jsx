@@ -7,11 +7,14 @@ export default function ChapterSnippetsModal({
   onClose,
   onOpenBorrowModal,
   onOpenReader,
-  isBorrowed = false
+  isBorrowed = false,
+  activeLoan = null
 }) {
   const [selectedChapterIndex, setSelectedChapterIndex] = useState(0);
 
   if (!book) return null;
+
+  const isLoanedToOther = Boolean(activeLoan && !isBorrowed);
 
   // Fallback chapter snippets if book doesn't have custom chapterSnippets array
   const defaultChapterSnippets = [
@@ -208,6 +211,10 @@ export default function ChapterSnippetsModal({
               <span className="footer-status unlocked">
                 <Unlock size={14} /> You have active borrowed access to this book.
               </span>
+            ) : isLoanedToOther ? (
+              <span className="footer-status locked" style={{ color: '#ef4444' }}>
+                <Lock size={14} /> Currently on loan to another student (1-Borrower limit).
+              </span>
             ) : (
               <span className="footer-status locked">
                 <Lock size={14} /> Borrow this textbook to unlock complete {book.pages} pages.
@@ -232,12 +239,13 @@ export default function ChapterSnippetsModal({
               <button
                 type="button"
                 className="btn-primary footer-btn"
+                style={isLoanedToOther ? { background: '#ef4444' } : {}}
                 onClick={() => {
                   onClose();
                   onOpenBorrowModal(book);
                 }}
               >
-                <Send size={16} /> Submit Borrow Request
+                <Send size={16} /> {isLoanedToOther ? 'View Loan Status' : 'Submit Borrow Request'}
               </button>
             )}
           </div>
