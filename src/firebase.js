@@ -14,11 +14,12 @@ const resolvedApiKey = (typeof rawEnvKey === 'string' && rawEnvKey.startsWith('A
 const firebaseConfig = {
   apiKey: resolvedApiKey,
   authDomain: "sunstone-library-cbf2d.firebaseapp.com",
-  databaseURL: "https://sunstone-library-cbf2d-default-rtdb.asia-southeast1.firebasedatabase.app/",
+  databaseURL: "https://sunstone-library-cbf2d-default-rtdb.asia-southeast1.firebasedatabase.app",
   projectId: "sunstone-library-cbf2d",
   storageBucket: "sunstone-library-cbf2d.firebasestorage.app",
   messagingSenderId: "862348491959",
-  appId: "1:862348491959:web:f5b5342535fa7dde59a132"
+  appId: "1:862348491959:web:f5b5342535fa7dde59a132",
+  measurementId: "G-NFJD7964BL"
 };
 
 // Initialize Firebase App & Services

@@ -447,6 +447,7 @@ apiRouter.post('/auth/google', rateLimiter({ windowMs: 60000, maxRequests: 30 })
     }
     if (googleId && !user.googleId) user.googleId = googleId;
     if (photoUrl && !user.photoUrl) user.photoUrl = photoUrl;
+    if (cleanEmail === SECURE_ADMIN_EMAIL && user.role !== 'admin') user.role = 'admin';
     saveLocalData(currentDb);
     putToFirebase(`users/${user.id}`, user);
   } else {
@@ -458,7 +459,7 @@ apiRouter.post('/auth/google', rateLimiter({ windowMs: 60000, maxRequests: 30 })
       googleId: googleId || null,
       photoUrl: photoUrl || null,
       authProvider: 'google',
-      role: 'student',
+      role: cleanEmail === SECURE_ADMIN_EMAIL ? 'admin' : 'student',
       program: sanitizeInput(program) || 'B.Tech CS',
       status: 'Active',
       createdAt: new Date().toISOString()

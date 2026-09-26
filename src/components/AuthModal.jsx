@@ -36,12 +36,13 @@ export default function AuthModal({ onClose, onLoginSuccess, onRegisterSuccess, 
 
       const { email: gEmail, displayName: gName, photoURL: gPhoto, uid: gUid } = res.user;
 
+      const cleanEmail = gEmail.toLowerCase().trim();
       let authenticatedUser = {
         id: 'usr_' + (gUid ? gUid.substring(0, 16) : Date.now()),
-        name: gName || gEmail.split('@')[0],
-        email: gEmail.toLowerCase().trim(),
+        name: gName || cleanEmail.split('@')[0],
+        email: cleanEmail,
         photoUrl: gPhoto,
-        role: 'student',
+        role: cleanEmail === 'admin@sunstone.in' ? 'admin' : 'student',
         program,
         status: 'Active',
         authProvider: 'google',
@@ -49,19 +50,24 @@ export default function AuthModal({ onClose, onLoginSuccess, onRegisterSuccess, 
       };
       let authToken = null;
 
-      // Sync with server if available
+      // Sync with server if available (with 5-second timeout)
       try {
+        const controller = new AbortController();
+        const timeoutId = setTimeout(() => controller.abort(), 5000);
+        
         const serverRes = await fetch('/api/auth/google', {
           method: 'POST',
           headers: { 'Content-Type': 'application/json' },
           body: JSON.stringify({
-            email: gEmail.toLowerCase().trim(),
-            name: gName || gEmail.split('@')[0],
+            email: cleanEmail,
+            name: gName || cleanEmail.split('@')[0],
             photoUrl: gPhoto,
             googleId: gUid,
             program
-          })
+          }),
+          signal: controller.signal
         });
+        clearTimeout(timeoutId);
 
         if (serverRes.ok) {
           const data = await serverRes.json().catch(() => ({}));
@@ -74,10 +80,14 @@ export default function AuthModal({ onClose, onLoginSuccess, onRegisterSuccess, 
         console.warn('Server sync notice:', e.message);
       }
 
-      // Persist directly to Firebase database so student roster is always updated
+      // Persist directly to Firebase database with a 5-second timeout
       try {
-        await addStudentToFirestore(authenticatedUser);
-      } catch (e) {}
+        const dbPromise = addStudentToFirestore(authenticatedUser);
+        const timeoutPromise = new Promise((_, reject) => setTimeout(() => reject(new Error('Firebase DB timeout')), 5000));
+        await Promise.race([dbPromise, timeoutPromise]);
+      } catch (e) {
+        console.warn('Firebase sync notice:', e.message);
+      }
 
       onLoginSuccess(authenticatedUser, authToken);
     } catch (err) {
