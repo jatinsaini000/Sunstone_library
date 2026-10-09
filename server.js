@@ -276,7 +276,7 @@ function loadLocalData() {
       return JSON.parse(raw);
     } catch (e) {}
   }
-  return { users: [], books: [], borrowRequests: [], userNotes: [] };
+  return { users: [], books: [], borrowRequests: [], userNotes: [], adminEmails: [] };
 }
 
 function saveLocalData(data) {
@@ -300,12 +300,27 @@ async function getLiveDb() {
 
     const cloudNotes = await fetchFromFirebase('notes');
     if (cloudNotes) db.userNotes = cloudNotes;
+
+    const cloudAdminEmails = await fetchFromFirebase('settings/adminEmails');
+    if (cloudAdminEmails && Array.isArray(cloudAdminEmails)) db.adminEmails = cloudAdminEmails;
   } catch (e) {}
   
   db.books = db.books || [];
   db.users = db.users || [];
   db.borrowRequests = db.borrowRequests || [];
   db.userNotes = db.userNotes || [];
+  db.adminEmails = db.adminEmails || [];
+
+  // Seed default admin emails if not already present
+  if (SECURE_ADMIN_EMAIL && !db.adminEmails.includes(SECURE_ADMIN_EMAIL)) {
+    db.adminEmails.push(SECURE_ADMIN_EMAIL);
+  }
+  if (!db.adminEmails.includes('admin@sunstone.in')) {
+    db.adminEmails.push('admin@sunstone.in');
+  }
+  if (!db.adminEmails.includes('sainijatin505@gmail.com')) {
+    db.adminEmails.push('sainijatin505@gmail.com');
+  }
   
   return db;
 }
@@ -446,7 +461,7 @@ apiRouter.post('/auth/register', rateLimiter({ windowMs: 60000, maxRequests: 20 
   res.json({ token, user: safeUser });
 });
 
-/** POST /auth/google - Secure Google Sign-In for students */
+/** POST /auth/google - Secure Google Sign-In with Role Auto-Detection */
 apiRouter.post('/auth/google', rateLimiter({ windowMs: 60000, maxRequests: 30 }), async (req, res) => {
   const { email, name, googleId, photoUrl, program } = req.body;
   if (!email) {
@@ -456,6 +471,10 @@ apiRouter.post('/auth/google', rateLimiter({ windowMs: 60000, maxRequests: 30 })
   const cleanEmail = email.toLowerCase().trim();
   const currentDb = await getLiveDb();
 
+  const isConfiguredAdmin =
+    cleanEmail === SECURE_ADMIN_EMAIL ||
+    (currentDb.adminEmails || []).some(e => e && e.toLowerCase().trim() === cleanEmail);
+
   let user = currentDb.users.find(u => u && u.email && u.email.toLowerCase() === cleanEmail);
 
   if (user) {
@@ -464,7 +483,9 @@ apiRouter.post('/auth/google', rateLimiter({ windowMs: 60000, maxRequests: 30 })
     }
     if (googleId && !user.googleId) user.googleId = googleId;
     if (photoUrl && !user.photoUrl) user.photoUrl = photoUrl;
-    if (cleanEmail === SECURE_ADMIN_EMAIL && user.role !== 'admin') user.role = 'admin';
+    if (isConfiguredAdmin && user.role !== 'admin') {
+      user.role = 'admin';
+    }
     saveLocalData(currentDb);
     putToFirebase(`users/${user.id}`, user);
   } else {
@@ -476,8 +497,8 @@ apiRouter.post('/auth/google', rateLimiter({ windowMs: 60000, maxRequests: 30 })
       googleId: googleId || null,
       photoUrl: photoUrl || null,
       authProvider: 'google',
-      role: cleanEmail === SECURE_ADMIN_EMAIL ? 'admin' : 'student',
-      program: sanitizeInput(program) || 'B.Tech CS',
+      role: isConfiguredAdmin ? 'admin' : 'student',
+      program: sanitizeInput(program) || 'B.Tech & BCA',
       status: 'Active',
       createdAt: new Date().toISOString()
     };
@@ -809,20 +830,99 @@ apiRouter.delete('/borrow-requests/:id', requireAdmin, async (req, res) => {
   res.json({ message: 'Borrow request deleted successfully.' });
 });
 
-// --- Students Management (Admin Only) ---
+// --- User & Student Management & Role Access (Admin Only) ---
 
-/** GET /students - Protected: List registered students */
-apiRouter.get('/students', requireAdmin, async (req, res) => {
+/** GET /users - Protected: List all registered users with their book activity */
+apiRouter.get('/users', requireAdmin, async (req, res) => {
   const currentDb = await getLiveDb();
-  const students = (currentDb.users || [])
-    .filter(u => u && u.role === 'student')
-    .map(sanitizeUser);
-  res.json(students);
+  const allUsers = (currentDb.users || []).map(u => {
+    const userRequests = (currentDb.borrowRequests || []).filter(r =>
+      r && (r.studentId === u.id || (u.email && r.studentEmail && r.studentEmail.toLowerCase() === u.email.toLowerCase()))
+    );
+    const activeBooks = userRequests.filter(r => r.status === 'Approved');
+    const pendingBooks = userRequests.filter(r => r.status === 'Pending');
+    const returnedBooks = userRequests.filter(r => r.status === 'Returned');
+    return {
+      ...sanitizeUser(u),
+      borrowCount: userRequests.length,
+      activeLoansCount: activeBooks.length,
+      pendingRequestsCount: pendingBooks.length,
+      returnedCount: returnedBooks.length,
+      borrowRequests: userRequests
+    };
+  });
+  res.json(allUsers);
 });
 
-/** POST /students - Protected: Add new student from Admin Console */
+/** GET /students - Backwards compatibility: List users */
+apiRouter.get('/students', requireAdmin, async (req, res) => {
+  const currentDb = await getLiveDb();
+  const allUsers = (currentDb.users || []).map(u => {
+    const userRequests = (currentDb.borrowRequests || []).filter(r =>
+      r && (r.studentId === u.id || (u.email && r.studentEmail && r.studentEmail.toLowerCase() === u.email.toLowerCase()))
+    );
+    return {
+      ...sanitizeUser(u),
+      borrowCount: userRequests.length,
+      borrowRequests: userRequests
+    };
+  });
+  res.json(allUsers);
+});
+
+/** GET /admin/emails - Protected: List all authorized admin emails */
+apiRouter.get('/admin/emails', requireAdmin, async (req, res) => {
+  const currentDb = await getLiveDb();
+  res.json(currentDb.adminEmails || [SECURE_ADMIN_EMAIL]);
+});
+
+/** POST /admin/grant-role - Protected: Grant or revoke admin access for any email */
+apiRouter.post('/admin/grant-role', requireAdmin, async (req, res) => {
+  const { email, role } = req.body;
+  if (!email || typeof email !== 'string') {
+    return res.status(400).json({ error: 'Valid email address is required.' });
+  }
+
+  const cleanEmail = email.toLowerCase().trim();
+  const targetRole = role === 'admin' ? 'admin' : 'student';
+  const currentDb = await getLiveDb();
+  currentDb.adminEmails = currentDb.adminEmails || [];
+
+  if (targetRole === 'admin') {
+    if (!currentDb.adminEmails.includes(cleanEmail)) {
+      currentDb.adminEmails.push(cleanEmail);
+    }
+  } else {
+    if (cleanEmail === SECURE_ADMIN_EMAIL) {
+      return res.status(400).json({ error: 'Cannot revoke admin rights from the primary master administrator.' });
+    }
+    currentDb.adminEmails = currentDb.adminEmails.filter(e => e.toLowerCase().trim() !== cleanEmail);
+  }
+
+  // Update existing user in memory & DB if present
+  let updatedUser = null;
+  const user = (currentDb.users || []).find(u => u && u.email && u.email.toLowerCase().trim() === cleanEmail);
+  if (user) {
+    user.role = targetRole;
+    putToFirebase(`users/${user.id}`, user);
+    updatedUser = sanitizeUser(user);
+  }
+
+  saveLocalData(currentDb);
+  putToFirebase('settings/adminEmails', currentDb.adminEmails);
+
+  res.json({
+    message: targetRole === 'admin'
+      ? `Admin access granted to ${cleanEmail}. They can now sign in with Google.`
+      : `Admin access revoked for ${cleanEmail}.`,
+    adminEmails: currentDb.adminEmails,
+    user: updatedUser
+  });
+});
+
+/** POST /students - Protected: Add/pre-register new student from Admin Console (Google Auth compatible) */
 apiRouter.post('/students', requireAdmin, async (req, res) => {
-  const { name, email, password, program } = req.body;
+  const { name, email, program } = req.body;
   if (!name || !email) {
     return res.status(400).json({ error: 'Name and email are required.' });
   }
@@ -831,22 +931,22 @@ apiRouter.post('/students', requireAdmin, async (req, res) => {
   const currentDb = await getLiveDb();
 
   if (currentDb.users.some(u => u && u.email && u.email.toLowerCase() === cleanEmail)) {
-    return res.status(400).json({ error: 'A student account with this email already exists.' });
+    return res.status(400).json({ error: 'An account with this email already exists.' });
   }
 
-  const studentPass = password || 'Sunstone2026!';
-  const { salt, hash } = hashPassword(studentPass);
   const userId = 'usr_' + Date.now();
+  const isConfiguredAdmin =
+    cleanEmail === SECURE_ADMIN_EMAIL ||
+    (currentDb.adminEmails || []).some(e => e && e.toLowerCase().trim() === cleanEmail);
 
   const newStudent = {
     id: userId,
     name: sanitizeInput(name),
     email: cleanEmail,
-    salt,
-    passwordHash: hash,
-    role: 'student',
+    role: isConfiguredAdmin ? 'admin' : 'student',
     program: sanitizeInput(program) || 'B.Tech & BCA',
     status: 'Active',
+    authProvider: 'google',
     createdAt: new Date().toISOString()
   };
 
@@ -854,27 +954,27 @@ apiRouter.post('/students', requireAdmin, async (req, res) => {
   saveLocalData(currentDb);
   putToFirebase(`users/${userId}`, newStudent);
 
-  res.json({ message: 'Student registered successfully.', student: sanitizeUser(newStudent) });
+  res.json({ message: 'User registered successfully.', student: sanitizeUser(newStudent) });
 });
 
-/** PUT /students/:id/status - Protected: Toggle student account status (Admin Only) */
+/** PUT /students/:id/status - Protected: Toggle user account status (Admin Only) */
 apiRouter.put('/students/:id/status', requireAdmin, async (req, res) => {
   const currentDb = await getLiveDb();
   const { status } = req.body;
   const student = (currentDb.users || []).find(u => u && u.id === req.params.id);
 
   if (!student) {
-    return res.status(404).json({ error: 'Student not found.' });
+    return res.status(404).json({ error: 'User not found.' });
   }
 
   student.status = sanitizeInput(status) || 'Active';
   saveLocalData(currentDb);
   putToFirebase(`users/${req.params.id}`, student);
 
-  res.json({ message: 'Student status updated.', student: sanitizeUser(student) });
+  res.json({ message: 'User status updated.', student: sanitizeUser(student) });
 });
 
-/** DELETE /students/:id - Protected: Remove student account (Admin Only) */
+/** DELETE /students/:id - Protected: Remove user account (Admin Only) */
 apiRouter.delete('/students/:id', requireAdmin, async (req, res) => {
   const currentDb = await getLiveDb();
   const studentId = req.params.id;
@@ -886,7 +986,7 @@ apiRouter.delete('/students/:id', requireAdmin, async (req, res) => {
     await fetch(`${FIREBASE_DB_URL}/users/${studentId}.json`, { method: 'DELETE' });
   } catch (e) {}
 
-  res.json({ message: 'Student account deleted successfully.' });
+  res.json({ message: 'User account deleted successfully.' });
 });
 
 

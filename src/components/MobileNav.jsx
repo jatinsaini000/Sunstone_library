@@ -106,7 +106,7 @@ export default function MobileNav({
           )}
         </div>
         <span className="mobile-nav-label">
-          {!user ? 'Login' : user.role === 'admin' ? 'Admin' : 'Account'}
+          {!user ? 'Sign In' : user.role === 'admin' ? 'Admin' : 'Account'}
         </span>
       </button>
     </nav>

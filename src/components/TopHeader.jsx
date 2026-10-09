@@ -1,5 +1,5 @@
 import React from 'react';
-import { Search, User, Tag, LogOut, Sun, Moon, MapPin, X } from 'lucide-react';
+import { Search, User, Tag, LogOut, Sun, Moon, MapPin, X, ShieldCheck } from 'lucide-react';
 import SunstoneLogo from './SunstoneLogo.jsx';
 
 export default function TopHeader({
@@ -69,6 +69,31 @@ export default function TopHeader({
 
 
 
+          {/* Admin Quick Access Button */}
+          {user && user.role === 'admin' && (
+            <button
+              type="button"
+              className="btn-secondary"
+              onClick={() => setCurrentView('admin')}
+              style={{
+                borderColor: currentView === 'admin' ? 'var(--accent-sunstone-red)' : 'var(--sunstone-border)',
+                background: currentView === 'admin' ? 'rgba(239, 68, 68, 0.1)' : 'transparent',
+                color: currentView === 'admin' ? 'var(--accent-sunstone-red)' : 'var(--sunstone-text-primary)',
+                fontSize: '12px',
+                padding: '6px 12px',
+                borderRadius: '20px',
+                fontWeight: '700',
+                display: 'flex',
+                alignItems: 'center',
+                gap: '5px'
+              }}
+              title="Open Admin Console"
+            >
+              <ShieldCheck size={14} color="var(--accent-sunstone-red)" />
+              <span>Admin Console</span>
+            </button>
+          )}
+
           {/* User Profile Pill or Login CTA */}
           {user ? (
             <div className="user-header-profile-wrap">
@@ -110,7 +135,7 @@ export default function TopHeader({
               className="btn-primary header-login-btn"
               onClick={onOpenAuth}
             >
-              <User size={13} /> <span>Login</span>
+              <User size={13} /> <span>Sign In</span>
             </button>
           )}
         </div>

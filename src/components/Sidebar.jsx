@@ -112,7 +112,7 @@ export default function Sidebar({
             className="btn-primary"
             style={{ width: '100%', justifyContent: 'center', fontSize: '13px', padding: '8px' }}
           >
-            <User size={14} /> Student Login
+            <User size={14} /> Sign In with Google
           </button>
         )}
       </div>

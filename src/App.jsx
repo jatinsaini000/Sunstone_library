@@ -38,9 +38,13 @@ import {
   addNoteToFirestore,
   deleteNoteFromFirestore,
   getStudentsFromFirestore,
+  getAllUsersFromFirestore,
   addStudentToFirestore,
   updateStudentStatusInFirestore,
-  deleteStudentFromFirestore
+  deleteStudentFromFirestore,
+  updateUserRoleInFirestore,
+  getAdminEmailsFromFirestore,
+  saveAdminEmailsToFirestore
 } from './firebase.js';
 
 export default function App() {
@@ -137,6 +141,15 @@ export default function App() {
       return saved ? JSON.parse(saved) : initialStudents;
     } catch (e) {
       return initialStudents;
+    }
+  });
+
+  const [adminEmails, setAdminEmails] = useState(() => {
+    try {
+      const saved = localStorage.getItem('sunstone_admin_emails');
+      return saved ? JSON.parse(saved) : ['Sunrbu@admin.login', 'admin@sunstone.in', 'sainijatin505@gmail.com'];
+    } catch (e) {
+      return ['Sunrbu@admin.login', 'admin@sunstone.in', 'sainijatin505@gmail.com'];
     }
   });
 
@@ -255,23 +268,32 @@ export default function App() {
     loadRequestsData();
   }, [token]);
 
-  // 3. Load Registered Students for Admin Console (Firestore -> Server -> LocalStorage)
+  // 3. Load Registered Users & Admin Emails (Firestore -> Server -> LocalStorage)
   useEffect(() => {
-    async function loadStudentsData() {
+    async function loadUsersData() {
       try {
-        const fsStudents = await getStudentsFromFirestore();
-        if (fsStudents && fsStudents.length > 0) {
-          setStudents(fsStudents);
+        const fsUsers = await getAllUsersFromFirestore();
+        if (fsUsers && fsUsers.length > 0) {
+          setStudents(fsUsers);
           try {
-            localStorage.setItem('sunstone_students', JSON.stringify(fsStudents));
+            localStorage.setItem('sunstone_students', JSON.stringify(fsUsers));
           } catch (e) {}
-          return;
+        }
+      } catch (e) {}
+
+      try {
+        const fsAdminEmails = await getAdminEmailsFromFirestore();
+        if (fsAdminEmails && fsAdminEmails.length > 0) {
+          setAdminEmails(fsAdminEmails);
+          try {
+            localStorage.setItem('sunstone_admin_emails', JSON.stringify(fsAdminEmails));
+          } catch (e) {}
         }
       } catch (e) {}
 
       try {
         const headers = token ? { Authorization: `Bearer ${token}` } : {};
-        const res = await fetch('/api/students', { headers });
+        const res = await fetch('/api/users', { headers });
         const contentType = res.headers.get('content-type');
         if (res.ok && contentType && contentType.includes('application/json')) {
           const data = await res.json();
@@ -283,8 +305,23 @@ export default function App() {
           }
         }
       } catch (e) {}
+
+      try {
+        if (token) {
+          const emailRes = await fetch('/api/admin/emails', { headers: { Authorization: `Bearer ${token}` } });
+          if (emailRes.ok) {
+            const emailData = await emailRes.json();
+            if (Array.isArray(emailData) && emailData.length > 0) {
+              setAdminEmails(emailData);
+              try {
+                localStorage.setItem('sunstone_admin_emails', JSON.stringify(emailData));
+              } catch (e) {}
+            }
+          }
+        }
+      } catch (e) {}
     }
-    loadStudentsData();
+    loadUsersData();
   }, [token]);
 
   // 4. Load Study Notes
@@ -734,7 +771,65 @@ const handleDeleteBook = async (bookId) => {
       }
     } catch (e) {}
 
-    triggerToast('Student account removed.');
+    triggerToast('User account removed.');
+  };
+
+  // Admin Grants or Revokes Admin Role for Any Email
+  const handleGrantAdminRole = async (targetEmail, targetRole = 'admin') => {
+    if (!targetEmail) return;
+    const cleanEmail = targetEmail.toLowerCase().trim();
+
+    // 1. Update adminEmails state
+    setAdminEmails((prev) => {
+      let next = [...prev];
+      if (targetRole === 'admin') {
+        if (!next.includes(cleanEmail)) next.push(cleanEmail);
+      } else {
+        next = next.filter((e) => e.toLowerCase().trim() !== cleanEmail);
+      }
+      try {
+        localStorage.setItem('sunstone_admin_emails', JSON.stringify(next));
+      } catch (e) {}
+      saveAdminEmailsToFirestore(next);
+      return next;
+    });
+
+    // 2. Update user in students list if already present
+    setStudents((prev) => {
+      const next = prev.map((s) => {
+        if (s.email && s.email.toLowerCase().trim() === cleanEmail) {
+          updateUserRoleInFirestore(s.id, targetRole);
+          return { ...s, role: targetRole };
+        }
+        return s;
+      });
+      try {
+        localStorage.setItem('sunstone_students', JSON.stringify(next));
+      } catch (e) {}
+      return next;
+    });
+
+    // 3. Sync with backend server
+    try {
+      if (token) {
+        await fetch('/api/admin/grant-role', {
+          method: 'POST',
+          headers: {
+            'Content-Type': 'application/json',
+            Authorization: `Bearer ${token}`
+          },
+          body: JSON.stringify({ email: cleanEmail, role: targetRole })
+        });
+      }
+    } catch (e) {}
+
+    triggerToast(targetRole === 'admin' ? `Admin access granted to ${cleanEmail}!` : `Admin access revoked for ${cleanEmail}`);
+  };
+
+  const handleToggleUserRole = async (userId, newRole) => {
+    const targetUser = students.find((s) => s.id === userId);
+    if (!targetUser) return;
+    await handleGrantAdminRole(targetUser.email, newRole);
   };
 
   // Handler for New Student Registration
@@ -1040,6 +1135,9 @@ const handleDeleteBook = async (bookId) => {
               onToggleStudentStatus={handleToggleStudentStatus}
               onAddStudent={handleAddStudent}
               onDeleteStudent={handleDeleteStudent}
+              adminEmails={adminEmails}
+              onGrantAdminRole={handleGrantAdminRole}
+              onToggleUserRole={handleToggleUserRole}
             />
           </main>
         )}

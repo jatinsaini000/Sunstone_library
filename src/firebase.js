@@ -308,7 +308,7 @@ export async function updateStudentStatusInFirestore(studentId, status) {
   } catch (e) {}
 }
 
-/** Delete student account from Firebase */
+/** Delete student / user account from Firebase */
 export async function deleteStudentFromFirestore(studentId) {
   try {
     await remove(ref(rtdb, 'users/' + studentId));
@@ -316,6 +316,61 @@ export async function deleteStudentFromFirestore(studentId) {
 
   try {
     await deleteDoc(doc(db, 'users', studentId));
+  } catch (e) {}
+}
+
+/** Fetch all registered users (students & admins) from Firebase */
+export async function getAllUsersFromFirestore() {
+  try {
+    const dbRef = ref(rtdb);
+    const snapshot = await get(child(dbRef, 'users'));
+    if (snapshot.exists()) {
+      const val = snapshot.val();
+      const allUsers = Array.isArray(val) ? val.filter(Boolean) : Object.values(val);
+      return allUsers;
+    }
+  } catch (err) {}
+
+  try {
+    const usersCol = collection(db, 'users');
+    const fsSnap = await getDocs(usersCol);
+    if (!fsSnap.empty) {
+      return fsSnap.docs.map(docSnap => ({ id: docSnap.id, ...docSnap.data() }));
+    }
+  } catch (error) {}
+
+  return null;
+}
+
+/** Update user role in Firebase (admin / student) */
+export async function updateUserRoleInFirestore(userId, role) {
+  const updates = { role, updatedAt: new Date().toISOString() };
+  try {
+    await update(ref(rtdb, 'users/' + userId), updates);
+  } catch (e) {}
+
+  try {
+    await updateDoc(doc(db, 'users', userId), updates);
+  } catch (e) {}
+}
+
+/** Fetch authorized admin emails from Firebase Realtime DB */
+export async function getAdminEmailsFromFirestore() {
+  try {
+    const dbRef = ref(rtdb);
+    const snapshot = await get(child(dbRef, 'settings/adminEmails'));
+    if (snapshot.exists()) {
+      const val = snapshot.val();
+      return Array.isArray(val) ? val : Object.values(val);
+    }
+  } catch (e) {}
+  return [];
+}
+
+/** Save authorized admin emails list to Firebase */
+export async function saveAdminEmailsToFirestore(emails) {
+  try {
+    await set(ref(rtdb, 'settings/adminEmails'), emails);
   } catch (e) {}
 }
 
