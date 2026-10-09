@@ -4,6 +4,8 @@ import multer from 'multer';
 import path from 'path';
 import fs from 'fs';
 import crypto from 'crypto';
+import dotenv from 'dotenv';
+dotenv.config();
 import { fileURLToPath } from 'url';
 
 const __filename = fileURLToPath(import.meta.url);
@@ -14,6 +16,10 @@ const PORT = process.env.PORT || 5000;
 const JWT_SECRET = process.env.JWT_SECRET || crypto.randomBytes(32).toString('hex');
 const SECURE_ADMIN_EMAIL = (process.env.ADMIN_EMAIL || 'Sunrbu@admin.login').toLowerCase().trim();
 const SECURE_ADMIN_PASSWORD = process.env.ADMIN_PASSWORD || 'Blackmagic@2026';
+if (process.env.NODE_ENV !== 'production') {
+  console.info('SECURE_ADMIN_EMAIL:', SECURE_ADMIN_EMAIL);
+  console.info('SECURE_ADMIN_PASSWORD set:', !!SECURE_ADMIN_PASSWORD);
+}
 const FIREBASE_DB_URL = (process.env.VITE_FIREBASE_DATABASE_URL || 'https://sunstone-library-cbf2d-default-rtdb.asia-southeast1.firebasedatabase.app/').replace(/\/$/, '');
 
 // --- Security: HTTP Security Headers ---
