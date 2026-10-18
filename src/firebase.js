@@ -1,7 +1,7 @@
 import { initializeApp } from 'firebase/app';
 import { getDatabase, ref, get, set, update, child, remove } from 'firebase/database';
 import { getFirestore, collection, getDocs, doc, getDoc, setDoc, updateDoc, deleteDoc, query, limit } from 'firebase/firestore';
-import { getAuth, GoogleAuthProvider, signInWithPopup, signOut, onAuthStateChanged } from 'firebase/auth';
+import { getAuth, GoogleAuthProvider, signInWithPopup, signInWithRedirect, getRedirectResult, signOut, onAuthStateChanged } from 'firebase/auth';
 import { getStorage, ref as storageRef, uploadBytesResumable, getDownloadURL } from 'firebase/storage';
 
 // Firebase configuration using your provided Realtime Database URL
@@ -70,12 +70,12 @@ export function uploadBookPdfToStorage(file, onProgress) {
 export const googleProvider = new GoogleAuthProvider();
 googleProvider.setCustomParameters({ prompt: 'select_account' });
 
-/** Launch Google Sign-In Popup */
+/** Launch Google Sign-In Popup with reliable timeout and clear diagnostics */
 export async function signInWithGooglePopup() {
   try {
     const popupPromise = signInWithPopup(auth, googleProvider);
     const timeoutPromise = new Promise((_, reject) =>
-      setTimeout(() => reject(new Error('Google Sign-In window timed out. Please check if the popup was blocked by your browser.')), 45000)
+      setTimeout(() => reject(new Error('Google Sign-In popup timed out. Your browser may be blocking popups, or try the Full Page Sign-in option below.')), 20000)
     );
     const result = await Promise.race([popupPromise, timeoutPromise]);
     const user = result.user;
@@ -89,10 +89,12 @@ export async function signInWithGooglePopup() {
       }
     };
   } catch (error) {
-    console.warn('Firebase Google Sign-In notice:', error.message);
+    console.warn('Firebase Google Sign-In notice:', error.code, error.message);
     let friendlyError = error.message;
     if (error.code === 'auth/popup-blocked') {
-      friendlyError = 'Pop-up window was blocked by your browser. Please click the pop-up icon in your browser address bar and allow popups.';
+      friendlyError = 'Pop-up window was blocked by your browser. Please allow popups or use "Full Page Sign-In".';
+    } else if (error.code === 'auth/unauthorized-domain') {
+      friendlyError = `Domain "${window.location.hostname}" is not authorized in Firebase Console. Please add "${window.location.hostname}" to Firebase Console -> Authentication -> Settings -> Authorized domains.`;
     } else if (error.code === 'auth/cancelled-popup-request') {
       friendlyError = 'Previous sign-in request was cancelled. Please try again.';
     } else if (error.code === 'auth/network-request-failed') {
@@ -104,6 +106,34 @@ export async function signInWithGooglePopup() {
       code: error.code
     };
   }
+}
+
+/** Full-Page Redirect Google Sign-In (Immune to browser popup blockers) */
+export async function signInWithGoogleRedirect() {
+  try {
+    await signInWithRedirect(auth, googleProvider);
+  } catch (error) {
+    console.error('Firebase Google Redirect notice:', error);
+    throw error;
+  }
+}
+
+/** Check if page just returned from a Google Sign-In redirect */
+export async function checkRedirectSignInResult() {
+  try {
+    const result = await getRedirectResult(auth);
+    if (result && result.user) {
+      return {
+        uid: result.user.uid,
+        email: result.user.email,
+        displayName: result.user.displayName,
+        photoURL: result.user.photoURL
+      };
+    }
+  } catch (err) {
+    console.warn('Redirect result check notice:', err);
+  }
+  return null;
 }
 
 // --- Realtime Database & Firestore Helpers ---

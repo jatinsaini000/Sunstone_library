@@ -1,15 +1,18 @@
 import React, { useState } from 'react';
-import { X, ShieldCheck, Loader2 } from 'lucide-react';
+import { X, ShieldCheck, Loader2, ExternalLink, AlertCircle } from 'lucide-react';
 import SunstoneLogo from './SunstoneLogo.jsx';
-import { signInWithGooglePopup, syncGoogleUser } from '../firebase.js';
+import { signInWithGooglePopup, signInWithGoogleRedirect, syncGoogleUser } from '../firebase.js';
 
 export default function AuthModal({ onClose, onLoginSuccess, onAdminLoginSuccess, adminEmails = [] }) {
   const [googleLoading, setGoogleLoading] = useState(false);
+  const [redirectLoading, setRedirectLoading] = useState(false);
   const [errorMsg, setErrorMsg] = useState('');
+  const [unauthorizedDomain, setUnauthorizedDomain] = useState(false);
 
   const handleGoogleSignIn = async () => {
     setGoogleLoading(true);
     setErrorMsg('');
+    setUnauthorizedDomain(false);
 
     try {
       const res = await signInWithGooglePopup();
@@ -17,6 +20,9 @@ export default function AuthModal({ onClose, onLoginSuccess, onAdminLoginSuccess
         if (res.code === 'auth/popup-closed-by-user') {
           setGoogleLoading(false);
           return;
+        }
+        if (res.code === 'auth/unauthorized-domain') {
+          setUnauthorizedDomain(true);
         }
         throw new Error(res.error || 'Google Sign-In failed. Please try again.');
       }
@@ -39,9 +45,26 @@ export default function AuthModal({ onClose, onLoginSuccess, onAdminLoginSuccess
     }
   };
 
+  const handleGoogleRedirectSignIn = async () => {
+    setRedirectLoading(true);
+    setErrorMsg('');
+    try {
+      await signInWithGoogleRedirect();
+    } catch (err) {
+      console.error('Google Redirect Sign-In Error:', err);
+      if (err.code === 'auth/unauthorized-domain') {
+        setUnauthorizedDomain(true);
+      }
+      setErrorMsg(err.message || 'Google Redirect failed.');
+      setRedirectLoading(false);
+    }
+  };
+
+  const currentHost = typeof window !== 'undefined' ? window.location.hostname : 'sunstone-library.netlify.app';
+
   return (
     <div className="modal-overlay" onClick={onClose}>
-      <div className="modal-card bottom-sheet-modal" style={{ maxWidth: '440px' }} onClick={(e) => e.stopPropagation()}>
+      <div className="modal-card bottom-sheet-modal" style={{ maxWidth: '460px' }} onClick={(e) => e.stopPropagation()}>
         <div className="sheet-drag-handle"></div>
 
         <button type="button" className="modal-close-btn" onClick={onClose} aria-label="Close modal">
@@ -62,18 +85,39 @@ export default function AuthModal({ onClose, onLoginSuccess, onAdminLoginSuccess
             </p>
           </div>
 
-          {errorMsg && (
+          {unauthorizedDomain && (
+            <div style={{
+              background: 'rgba(239, 68, 68, 0.08)',
+              border: '1.5px solid rgba(239, 68, 68, 0.35)',
+              color: '#b91c1c',
+              padding: '12px 14px',
+              borderRadius: '10px',
+              fontSize: '12px',
+              marginBottom: '16px',
+              lineHeight: '1.5'
+            }}>
+              <div style={{ display: 'flex', alignItems: 'center', gap: '8px', fontWeight: '700', marginBottom: '4px' }}>
+                <AlertCircle size={16} />
+                <span>Domain Not Authorized in Firebase</span>
+              </div>
+              Firebase blocked login from <code>{currentHost}</code>.
+              <br />
+              <strong>Fix:</strong> Open <strong>Firebase Console</strong> &rarr; <strong>Authentication</strong> &rarr; <strong>Settings</strong> &rarr; <strong>Authorized domains</strong> &rarr; click <strong>Add domain</strong> &rarr; enter <code>{currentHost}</code>.
+            </div>
+          )}
+
+          {errorMsg && !unauthorizedDomain && (
             <div className="auth-error-banner" style={{ background: 'rgba(239, 68, 68, 0.1)', border: '1px solid rgba(239, 68, 68, 0.3)', color: '#dc2626', padding: '10px 14px', borderRadius: '8px', fontSize: '12px', marginBottom: '18px' }}>
               {errorMsg}
             </div>
           )}
 
           {/* ONE-CLICK GOOGLE LOGIN ONLY */}
-          <div className="auth-form-wrapper" style={{ display: 'flex', flexDirection: 'column', gap: '14px' }}>
+          <div className="auth-form-wrapper" style={{ display: 'flex', flexDirection: 'column', gap: '12px' }}>
             <button
               type="button"
               onClick={handleGoogleSignIn}
-              disabled={googleLoading}
+              disabled={googleLoading || redirectLoading}
               className="btn-google-auth"
               style={{
                 width: '100%',
@@ -88,7 +132,7 @@ export default function AuthModal({ onClose, onLoginSuccess, onAdminLoginSuccess
                 alignItems: 'center',
                 justifyContent: 'center',
                 gap: '12px',
-                cursor: googleLoading ? 'wait' : 'pointer',
+                cursor: (googleLoading || redirectLoading) ? 'wait' : 'pointer',
                 boxShadow: '0 2px 6px rgba(0,0,0,0.06)',
                 transition: 'all 0.2s ease'
               }}
@@ -106,13 +150,15 @@ export default function AuthModal({ onClose, onLoginSuccess, onAdminLoginSuccess
               <span>{googleLoading ? 'Connecting to Google...' : 'Continue with Google'}</span>
             </button>
 
-            {googleLoading && (
-              <div style={{ textAlign: 'center', fontSize: '12px', color: 'var(--sunstone-text-secondary)', lineHeight: '1.4' }}>
-                Please select your Google account in the popup window.
+            {/* Fallback button if popup doesn't open or is blocked */}
+            {(googleLoading || errorMsg) && (
+              <div style={{ textAlign: 'center', fontSize: '12px', color: 'var(--sunstone-text-secondary)', lineHeight: '1.5', padding: '6px 0' }}>
+                <span>Window didn't appear or popup blocked?</span>
                 <br />
                 <button
                   type="button"
-                  onClick={() => setGoogleLoading(false)}
+                  onClick={handleGoogleRedirectSignIn}
+                  disabled={redirectLoading}
                   style={{
                     background: 'none',
                     border: 'none',
@@ -121,11 +167,24 @@ export default function AuthModal({ onClose, onLoginSuccess, onAdminLoginSuccess
                     cursor: 'pointer',
                     textDecoration: 'underline',
                     marginTop: '4px',
-                    fontSize: '12px'
+                    fontSize: '13px',
+                    display: 'inline-flex',
+                    alignItems: 'center',
+                    gap: '4px'
                   }}
                 >
-                  Window didn't appear? Click to Cancel / Retry
+                  {redirectLoading ? <Loader2 size={13} className="animate-spin" /> : <ExternalLink size={13} />}
+                  <span>Sign in using Full Page Redirect instead</span>
                 </button>
+                <div style={{ marginTop: '4px' }}>
+                  <button
+                    type="button"
+                    onClick={() => { setGoogleLoading(false); setErrorMsg(''); }}
+                    style={{ background: 'none', border: 'none', color: '#64748b', fontSize: '11px', cursor: 'pointer' }}
+                  >
+                    Cancel
+                  </button>
+                </div>
               </div>
             )}
 
@@ -137,7 +196,7 @@ export default function AuthModal({ onClose, onLoginSuccess, onAdminLoginSuccess
               display: 'flex',
               alignItems: 'flex-start',
               gap: '10px',
-              marginTop: '8px'
+              marginTop: '4px'
             }}>
               <ShieldCheck size={18} color="#2563eb" style={{ flexShrink: 0, marginTop: '2px' }} />
               <div style={{ fontSize: '12px', color: 'var(--sunstone-text-secondary)', lineHeight: '1.4' }}>
