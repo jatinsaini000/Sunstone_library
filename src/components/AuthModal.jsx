@@ -1,9 +1,9 @@
 import React, { useState } from 'react';
 import { X, ShieldCheck, Loader2 } from 'lucide-react';
 import SunstoneLogo from './SunstoneLogo.jsx';
-import { signInWithGooglePopup, addStudentToFirestore } from '../firebase.js';
+import { signInWithGooglePopup, syncGoogleUser } from '../firebase.js';
 
-export default function AuthModal({ onClose, onLoginSuccess, onRegisterSuccess, onAdminLoginSuccess }) {
+export default function AuthModal({ onClose, onLoginSuccess, onAdminLoginSuccess, adminEmails = [] }) {
   const [googleLoading, setGoogleLoading] = useState(false);
   const [errorMsg, setErrorMsg] = useState('');
 
@@ -21,67 +21,15 @@ export default function AuthModal({ onClose, onLoginSuccess, onRegisterSuccess, 
         throw new Error(res.error || 'Google Sign-In failed. Please try again.');
       }
 
-      const { email: gEmail, displayName: gName, photoURL: gPhoto, uid: gUid } = res.user;
-      const cleanEmail = gEmail.toLowerCase().trim();
-
-      let authenticatedUser = {
-        id: 'usr_' + (gUid ? gUid.substring(0, 16) : Date.now()),
-        name: gName || cleanEmail.split('@')[0],
-        email: cleanEmail,
-        photoUrl: gPhoto,
-        role: 'student',
-        program: 'B.Tech & BCA',
-        status: 'Active',
-        authProvider: 'google',
-        createdAt: new Date().toISOString()
-      };
-      let authToken = null;
-
-      // Sync with server (server assigns admin role if email is authorized)
-      try {
-        const controller = new AbortController();
-        const timeoutId = setTimeout(() => controller.abort(), 10000);
-
-        const serverRes = await fetch('/api/auth/google', {
-          method: 'POST',
-          headers: { 'Content-Type': 'application/json' },
-          body: JSON.stringify({
-            email: cleanEmail,
-            name: gName || cleanEmail.split('@')[0],
-            photoUrl: gPhoto,
-            googleId: gUid,
-            program: 'B.Tech & BCA'
-          }),
-          signal: controller.signal
-        });
-        clearTimeout(timeoutId);
-
-        if (serverRes.ok) {
-          const data = await serverRes.json().catch(() => ({}));
-          if (data.user) {
-            authenticatedUser = data.user;
-            authToken = data.token;
-          }
-        }
-      } catch (e) {
-        console.warn('Server sync notice:', e.message);
-      }
-
-      // Persist directly to Firebase database with a 5-second timeout
-      try {
-        const dbPromise = addStudentToFirestore(authenticatedUser);
-        const timeoutPromise = new Promise((_, reject) => setTimeout(() => reject(new Error('Firebase DB timeout')), 5000));
-        await Promise.race([dbPromise, timeoutPromise]);
-      } catch (e) {
-        console.warn('Firebase sync notice:', e.message);
-      }
+      // Sync/initialize scalable user profile directly with Firebase
+      const authenticatedUser = await syncGoogleUser(res.user, adminEmails);
 
       // Route based on role
       if (authenticatedUser.role === 'admin') {
-        if (onAdminLoginSuccess) onAdminLoginSuccess(authenticatedUser, authToken);
-        else onLoginSuccess(authenticatedUser, authToken);
+        if (onAdminLoginSuccess) onAdminLoginSuccess(authenticatedUser);
+        else onLoginSuccess(authenticatedUser);
       } else {
-        onLoginSuccess(authenticatedUser, authToken);
+        onLoginSuccess(authenticatedUser);
       }
     } catch (err) {
       console.error('Google Sign-In Error:', err);

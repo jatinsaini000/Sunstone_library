@@ -14,8 +14,9 @@ export default function TopHeader({
   setTheme,
   setSelectedProgram
 }) {
-  const userName = user ? user.name.split(' ')[0] : '';
-  const userProgram = user ? (user.program === 'All Programs' ? 'Sunstone Admin' : user.program) : '';
+  const displayName = user ? (user.displayName || user.name || (user.email ? user.email.split('@')[0] : '')) : '';
+  const userName = displayName.split(' ')[0];
+  const userProgram = user ? (user.program === 'All Programs' ? 'Sunstone Admin' : (user.program || user.role)) : '';
 
   const popularTags = [
     { label: 'Python', query: 'Python' },
@@ -105,16 +106,24 @@ export default function TopHeader({
                 }}
                 title="View Profile & Bookshelf"
               >
-                <div
-                  className="user-avatar-mini"
-                  style={{
-                    background: user.role === 'admin' ? 'var(--accent-sunstone-red)' : 'var(--accent-blue)'
-                  }}
-                >
-                  {user.name.charAt(0).toUpperCase()}
-                </div>
+                {user.photoUrl || user.photoURL ? (
+                  <img
+                    src={user.photoUrl || user.photoURL}
+                    alt={displayName}
+                    style={{ width: '28px', height: '28px', borderRadius: '50%', objectFit: 'cover' }}
+                  />
+                ) : (
+                  <div
+                    className="user-avatar-mini"
+                    style={{
+                      background: user.role === 'admin' ? 'var(--accent-sunstone-red)' : 'var(--accent-blue)'
+                    }}
+                  >
+                    {displayName ? displayName.charAt(0).toUpperCase() : 'U'}
+                  </div>
+                )}
                 <div className="user-chip-info">
-                  <span className="user-chip-name">{user.name}</span>
+                  <span className="user-chip-name">{displayName}</span>
                   <span className="user-chip-sub">{userProgram || user.role}</span>
                 </div>
               </div>

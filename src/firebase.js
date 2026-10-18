@@ -1,8 +1,8 @@
 import { initializeApp } from 'firebase/app';
 import { getDatabase, ref, get, set, update, child, remove } from 'firebase/database';
-import { getFirestore, collection, getDocs, doc, setDoc, updateDoc, deleteDoc } from 'firebase/firestore';
-import { getAuth, GoogleAuthProvider, signInWithPopup } from 'firebase/auth';
-import { getStorage } from 'firebase/storage';
+import { getFirestore, collection, getDocs, doc, getDoc, setDoc, updateDoc, deleteDoc, query, limit } from 'firebase/firestore';
+import { getAuth, GoogleAuthProvider, signInWithPopup, signOut, onAuthStateChanged } from 'firebase/auth';
+import { getStorage, ref as storageRef, uploadBytesResumable, getDownloadURL } from 'firebase/storage';
 
 // Firebase configuration using your provided Realtime Database URL
 const FIREBASE_WEB_API_KEY = "AIzaSyCvmjYePXRpAbahhOCtqrz5z6-jEhvjZH0";
@@ -28,6 +28,44 @@ export const rtdb = getDatabase(app);
 export const db = getFirestore(app);
 export const auth = getAuth(app);
 export const storage = getStorage(app);
+
+/** Upload book PDF directly to Firebase Storage with progress tracking */
+export function uploadBookPdfToStorage(file, onProgress) {
+  return new Promise((resolve, reject) => {
+    if (!file) return reject(new Error('No PDF file provided for upload.'));
+    
+    // Clean filename and ensure uniqueness
+    const cleanFileName = file.name.replace(/[^a-zA-Z0-9._-]/g, '_');
+    const storagePath = `books/${Date.now()}_${cleanFileName}`;
+    const fileRef = storageRef(storage, storagePath);
+
+    const uploadTask = uploadBytesResumable(fileRef, file, {
+      contentType: file.type || 'application/pdf'
+    });
+
+    uploadTask.on(
+      'state_changed',
+      (snapshot) => {
+        if (snapshot.totalBytes > 0) {
+          const progress = Math.round((snapshot.bytesTransferred / snapshot.totalBytes) * 100);
+          if (typeof onProgress === 'function') onProgress(progress);
+        }
+      },
+      (error) => {
+        console.error('Firebase Storage upload error:', error);
+        reject(error);
+      },
+      async () => {
+        try {
+          const downloadUrl = await getDownloadURL(uploadTask.snapshot.ref);
+          resolve(downloadUrl);
+        } catch (err) {
+          reject(err);
+        }
+      }
+    );
+  });
+}
 
 export const googleProvider = new GoogleAuthProvider();
 googleProvider.setCustomParameters({ prompt: 'select_account' });
@@ -248,8 +286,136 @@ export async function deleteNoteFromFirestore(noteId) {
   } catch (e) {}
 }
 
+/**
+ * Scalable User Schema for 1,000+ Users:
+ * Primary Key: Google Firebase Auth UID (doc path: /users/{uid})
+ * Fields:
+ * - uid: string (Google UID)
+ * - id: string (compatible alias for uid)
+ * - email: canonical lowercase string
+ * - displayName: string (name)
+ * - name: string (alias for displayName)
+ * - photoURL: string (avatar)
+ * - photoUrl: string (alias for photoURL)
+ * - role: 'student' | 'admin'
+ * - status: 'Active' | 'Suspended'
+ * - academic: { program: string, rollNo: string, batch: string }
+ * - program: string (alias)
+ * - stats: { activeBorrows: number, totalBorrows: number }
+ * - createdAt: ISO string
+ * - lastLoginAt: ISO string
+ */
+
+/** Fetch single user profile by UID (O(1) direct lookup, optimal for scale) */
+export async function getUserProfile(uid) {
+  if (!uid) return null;
+  try {
+    const docSnap = await getDoc(doc(db, 'users', uid));
+    if (docSnap.exists()) {
+      return { id: docSnap.id, uid: docSnap.id, ...docSnap.data() };
+    }
+  } catch (err) {}
+
+  try {
+    const snap = await get(child(ref(rtdb), `users/${uid}`));
+    if (snap.exists()) {
+      const val = snap.val();
+      return { id: uid, uid, ...val };
+    }
+  } catch (err) {}
+
+  return null;
+}
+
+/** Sync or initialize Google-authenticated user in database */
+export async function syncGoogleUser(googleUser, adminEmails = []) {
+  if (!googleUser || !googleUser.uid) {
+    throw new Error('Invalid Google user data');
+  }
+
+  const uid = googleUser.uid;
+  const cleanEmail = (googleUser.email || '').toLowerCase().trim();
+  const normalizedAdmins = (adminEmails || []).map(e => (typeof e === 'string' ? e.toLowerCase().trim() : ''));
+  const isAuthorizedAdmin = normalizedAdmins.includes(cleanEmail);
+
+  // Check if existing profile exists
+  let existingProfile = null;
+  try {
+    existingProfile = await getUserProfile(uid);
+  } catch (e) {}
+
+  const now = new Date().toISOString();
+
+  let finalProfile;
+  if (existingProfile) {
+    // Determine updated role: retain admin if granted, or elevate if email matches whitelist
+    const targetRole = isAuthorizedAdmin ? 'admin' : (existingProfile.role || 'student');
+    finalProfile = {
+      ...existingProfile,
+      uid,
+      id: uid,
+      email: cleanEmail,
+      displayName: googleUser.displayName || existingProfile.displayName || cleanEmail.split('@')[0],
+      name: googleUser.displayName || existingProfile.name || cleanEmail.split('@')[0],
+      photoURL: googleUser.photoURL || existingProfile.photoURL || '',
+      photoUrl: googleUser.photoURL || existingProfile.photoUrl || '',
+      role: targetRole,
+      status: existingProfile.status || 'Active',
+      lastLoginAt: now
+    };
+  } else {
+    // Create new student/admin profile
+    finalProfile = {
+      uid,
+      id: uid,
+      email: cleanEmail,
+      displayName: googleUser.displayName || cleanEmail.split('@')[0],
+      name: googleUser.displayName || cleanEmail.split('@')[0],
+      photoURL: googleUser.photoURL || '',
+      photoUrl: googleUser.photoURL || '',
+      role: isAuthorizedAdmin ? 'admin' : 'student',
+      status: 'Active',
+      program: 'B.Tech & BCA',
+      academic: {
+        program: 'B.Tech & BCA',
+        rollNo: '',
+        batch: ''
+      },
+      stats: {
+        activeBorrows: 0,
+        totalBorrows: 0
+      },
+      createdAt: now,
+      lastLoginAt: now
+    };
+  }
+
+  // Persist to Firestore and RTDB asynchronously
+  try {
+    await setDoc(doc(db, 'users', uid), finalProfile, { merge: true });
+  } catch (e) {
+    console.warn('Firestore user sync warning:', e.message);
+  }
+
+  try {
+    await set(ref(rtdb, 'users/' + uid), finalProfile);
+  } catch (e) {}
+
+  return finalProfile;
+}
+
 /** Fetch all registered students from Firebase */
 export async function getStudentsFromFirestore() {
+  try {
+    const usersCol = collection(db, 'users');
+    const fsSnap = await getDocs(usersCol);
+    if (!fsSnap.empty) {
+      return fsSnap.docs
+        .map(docSnap => ({ id: docSnap.id, uid: docSnap.id, ...docSnap.data() }))
+        .filter(u => u.role === 'student');
+    }
+  } catch (error) {}
+
   try {
     const dbRef = ref(rtdb);
     const snapshot = await get(child(dbRef, 'users'));
@@ -260,36 +426,27 @@ export async function getStudentsFromFirestore() {
     }
   } catch (err) {}
 
-  try {
-    const usersCol = collection(db, 'users');
-    const fsSnap = await getDocs(usersCol);
-    if (!fsSnap.empty) {
-      return fsSnap.docs
-        .map(docSnap => ({ id: docSnap.id, ...docSnap.data() }))
-        .filter(u => u.role === 'student');
-    }
-  } catch (error) {}
-
   return null;
 }
 
-/** Add a new registered student to Firebase */
+/** Add or update a registered student in Firebase */
 export async function addStudentToFirestore(studentData) {
-  const studentId = studentData.id || ('usr_' + Date.now());
+  const studentId = studentData.uid || studentData.id || ('usr_' + Date.now());
   const finalStudent = {
     ...studentData,
+    uid: studentId,
     id: studentId,
-    role: 'student',
+    role: studentData.role || 'student',
     status: studentData.status || 'Active',
     createdAt: studentData.createdAt || new Date().toISOString()
   };
 
   try {
-    await set(ref(rtdb, 'users/' + studentId), finalStudent);
+    await setDoc(doc(db, 'users', studentId), finalStudent, { merge: true });
   } catch (e) {}
 
   try {
-    await setDoc(doc(db, 'users', studentId), finalStudent);
+    await set(ref(rtdb, 'users/' + studentId), finalStudent);
   } catch (e) {}
 
   return finalStudent;
@@ -300,27 +457,35 @@ export async function updateStudentStatusInFirestore(studentId, status) {
   const updates = { status, updatedAt: new Date().toISOString() };
 
   try {
-    await update(ref(rtdb, 'users/' + studentId), updates);
+    await updateDoc(doc(db, 'users', studentId), updates);
   } catch (e) {}
 
   try {
-    await updateDoc(doc(db, 'users', studentId), updates);
+    await update(ref(rtdb, 'users/' + studentId), updates);
   } catch (e) {}
 }
 
 /** Delete student / user account from Firebase */
 export async function deleteStudentFromFirestore(studentId) {
   try {
-    await remove(ref(rtdb, 'users/' + studentId));
+    await deleteDoc(doc(db, 'users', studentId));
   } catch (e) {}
 
   try {
-    await deleteDoc(doc(db, 'users', studentId));
+    await remove(ref(rtdb, 'users/' + studentId));
   } catch (e) {}
 }
 
 /** Fetch all registered users (students & admins) from Firebase */
 export async function getAllUsersFromFirestore() {
+  try {
+    const usersCol = collection(db, 'users');
+    const fsSnap = await getDocs(usersCol);
+    if (!fsSnap.empty) {
+      return fsSnap.docs.map(docSnap => ({ id: docSnap.id, uid: docSnap.id, ...docSnap.data() }));
+    }
+  } catch (error) {}
+
   try {
     const dbRef = ref(rtdb);
     const snapshot = await get(child(dbRef, 'users'));
@@ -331,31 +496,31 @@ export async function getAllUsersFromFirestore() {
     }
   } catch (err) {}
 
-  try {
-    const usersCol = collection(db, 'users');
-    const fsSnap = await getDocs(usersCol);
-    if (!fsSnap.empty) {
-      return fsSnap.docs.map(docSnap => ({ id: docSnap.id, ...docSnap.data() }));
-    }
-  } catch (error) {}
-
   return null;
 }
 
 /** Update user role in Firebase (admin / student) */
 export async function updateUserRoleInFirestore(userId, role) {
   const updates = { role, updatedAt: new Date().toISOString() };
-  try {
-    await update(ref(rtdb, 'users/' + userId), updates);
-  } catch (e) {}
 
   try {
     await updateDoc(doc(db, 'users', userId), updates);
   } catch (e) {}
+
+  try {
+    await update(ref(rtdb, 'users/' + userId), updates);
+  } catch (e) {}
 }
 
-/** Fetch authorized admin emails from Firebase Realtime DB */
+/** Fetch authorized admin emails from Firebase Realtime DB / Firestore */
 export async function getAdminEmailsFromFirestore() {
+  try {
+    const docSnap = await getDoc(doc(db, 'settings', 'adminEmails'));
+    if (docSnap.exists() && Array.isArray(docSnap.data().emails)) {
+      return docSnap.data().emails;
+    }
+  } catch (e) {}
+
   try {
     const dbRef = ref(rtdb);
     const snapshot = await get(child(dbRef, 'settings/adminEmails'));
@@ -370,8 +535,26 @@ export async function getAdminEmailsFromFirestore() {
 /** Save authorized admin emails list to Firebase */
 export async function saveAdminEmailsToFirestore(emails) {
   try {
+    await setDoc(doc(db, 'settings', 'adminEmails'), { emails, updatedAt: new Date().toISOString() }, { merge: true });
+  } catch (e) {}
+
+  try {
     await set(ref(rtdb, 'settings/adminEmails'), emails);
   } catch (e) {}
+}
+
+/** Sign out user from Firebase Auth */
+export async function signOutUser() {
+  try {
+    await signOut(auth);
+  } catch (e) {
+    console.warn('Sign out notice:', e.message);
+  }
+}
+
+/** Listen to auth state changes directly from Firebase Auth */
+export function onAuthUserChanged(callback) {
+  return onAuthStateChanged(auth, callback);
 }
 
 export default app;

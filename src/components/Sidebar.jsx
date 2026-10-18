@@ -91,12 +91,21 @@ export default function Sidebar({
       <div className="sidebar-user-footer">
         {user ? (
           <>
-            <div className="user-avatar-circle">
-              {user.name ? user.name.charAt(0).toUpperCase() : 'S'}
-            </div>
+            {user.photoUrl || user.photoURL ? (
+              <img
+                src={user.photoUrl || user.photoURL}
+                alt={user.displayName || user.name || 'User'}
+                className="user-avatar-circle"
+                style={{ objectFit: 'cover' }}
+              />
+            ) : (
+              <div className="user-avatar-circle">
+                {(user.displayName || user.name || 'U').charAt(0).toUpperCase()}
+              </div>
+            )}
             <div className="user-info-text">
-              <div className="user-info-name">{user.name}</div>
-              <div className="user-info-role">{user.program || user.role}</div>
+              <div className="user-info-name">{user.displayName || user.name || (user.email ? user.email.split('@')[0] : 'User')}</div>
+              <div className="user-info-role">{user.program || user.academic?.program || user.role}</div>
             </div>
             <button
               onClick={onLogout}

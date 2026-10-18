@@ -1,4 +1,4 @@
-import React, { useState, useEffect } from 'react';
+import React, { useState, useEffect, lazy, Suspense } from 'react';
 import Sidebar from './components/Sidebar.jsx';
 import TopHeader from './components/TopHeader.jsx';
 import MobileNav from './components/MobileNav.jsx';
@@ -6,13 +6,16 @@ import HeroBanner from './components/HeroBanner.jsx';
 import ProgramTabs from './components/ProgramTabs.jsx';
 import NetflixRow from './components/NetflixRow.jsx';
 import BookGrid from './components/BookGrid.jsx';
-import BookDetailModal from './components/BookDetailModal.jsx';
-import ChapterSnippetsModal from './components/ChapterSnippetsModal.jsx';
-import PdfReaderModal from './components/PdfReaderModal.jsx';
-import StudentProfile from './components/StudentProfile.jsx';
-import AdminConsole from './components/AdminConsole.jsx';
 import AuthModal from './components/AuthModal.jsx';
 import BorrowModal from './components/BorrowModal.jsx';
+
+// Lazy-loaded components for optimal performance and smaller initial bundle size
+const BookDetailModal = lazy(() => import('./components/BookDetailModal.jsx'));
+const ChapterSnippetsModal = lazy(() => import('./components/ChapterSnippetsModal.jsx'));
+const PdfReaderModal = lazy(() => import('./components/PdfReaderModal.jsx'));
+const StudentProfile = lazy(() => import('./components/StudentProfile.jsx'));
+const AdminConsole = lazy(() => import('./components/AdminConsole.jsx'));
+
 import {
   Flame,
   Code,
@@ -21,7 +24,8 @@ import {
   Sparkles,
   BookOpenCheck,
   CheckCircle2,
-  X
+  X,
+  Loader2
 } from 'lucide-react';
 import { initialBooks, initialBorrowRequests, initialStudents } from './starterBooks.js';
 import { preferCatalogIfStale, enrichBooksCatalog } from './bookEnrichment.js';
@@ -44,7 +48,11 @@ import {
   deleteStudentFromFirestore,
   updateUserRoleInFirestore,
   getAdminEmailsFromFirestore,
-  saveAdminEmailsToFirestore
+  saveAdminEmailsToFirestore,
+  getUserProfile,
+  syncGoogleUser,
+  signOutUser,
+  onAuthUserChanged
 } from './firebase.js';
 
 export default function App() {
@@ -55,7 +63,7 @@ export default function App() {
   const [searchQuery, setSearchQuery] = useState('');
   const [toastMessage, setToastMessage] = useState(null);
 
-  // Active user session and cryptographic JWT token
+  // Active user session (Synced with Firebase Auth and Firestore /users/{uid})
   const [user, setUser] = useState(() => {
     try {
       const savedUser = localStorage.getItem('sunstone_user');
@@ -65,33 +73,22 @@ export default function App() {
     }
   });
 
-  const [token, setToken] = useState(() => {
-    try {
-      return localStorage.getItem('sunstone_token') || null;
-    } catch (e) {
-      return null;
-    }
-  });
-
-  const handleSetUser = (userData, userToken = null) => {
+  const handleSetUser = (userData) => {
     if (userData) {
       try {
         localStorage.setItem('sunstone_user', JSON.stringify(userData));
-        if (userToken) localStorage.setItem('sunstone_token', userToken);
       } catch (e) {}
       setUser(userData);
-      if (userToken) setToken(userToken);
     } else {
       try {
         localStorage.removeItem('sunstone_user');
-        localStorage.removeItem('sunstone_token');
       } catch (e) {}
       setUser(null);
-      setToken(null);
     }
   };
 
   const handleLogout = () => {
+    signOutUser();
     handleSetUser(null);
     setCurrentView('catalog');
   };
@@ -176,29 +173,27 @@ export default function App() {
     document.documentElement.setAttribute('data-theme', theme);
   }, [theme]);
 
-  // Server-Side Session Verification on App Startup
+  // Listen to Firebase Auth state natively for persistent Google Sign-In
   useEffect(() => {
-    async function verifySession() {
-      if (!token) return;
-      try {
-        const res = await fetch('/api/auth/me', {
-          headers: { Authorization: `Bearer ${token}` }
-        });
-        if (res.ok) {
-          const data = await res.json();
-          if (data.user) {
-            setUser(data.user);
-            try {
-              localStorage.setItem('sunstone_user', JSON.stringify(data.user));
-            } catch (e) {}
+    const unsubscribe = onAuthUserChanged(async (firebaseUser) => {
+      if (firebaseUser) {
+        try {
+          const profile = await getUserProfile(firebaseUser.uid);
+          if (profile) {
+            handleSetUser(profile);
+          } else {
+            const synced = await syncGoogleUser(firebaseUser, adminEmails);
+            handleSetUser(synced);
           }
-        } else if (res.status === 401 || res.status === 403) {
-          handleSetUser(null);
+        } catch (e) {
+          console.warn('Auth state sync notice:', e.message);
         }
-      } catch (e) {}
-    }
-    verifySession();
-  }, [token]);
+      }
+    });
+    return () => {
+      if (typeof unsubscribe === 'function') unsubscribe();
+    };
+  }, [adminEmails]);
 
   // 1. Load Books Data (Firestore -> Server -> LocalStorage -> Catalog)
   useEffect(() => {
@@ -251,8 +246,7 @@ export default function App() {
       } catch (e) {}
 
       try {
-        const headers = token ? { Authorization: `Bearer ${token}` } : {};
-        const res = await fetch('/api/borrow-requests', { headers });
+        const res = await fetch('/api/borrow-requests');
         const contentType = res.headers.get('content-type');
         if (res.ok && contentType && contentType.includes('application/json')) {
           const data = await res.json();
@@ -266,21 +260,11 @@ export default function App() {
       } catch (e) {}
     }
     loadRequestsData();
-  }, [token]);
+  }, []);
 
-  // 3. Load Registered Users & Admin Emails (Firestore -> Server -> LocalStorage)
+  // 3. Load Admin Emails on startup (determines Google Sign-In admin privileges)
   useEffect(() => {
-    async function loadUsersData() {
-      try {
-        const fsUsers = await getAllUsersFromFirestore();
-        if (fsUsers && fsUsers.length > 0) {
-          setStudents(fsUsers);
-          try {
-            localStorage.setItem('sunstone_students', JSON.stringify(fsUsers));
-          } catch (e) {}
-        }
-      } catch (e) {}
-
+    async function loadAdminEmails() {
       try {
         const fsAdminEmails = await getAdminEmailsFromFirestore();
         if (fsAdminEmails && fsAdminEmails.length > 0) {
@@ -290,64 +274,45 @@ export default function App() {
           } catch (e) {}
         }
       } catch (e) {}
+    }
+    loadAdminEmails();
+  }, []);
 
+  // 4. Load Registered Users ONLY when authenticated user is Admin (Scale: avoids downloading 1,000+ users for students)
+  useEffect(() => {
+    async function loadUsersForAdmin() {
+      if (user?.role !== 'admin') return;
       try {
-        const headers = token ? { Authorization: `Bearer ${token}` } : {};
-        const res = await fetch('/api/users', { headers });
-        const contentType = res.headers.get('content-type');
-        if (res.ok && contentType && contentType.includes('application/json')) {
-          const data = await res.json();
-          if (Array.isArray(data) && data.length > 0) {
-            setStudents(data);
-            try {
-              localStorage.setItem('sunstone_students', JSON.stringify(data));
-            } catch (e) {}
-          }
-        }
-      } catch (e) {}
-
-      try {
-        if (token) {
-          const emailRes = await fetch('/api/admin/emails', { headers: { Authorization: `Bearer ${token}` } });
-          if (emailRes.ok) {
-            const emailData = await emailRes.json();
-            if (Array.isArray(emailData) && emailData.length > 0) {
-              setAdminEmails(emailData);
-              try {
-                localStorage.setItem('sunstone_admin_emails', JSON.stringify(emailData));
-              } catch (e) {}
-            }
-          }
+        const fsUsers = await getAllUsersFromFirestore();
+        if (fsUsers && fsUsers.length > 0) {
+          setStudents(fsUsers);
+          try {
+            localStorage.setItem('sunstone_students', JSON.stringify(fsUsers));
+          } catch (e) {}
         }
       } catch (e) {}
     }
-    loadUsersData();
-  }, [token]);
+    loadUsersForAdmin();
+  }, [user?.role]);
 
-  // 4. Load Study Notes
+  // 5. Load Study Notes for active user
   useEffect(() => {
     async function loadNotesData() {
+      if (!user) {
+        setUserNotes([]);
+        return;
+      }
       try {
-        const fsNotes = await getNotesFromFirestore();
+        const currentUserId = user.uid || user.id;
+        const fsNotes = await getNotesFromFirestore(currentUserId);
         if (fsNotes && fsNotes.length > 0) {
           setUserNotes(fsNotes);
           return;
         }
       } catch (e) {}
-
-      try {
-        if (!token) return;
-        const res = await fetch('/api/notes', {
-          headers: { Authorization: `Bearer ${token}` }
-        });
-        if (res.ok) {
-          const data = await res.json();
-          if (Array.isArray(data) && data.length > 0) setUserNotes(data);
-        }
-      } catch (e) {}
     }
     loadNotesData();
-  }, [token]);
+  }, [user?.uid, user?.id]);
 
   const triggerToast = (text, type = 'success') => {
     setToastMessage({ text, type });
@@ -413,23 +378,34 @@ export default function App() {
 
   // Submit Borrow Request (Linked to Active Student Profile)
   const handleSubmitBorrowRequest = async (requestPayload) => {
-    // ENFORCE SINGLE BORROWER RULE:
-    const activeLoan = activeLoansByBookId[requestPayload.bookId];
-    if (activeLoan && activeLoan.studentId !== user?.id && activeLoan.studentEmail?.toLowerCase() !== user?.email?.toLowerCase()) {
-      triggerToast('This book is currently on loan to another student. Only one student can borrow it at a time.', 'error');
+    const studentUid = user ? (user.uid || user.id) : ('usr_' + Date.now());
+    const studentEmail = user ? user.email : 'student@sunstone.in';
+
+    // 1. Quota Check: Max 3 active or pending books per student
+    const activeBorrows = borrowRequests.filter(
+      (r) => (r.studentId === studentUid || r.studentEmail?.toLowerCase() === studentEmail?.toLowerCase()) &&
+             (r.status === 'Approved' || r.status === 'Pending')
+    );
+    if (activeBorrows.length >= 3) {
+      triggerToast('Quota Limit: You have reached the maximum allowance of 3 active or pending book requests.', 'error');
       return;
     }
 
-    const studentId = user ? user.id : ('usr_' + Date.now());
-    const studentName = user ? user.name : 'Student Scholar';
-    const studentEmail = user ? user.email : 'student@sunstone.in';
-    const studentProgram = user ? user.program : 'B.Tech & BCA';
+    // 2. Enforce Single Borrower Rule:
+    const activeLoan = activeLoansByBookId[requestPayload.bookId];
+    if (activeLoan && activeLoan.studentId !== studentUid && activeLoan.studentEmail?.toLowerCase() !== studentEmail?.toLowerCase()) {
+      triggerToast('This book is currently on loan to another student. Only one reader can borrow it at a time.', 'error');
+      return;
+    }
+
+    const studentName = user ? (user.displayName || user.name) : 'Student Scholar';
+    const studentProgram = user ? (user.program || user.academic?.program) : 'B.Tech & BCA';
 
     const reqId = 'req_' + Date.now();
     const newReq = {
       ...requestPayload,
       id: reqId,
-      studentId,
+      studentId: studentUid,
       studentName,
       studentEmail,
       studentProgram,
@@ -450,24 +426,36 @@ export default function App() {
       await addBorrowRequestToFirestore(newReq);
     } catch (e) {}
 
-    try {
-      if (token) {
-        await fetch('/api/borrow-requests', {
-          method: 'POST',
-          headers: {
-            'Content-Type': 'application/json',
-            Authorization: `Bearer ${token}`
-          },
-          body: JSON.stringify(newReq)
-        });
-      }
-    } catch (e) {}
-
     triggerToast(`Borrow request submitted for "${requestPayload.bookTitle}"!`);
   };
 
   // Admin Updates Borrow Request (Approved / Rejected / Returned)
   const handleUpdateBorrowStatus = async (requestId, status, adminNote = '') => {
+    const targetReq = borrowRequests.find((r) => r.id === requestId);
+    if (!targetReq) return;
+
+    if (status === 'Approved') {
+      // 1. Concurrency Check: Book must not already be on loan to another reader
+      const isAlreadyLoaned = borrowRequests.some(
+        (r) => r.bookId === targetReq.bookId && r.id !== requestId && r.status === 'Approved'
+      );
+      if (isAlreadyLoaned) {
+        triggerToast('Loan Conflict: This book is currently actively loaned out to another reader.', 'error');
+        return;
+      }
+
+      // 2. Student Quota Check: Maximum 3 approved loans per student
+      const studentApprovedLoans = borrowRequests.filter(
+        (r) => (r.studentId === targetReq.studentId || (r.studentEmail && targetReq.studentEmail && r.studentEmail.toLowerCase() === targetReq.studentEmail.toLowerCase())) &&
+               r.status === 'Approved' &&
+               r.id !== requestId
+      );
+      if (studentApprovedLoans.length >= 3) {
+        triggerToast('Quota Exceeded: This student already holds 3 approved books (Maximum limit).', 'error');
+        return;
+      }
+    }
+
     setBorrowRequests((prev) => {
       const next = prev.map((r) => (r.id === requestId ? { ...r, status, adminNote } : r));
       try {
@@ -478,19 +466,6 @@ export default function App() {
 
     try {
       await updateBorrowStatusInFirestore(requestId, status, adminNote);
-    } catch (e) {}
-
-    try {
-      if (token) {
-        await fetch(`/api/borrow-requests/${requestId}`, {
-          method: 'PUT',
-          headers: {
-            'Content-Type': 'application/json',
-            Authorization: `Bearer ${token}`
-          },
-          body: JSON.stringify({ status, adminNote })
-        });
-      }
     } catch (e) {}
 
     triggerToast(`Borrow request marked as ${status}.`);
@@ -652,73 +627,69 @@ export default function App() {
     triggerToast(`Book "${title}" published to Sunstone Library!`);
   };
 
-  // Admin Deletes Book from Catalog
-const handleDeleteBook = async (bookId) => {
-  setBooks((prev) => {
-    const nextBooks = prev.filter((b) => b.id !== bookId);
+  // Admin Deletes Book from Catalog with Cascade Cleanup
+  const handleDeleteBook = async (bookId) => {
+    // 1. Remove from books state
+    setBooks((prev) => {
+      const nextBooks = prev.filter((b) => b.id !== bookId);
+      try {
+        localStorage.setItem('sunstone_books', JSON.stringify(nextBooks));
+      } catch (e) {}
+      return nextBooks;
+    });
+
     try {
-      localStorage.setItem('sunstone_books', JSON.stringify(nextBooks));
+      await deleteBookFromFirestore(bookId);
     } catch (e) {}
-    return nextBooks;
-  });
 
-  try {
-    await deleteBookFromFirestore(bookId);
-  } catch (e) {}
-
-  // Only call backend if JWT token present (contains three parts)
-  if (token && token.split('.').length === 3) {
-    try {
-      await fetch(`/api/books/${bookId}`, {
-        method: 'DELETE',
-        headers: { Authorization: `Bearer ${token}` }
+    // 2. Cascade cleanup: cancel any pending or active borrow requests for this deleted book
+    setBorrowRequests((prev) => {
+      const nextReqs = prev.map((r) => {
+        if (r.bookId === bookId && (r.status === 'Pending' || r.status === 'Approved')) {
+          updateBorrowStatusInFirestore(r.id, 'Returned', 'Book decommissioned from library catalog.');
+          return { ...r, status: 'Returned', adminNote: 'Book decommissioned from library catalog.' };
+        }
+        return r;
       });
-    } catch (e) {}
-  }
+      try {
+        localStorage.setItem('sunstone_borrow_requests', JSON.stringify(nextReqs));
+      } catch (e) {}
+      return nextReqs;
+    });
 
-  triggerToast('Book removed from Sunstone catalog.');
-};
+    triggerToast('Book removed from Sunstone catalog and associated borrow records archived.');
+  };
 
-// Admin Suspends or Activates Student Account
+  // Admin Suspends or Activates Student Account
   const handleToggleStudentStatus = async (studentId, forcedStatus = null) => {
-    const student = students.find((s) => s.id === studentId);
-    const newStatus = forcedStatus || (student && student.status === 'Active' ? 'Suspended' : 'Active');
+    const student = students.find((s) => s.id === studentId || s.uid === studentId);
+    if (!student) return;
+
+    // Self-Protection: Admin cannot suspend their own account
+    if (user && (user.id === studentId || user.uid === studentId || user.email?.toLowerCase() === student.email?.toLowerCase())) {
+      triggerToast('Security Violation: You cannot suspend your own administrator account.', 'error');
+      return;
+    }
+
+    const currentStatus = student.status || 'Active';
+    const newStatus = forcedStatus || (currentStatus === 'Active' ? 'Suspended' : 'Active');
 
     setStudents((prev) => {
-      const next = prev.map((s) => (s.id === studentId ? { ...s, status: newStatus } : s));
+      const next = prev.map((s) => ((s.id === studentId || s.uid === studentId) ? { ...s, status: newStatus } : s));
       try {
         localStorage.setItem('sunstone_students', JSON.stringify(next));
       } catch (e) {}
       return next;
     });
 
-    // If currently logged-in user is this student, update session
-    if (user && user.id === studentId) {
-      const updatedUser = { ...user, status: newStatus };
-      handleSetUser(updatedUser, token);
-    }
-
     try {
       await updateStudentStatusInFirestore(studentId, newStatus);
-    } catch (e) {}
-
-    try {
-      if (token) {
-        await fetch(`/api/students/${studentId}/status`, {
-          method: 'PUT',
-          headers: {
-            'Content-Type': 'application/json',
-            Authorization: `Bearer ${token}`
-          },
-          body: JSON.stringify({ status: newStatus })
-        });
-      }
     } catch (e) {}
 
     triggerToast(`Student status updated to ${newStatus}.`);
   };
 
-  // Admin Adds New Student
+  // Admin Adds New Student (Google Auth Compatible)
   const handleAddStudent = async (newStudent) => {
     setStudents((prev) => {
       const next = [newStudent, ...prev];
@@ -732,26 +703,19 @@ const handleDeleteBook = async (bookId) => {
       await addStudentToFirestore(newStudent);
     } catch (e) {}
 
-    try {
-      if (token) {
-        await fetch('/api/students', {
-          method: 'POST',
-          headers: {
-            'Content-Type': 'application/json',
-            Authorization: `Bearer ${token}`
-          },
-          body: JSON.stringify(newStudent)
-        });
-      }
-    } catch (e) {}
-
-    triggerToast(`Student ${newStudent.name} registered successfully!`);
+    triggerToast(`Student ${newStudent.displayName || newStudent.name} registered successfully!`);
   };
 
   // Admin Deletes Student Account
   const handleDeleteStudent = async (studentId) => {
+    const student = students.find((s) => s.id === studentId || s.uid === studentId);
+    if (user && (user.id === studentId || user.uid === studentId || user.email?.toLowerCase() === student?.email?.toLowerCase())) {
+      triggerToast('Security Violation: You cannot delete your own account.', 'error');
+      return;
+    }
+
     setStudents((prev) => {
-      const next = prev.filter((s) => s.id !== studentId);
+      const next = prev.filter((s) => s.id !== studentId && s.uid !== studentId);
       try {
         localStorage.setItem('sunstone_students', JSON.stringify(next));
       } catch (e) {}
@@ -762,15 +726,6 @@ const handleDeleteBook = async (bookId) => {
       await deleteStudentFromFirestore(studentId);
     } catch (e) {}
 
-    try {
-      if (token) {
-        await fetch(`/api/students/${studentId}`, {
-          method: 'DELETE',
-          headers: { Authorization: `Bearer ${token}` }
-        });
-      }
-    } catch (e) {}
-
     triggerToast('User account removed.');
   };
 
@@ -778,6 +733,18 @@ const handleDeleteBook = async (bookId) => {
   const handleGrantAdminRole = async (targetEmail, targetRole = 'admin') => {
     if (!targetEmail) return;
     const cleanEmail = targetEmail.toLowerCase().trim();
+
+    // Self-Protection & Last-Admin Check
+    if (targetRole !== 'admin') {
+      if (user && user.email?.toLowerCase() === cleanEmail) {
+        triggerToast('Security Violation: You cannot revoke your own administrator privileges.', 'error');
+        return;
+      }
+      if (adminEmails.length <= 1) {
+        triggerToast('System Protection: At least one administrator email must remain configured.', 'error');
+        return;
+      }
+    }
 
     // 1. Update adminEmails state
     setAdminEmails((prev) => {
@@ -798,7 +765,7 @@ const handleDeleteBook = async (bookId) => {
     setStudents((prev) => {
       const next = prev.map((s) => {
         if (s.email && s.email.toLowerCase().trim() === cleanEmail) {
-          updateUserRoleInFirestore(s.id, targetRole);
+          updateUserRoleInFirestore(s.uid || s.id, targetRole);
           return { ...s, role: targetRole };
         }
         return s;
@@ -809,47 +776,13 @@ const handleDeleteBook = async (bookId) => {
       return next;
     });
 
-    // 3. Sync with backend server
-    try {
-      if (token) {
-        await fetch('/api/admin/grant-role', {
-          method: 'POST',
-          headers: {
-            'Content-Type': 'application/json',
-            Authorization: `Bearer ${token}`
-          },
-          body: JSON.stringify({ email: cleanEmail, role: targetRole })
-        });
-      }
-    } catch (e) {}
-
     triggerToast(targetRole === 'admin' ? `Admin access granted to ${cleanEmail}!` : `Admin access revoked for ${cleanEmail}`);
   };
 
   const handleToggleUserRole = async (userId, newRole) => {
-    const targetUser = students.find((s) => s.id === userId);
+    const targetUser = students.find((s) => s.id === userId || s.uid === userId);
     if (!targetUser) return;
     await handleGrantAdminRole(targetUser.email, newRole);
-  };
-
-  // Handler for New Student Registration
-  const handleRegisterSuccess = async (newUser, userToken) => {
-    handleSetUser(newUser, userToken);
-    if (newUser && newUser.role === 'student') {
-      setStudents((prev) => {
-        const exists = prev.some((s) => s.id === newUser.id || s.email === newUser.email);
-        const next = exists ? prev : [newUser, ...prev];
-        try {
-          localStorage.setItem('sunstone_students', JSON.stringify(next));
-        } catch (e) {}
-        return next;
-      });
-      try {
-        await addStudentToFirestore(newUser);
-      } catch (e) {}
-    }
-    setShowAuthModal(false);
-    triggerToast(`Welcome to Sunstone Library, ${newUser.name}!`);
   };
 
   // Filter books based on search query and selected program
@@ -1096,49 +1029,63 @@ const handleDeleteBook = async (bookId) => {
         {/* VIEW 2: STUDENT PROFILE & SHELF */}
         {currentView === 'profile' && (
           <main className="view-content-main">
-            <StudentProfile
-              user={user}
-              allBooks={books}
-              savedBookIds={savedBookIds}
-              onToggleSave={handleToggleSaveBook}
-              onOpenReader={(b) => setActiveReaderBook(b)}
-              onOpenSnippets={(b) => setActiveSnippetBook(b)}
-              onOpenQuickSummary={(b) => setSelectedQuickSummaryBook(b)}
-              onOpenBorrowModal={(b) => {
-                if (!user) setShowAuthModal(true);
-                else setActiveBorrowBook(b);
-              }}
-              borrowRequests={borrowRequests}
-              userNotes={userNotes}
-              onDeleteNote={handleDeleteNote}
-              activeTab={profileSubTab}
-              setActiveTab={setProfileSubTab}
-              borrowedBookIds={borrowedBookIds}
-            />
+            <Suspense fallback={
+              <div style={{ display: 'flex', alignItems: 'center', justifyContent: 'center', padding: '60px 20px', color: 'var(--sunstone-text-secondary)', gap: '10px' }}>
+                <Loader2 size={24} className="animate-spin" />
+                <span>Loading Student Profile...</span>
+              </div>
+            }>
+              <StudentProfile
+                user={user}
+                allBooks={books}
+                savedBookIds={savedBookIds}
+                onToggleSave={handleToggleSaveBook}
+                onOpenReader={(b) => setActiveReaderBook(b)}
+                onOpenSnippets={(b) => setActiveSnippetBook(b)}
+                onOpenQuickSummary={(b) => setSelectedQuickSummaryBook(b)}
+                onOpenBorrowModal={(b) => {
+                  if (!user) setShowAuthModal(true);
+                  else setActiveBorrowBook(b);
+                }}
+                borrowRequests={borrowRequests}
+                userNotes={userNotes}
+                onDeleteNote={handleDeleteNote}
+                activeTab={profileSubTab}
+                setActiveTab={setProfileSubTab}
+                borrowedBookIds={borrowedBookIds}
+              />
+            </Suspense>
           </main>
         )}
 
         {/* VIEW 3: SECRET ADMIN CONSOLE */}
         {currentView === 'admin' && (
           <main className="view-content-main">
-            <AdminConsole
-              user={user}
-              onAdminLogin={(adminUser, adminToken) => handleSetUser(adminUser, adminToken)}
-              allBooks={books}
-              onUploadBook={handleUploadBook}
-              onEditBook={handleEditBook}
-              onDeleteBook={handleDeleteBook}
-              borrowRequests={borrowRequests}
-              onUpdateBorrowStatus={handleUpdateBorrowStatus}
-              onDeleteBorrowRequest={handleDeleteBorrowRequest}
-              students={students}
-              onToggleStudentStatus={handleToggleStudentStatus}
-              onAddStudent={handleAddStudent}
-              onDeleteStudent={handleDeleteStudent}
-              adminEmails={adminEmails}
-              onGrantAdminRole={handleGrantAdminRole}
-              onToggleUserRole={handleToggleUserRole}
-            />
+            <Suspense fallback={
+              <div style={{ display: 'flex', alignItems: 'center', justifyContent: 'center', padding: '60px 20px', color: 'var(--sunstone-text-secondary)', gap: '10px' }}>
+                <Loader2 size={24} className="animate-spin" />
+                <span>Loading Admin Console...</span>
+              </div>
+            }>
+              <AdminConsole
+                user={user}
+                onAdminLogin={(adminUser) => handleSetUser(adminUser)}
+                allBooks={books}
+                onUploadBook={handleUploadBook}
+                onEditBook={handleEditBook}
+                onDeleteBook={handleDeleteBook}
+                borrowRequests={borrowRequests}
+                onUpdateBorrowStatus={handleUpdateBorrowStatus}
+                onDeleteBorrowRequest={handleDeleteBorrowRequest}
+                students={students}
+                onToggleStudentStatus={handleToggleStudentStatus}
+                onAddStudent={handleAddStudent}
+                onDeleteStudent={handleDeleteStudent}
+                adminEmails={adminEmails}
+                onGrantAdminRole={handleGrantAdminRole}
+                onToggleUserRole={handleToggleUserRole}
+              />
+            </Suspense>
           </main>
         )}
       </div>
@@ -1167,68 +1114,70 @@ const handleDeleteBook = async (bookId) => {
       {/* MODALS */}
       {showAuthModal && (
         <AuthModal
+          adminEmails={adminEmails}
           onClose={() => setShowAuthModal(false)}
-          onLoginSuccess={(usr, usrToken) => {
-            handleSetUser(usr, usrToken);
+          onLoginSuccess={(usr) => {
+            handleSetUser(usr);
             setShowAuthModal(false);
           }}
-          onRegisterSuccess={handleRegisterSuccess}
-          onAdminLoginSuccess={(adminUsr, adminToken) => {
-            handleSetUser(adminUsr, adminToken);
+          onAdminLoginSuccess={(adminUsr) => {
+            handleSetUser(adminUsr);
             setCurrentView('admin');
             setShowAuthModal(false);
           }}
         />
       )}
 
-      {selectedQuickSummaryBook && (
-        <BookDetailModal
-          book={selectedQuickSummaryBook}
-          onClose={() => setSelectedQuickSummaryBook(null)}
-          onOpenReader={(b) => setActiveReaderBook(b)}
-          onOpenSnippets={(b) => setActiveSnippetBook(b)}
-          onOpenBorrowModal={(b) => {
-            if (!user) setShowAuthModal(true);
-            else setActiveBorrowBook(b);
-          }}
-          initialTab="summary"
-          isBorrowed={borrowedBookIds.includes(selectedQuickSummaryBook.id)}
-          activeLoan={activeLoansByBookId[selectedQuickSummaryBook.id]}
-        />
-      )}
+      <Suspense fallback={null}>
+        {selectedQuickSummaryBook && (
+          <BookDetailModal
+            book={selectedQuickSummaryBook}
+            onClose={() => setSelectedQuickSummaryBook(null)}
+            onOpenReader={(b) => setActiveReaderBook(b)}
+            onOpenSnippets={(b) => setActiveSnippetBook(b)}
+            onOpenBorrowModal={(b) => {
+              if (!user) setShowAuthModal(true);
+              else setActiveBorrowBook(b);
+            }}
+            initialTab="summary"
+            isBorrowed={borrowedBookIds.includes(selectedQuickSummaryBook.id)}
+            activeLoan={activeLoansByBookId[selectedQuickSummaryBook.id]}
+          />
+        )}
 
-      {activeSnippetBook && (
-        <ChapterSnippetsModal
-          book={activeSnippetBook}
-          onClose={() => setActiveSnippetBook(null)}
-          onOpenBorrowModal={(b) => {
-            if (!user) setShowAuthModal(true);
-            else setActiveBorrowBook(b);
-          }}
-          onOpenReader={(b) => setActiveReaderBook(b)}
-          isBorrowed={borrowedBookIds.includes(activeSnippetBook.id)}
-          activeLoan={activeLoansByBookId[activeSnippetBook.id]}
-        />
-      )}
+        {activeSnippetBook && (
+          <ChapterSnippetsModal
+            book={activeSnippetBook}
+            onClose={() => setActiveSnippetBook(null)}
+            onOpenBorrowModal={(b) => {
+              if (!user) setShowAuthModal(true);
+              else setActiveBorrowBook(b);
+            }}
+            onOpenReader={(b) => setActiveReaderBook(b)}
+            isBorrowed={borrowedBookIds.includes(activeSnippetBook.id)}
+            activeLoan={activeLoansByBookId[activeSnippetBook.id]}
+          />
+        )}
 
-      {activeReaderBook && (
-        <PdfReaderModal
-          book={activeReaderBook}
-          onClose={() => setActiveReaderBook(null)}
-          userNotes={userNotes}
-          onAddNote={handleAddNote}
-          onDeleteNote={handleDeleteNote}
-          isBorrowed={borrowedBookIds.includes(activeReaderBook.id)}
-          hasPendingBorrowRequest={borrowRequests.some(
-            (r) => user && (r.studentId === user.id || r.studentEmail === user.email) && r.bookId === activeReaderBook.id && r.status === 'Pending'
-          )}
-          onOpenSnippets={(b) => setActiveSnippetBook(b)}
-          onOpenBorrowModal={(b) => {
-            if (!user) setShowAuthModal(true);
-            else setActiveBorrowBook(b);
-          }}
-        />
-      )}
+        {activeReaderBook && (
+          <PdfReaderModal
+            book={activeReaderBook}
+            onClose={() => setActiveReaderBook(null)}
+            userNotes={userNotes}
+            onAddNote={handleAddNote}
+            onDeleteNote={handleDeleteNote}
+            isBorrowed={borrowedBookIds.includes(activeReaderBook.id)}
+            hasPendingBorrowRequest={borrowRequests.some(
+              (r) => user && (r.studentId === user.id || r.studentEmail === user.email) && r.bookId === activeReaderBook.id && r.status === 'Pending'
+            )}
+            onOpenSnippets={(b) => setActiveSnippetBook(b)}
+            onOpenBorrowModal={(b) => {
+              if (!user) setShowAuthModal(true);
+              else setActiveBorrowBook(b);
+            }}
+          />
+        )}
+      </Suspense>
 
       {activeBorrowBook && (
         <BorrowModal

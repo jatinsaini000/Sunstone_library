@@ -32,23 +32,36 @@ export default function StudentProfile({
   }
 
   const savedBooks = allBooks.filter(b => savedBookIds.includes(b.id));
-  const myRequests = borrowRequests.filter(r => r.studentId === user.id || r.studentEmail === user.email);
-  const myNotes = userNotes.filter(n => n.studentId === user.id);
+  const currentUid = user.uid || user.id;
+  const myRequests = borrowRequests.filter(r => r.studentId === currentUid || r.studentEmail === user.email);
+  const myNotes = userNotes.filter(n => n.studentId === currentUid || n.studentEmail === user.email);
+
+  const avatarUrl = user.photoUrl || user.photoURL;
+  const displayName = user.displayName || user.name || (user.email ? user.email.split('@')[0] : 'Student');
 
   return (
     <div className="student-profile-wrap">
       {/* Student Banner Header Card */}
       <div className="student-banner-card">
         <div className="student-banner-info">
-          <div className="user-avatar-circle student-avatar-big">
-            {user.name ? user.name.charAt(0).toUpperCase() : 'S'}
-          </div>
+          {avatarUrl ? (
+            <img
+              src={avatarUrl}
+              alt={displayName}
+              className="user-avatar-circle student-avatar-big"
+              style={{ objectFit: 'cover' }}
+            />
+          ) : (
+            <div className="user-avatar-circle student-avatar-big">
+              {displayName.charAt(0).toUpperCase()}
+            </div>
+          )}
           <div className="student-details-box">
             <div className="student-name-row">
-              <h2 className="student-name-heading">{user.name}</h2>
+              <h2 className="student-name-heading">{displayName}</h2>
               <span className="student-badge-pill">
                 <GraduationCap size={13} color="var(--accent-sunstone-red)" />
-                <span>{user.program || 'B.Tech CS'}</span>
+                <span>{user.program || user.academic?.program || 'B.Tech & BCA'}</span>
               </span>
             </div>
             <p className="student-email-tag">

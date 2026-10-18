@@ -328,140 +328,7 @@ async function getLiveDb() {
 // --- API Router (Universal Mounting for Netlify & Express) ---
 const apiRouter = express.Router();
 
-/** POST /auth/login - Secure login with password verification, lockout protection & JWT token issue */
-apiRouter.post('/auth/login', rateLimiter({ windowMs: 60000, maxRequests: 30 }), async (req, res) => {
-  const { email, password } = req.body;
-  if (!email || !password) {
-    return res.status(400).json({ error: 'Email and password are required.' });
-  }
-
-  const cleanEmail = email.toLowerCase().trim();
-
-  // Check Account Lockout (5 failed attempts locks for 15 minutes)
-  const lockoutEntry = failedLoginMap.get(cleanEmail);
-  const now = Date.now();
-  if (lockoutEntry && lockoutEntry.attempts >= 5) {
-    if (now < lockoutEntry.lockoutUntil) {
-      const remainingMinutes = Math.ceil((lockoutEntry.lockoutUntil - now) / 60000);
-      return res.status(429).json({
-        error: `Account temporarily locked due to repeated failed login attempts. Please try again in ${remainingMinutes} minute(s).`
-      });
-    } else {
-      failedLoginMap.delete(cleanEmail);
-    }
-  }
-
-  const currentDb = await getLiveDb();
-
-  // Check Master Admin Account (requires ADMIN_EMAIL and ADMIN_PASSWORD to be configured;
-  // no hardcoded fallback credentials are accepted)
-  const isMasterAdmin =
-    Boolean(SECURE_ADMIN_EMAIL) &&
-    Boolean(SECURE_ADMIN_PASSWORD) &&
-    cleanEmail === SECURE_ADMIN_EMAIL &&
-    safeEqual(password, SECURE_ADMIN_PASSWORD);
-
-  if (isMasterAdmin) {
-    failedLoginMap.delete(cleanEmail);
-    const adminUser = {
-      id: 'usr_admin',
-      name: 'Prayas Lab Admin',
-      email: SECURE_ADMIN_EMAIL,
-      role: 'admin',
-      program: 'All Programs',
-      status: 'Active'
-    };
-    const token = generateJwt(adminUser);
-    return res.json({ token, user: adminUser });
-  }
-
-  // Check Registered Users
-  const user = currentDb.users.find(u => u && u.email && u.email.toLowerCase() === cleanEmail);
-  if (!user) {
-    const entry = failedLoginMap.get(cleanEmail) || { attempts: 0, lockoutUntil: 0 };
-    entry.attempts += 1;
-    if (entry.attempts >= 5) entry.lockoutUntil = now + 15 * 60 * 1000;
-    failedLoginMap.set(cleanEmail, entry);
-    return res.status(401).json({ error: 'Invalid email or password.' });
-  }
-
-  if (user.status !== 'Active') {
-    return res.status(403).json({ error: 'Your account has been suspended by library administration.' });
-  }
-
-  // Verify Password Hash
-  let isPasswordValid = false;
-  if (user.salt && user.passwordHash) {
-    isPasswordValid = verifyPassword(password, user.salt, user.passwordHash);
-  } else if (user.password === password) {
-    isPasswordValid = true;
-    const { salt, hash } = hashPassword(password);
-    user.salt = salt;
-    user.passwordHash = hash;
-    delete user.password;
-    saveLocalData(currentDb);
-    putToFirebase(`users/${user.id}`, user);
-  }
-
-  if (!isPasswordValid) {
-    const entry = failedLoginMap.get(cleanEmail) || { attempts: 0, lockoutUntil: 0 };
-    entry.attempts += 1;
-    if (entry.attempts >= 5) entry.lockoutUntil = now + 15 * 60 * 1000;
-    failedLoginMap.set(cleanEmail, entry);
-    return res.status(401).json({ error: 'Invalid email or password.' });
-  }
-
-  // Reset failed login attempts on successful login
-  failedLoginMap.delete(cleanEmail);
-
-  const safeUser = sanitizeUser(user);
-  const token = generateJwt(safeUser);
-  res.json({ token, user: safeUser });
-});
-
-/** POST /auth/register - Secure student registration with password hashing & complexity enforcement */
-apiRouter.post('/auth/register', rateLimiter({ windowMs: 60000, maxRequests: 20 }), async (req, res) => {
-  const { name, email, password, program } = req.body;
-  if (!name || !email || !password) {
-    return res.status(400).json({ error: 'Name, email, and password are required.' });
-  }
-
-  if (password.length < 4) {
-    return res.status(400).json({ error: 'Password must be at least 4 characters long.' });
-  }
-
-  const cleanEmail = email.toLowerCase().trim();
-  const currentDb = await getLiveDb();
-
-  if (currentDb.users.some(u => u && u.email && u.email.toLowerCase() === cleanEmail)) {
-    return res.status(400).json({ error: 'An account with this email address already exists.' });
-  }
-
-  const { salt, hash } = hashPassword(password);
-  const userId = 'usr_' + Date.now();
-
-  const newUser = {
-    id: userId,
-    name: sanitizeInput(name),
-    email: cleanEmail,
-    salt,
-    passwordHash: hash,
-    role: 'student',
-    program: sanitizeInput(program) || 'B.Tech CS',
-    status: 'Active',
-    createdAt: new Date().toISOString()
-  };
-
-  currentDb.users.push(newUser);
-  saveLocalData(currentDb);
-  putToFirebase(`users/${userId}`, newUser);
-
-  const safeUser = sanitizeUser(newUser);
-  const token = generateJwt(safeUser);
-  res.json({ token, user: safeUser });
-});
-
-/** POST /auth/google - Secure Google Sign-In with Role Auto-Detection */
+/** POST /auth/google - Direct Google Sign-In with Role Auto-Detection */
 apiRouter.post('/auth/google', rateLimiter({ windowMs: 60000, maxRequests: 30 }), async (req, res) => {
   const { email, name, googleId, photoUrl, program } = req.body;
   if (!email) {
@@ -481,17 +348,21 @@ apiRouter.post('/auth/google', rateLimiter({ windowMs: 60000, maxRequests: 30 })
     if (user.status !== 'Active') {
       return res.status(403).json({ error: 'Your account has been suspended by library administration.' });
     }
-    if (googleId && !user.googleId) user.googleId = googleId;
-    if (photoUrl && !user.photoUrl) user.photoUrl = photoUrl;
+    if (googleId) {
+      user.uid = googleId;
+      user.id = googleId;
+    }
+    if (photoUrl) user.photoUrl = photoUrl;
     if (isConfiguredAdmin && user.role !== 'admin') {
       user.role = 'admin';
     }
     saveLocalData(currentDb);
     putToFirebase(`users/${user.id}`, user);
   } else {
-    const userId = 'usr_' + Date.now();
+    const userId = googleId || ('usr_' + Date.now());
     user = {
       id: userId,
+      uid: userId,
       name: sanitizeInput(name) || cleanEmail.split('@')[0],
       email: cleanEmail,
       googleId: googleId || null,

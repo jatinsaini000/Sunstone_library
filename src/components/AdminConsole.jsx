@@ -30,7 +30,7 @@ import {
   User as UserIcon
 } from 'lucide-react';
 import { convertGoogleDriveUrl, convertGoogleDriveImageUrl, PRAYAS_DRIVE_FOLDER_URL } from '../googleDriveHelper.js';
-import { signInWithGooglePopup } from '../firebase.js';
+import { signInWithGooglePopup, syncGoogleUser, uploadBookPdfToStorage } from '../firebase.js';
 
 export default function AdminConsole({
   user,
@@ -78,6 +78,9 @@ export default function AdminConsole({
   const [takeawaysText, setTakeawaysText] = useState('');
   const [chapterSnippetsText, setChapterSnippetsText] = useState('');
   const [uploadSuccessMsg, setUploadSuccessMsg] = useState('');
+  const [uploadProgress, setUploadProgress] = useState(0);
+  const [isUploading, setIsUploading] = useState(false);
+  const [uploadError, setUploadError] = useState('');
 
   // Edit Book Modal State
   const [editingBook, setEditingBook] = useState(null);
@@ -111,35 +114,15 @@ export default function AdminConsole({
         }
         throw new Error(res.error || 'Google Sign-In failed.');
       }
-      const { email: gEmail, displayName: gName, photoURL: gPhoto, uid: gUid } = res.user;
-      const cleanEmail = gEmail.toLowerCase().trim();
 
-      const serverRes = await fetch('/api/auth/google', {
-        method: 'POST',
-        headers: { 'Content-Type': 'application/json' },
-        body: JSON.stringify({
-          email: cleanEmail,
-          name: gName || cleanEmail.split('@')[0],
-          photoUrl: gPhoto,
-          googleId: gUid,
-          program: 'All Programs'
-        })
-      });
+      const cleanUser = await syncGoogleUser(res.user, adminEmails);
+      onAdminLogin(cleanUser);
 
-      if (serverRes.ok) {
-        const data = await serverRes.json().catch(() => ({}));
-        if (data.user) {
-          onAdminLogin(data.user, data.token);
-          if (data.user.role === 'admin') {
-            setLoginError('');
-            return;
-          } else {
-            setLoginError(`Signed in as ${cleanEmail}. This Google account is currently registered as Student. Ask an existing administrator to grant admin rights to your email.`);
-            return;
-          }
-        }
+      if (cleanUser.role === 'admin') {
+        setLoginError('');
+      } else {
+        setLoginError(`Signed in as ${cleanUser.email}. This account has a Student role. Ask an existing administrator to grant admin rights to your email.`);
       }
-      setLoginError('Could not verify administrator credentials with the server.');
     } catch (err) {
       setLoginError(err.message || 'Google Sign-In failed. Please try again.');
     } finally {
@@ -154,6 +137,12 @@ export default function AdminConsole({
     setGrantErrorMsg('');
     setGrantSuccessMsg('');
 
+    const emailRegex = /^[a-zA-Z0-9._%+-]+@[a-zA-Z0-9.-]+\.[a-zA-Z]{2,}$/;
+    if (!emailRegex.test(targetEmail)) {
+      setGrantErrorMsg('Invalid email address format. Please enter a valid institutional/Google email.');
+      return;
+    }
+
     try {
       if (onGrantAdminRole) {
         await onGrantAdminRole(targetEmail, 'admin');
@@ -166,50 +155,90 @@ export default function AdminConsole({
     }
   };
 
+  const handlePdfFileChange = (e) => {
+    const file = e.target.files[0];
+    setUploadError('');
+    if (!file) {
+      setPdfFile(null);
+      return;
+    }
+    if (file.type && file.type !== 'application/pdf' && !file.name.toLowerCase().endsWith('.pdf')) {
+      setUploadError('Invalid file type: Only PDF documents (.pdf) can be uploaded.');
+      e.target.value = '';
+      setPdfFile(null);
+      return;
+    }
+    if (file.size > 30 * 1024 * 1024) {
+      setUploadError(`File is too large (${(file.size / (1024 * 1024)).toFixed(1)} MB). Maximum allowed size is 30 MB.`);
+      e.target.value = '';
+      setPdfFile(null);
+      return;
+    }
+    setPdfFile(file);
+  };
+
   const handleCreateBookSubmit = async (e) => {
     e.preventDefault();
+    setUploadError('');
     if (!title.trim() || !author.trim()) {
-      alert('Please provide book title and author name.');
+      setUploadError('Please provide book title and author name.');
       return;
     }
 
-    const finalUploadedPdfUrl = convertGoogleDriveUrl(pdfUrl);
+    setIsUploading(true);
+    setUploadProgress(1);
 
-    const formData = new FormData();
-    formData.append('title', title.trim());
-    formData.append('author', author.trim());
-    formData.append('program', program);
-    formData.append('category', category);
-    formData.append('fileType', uploadMode);
-    formData.append('description', description);
-    formData.append('highlights', highlightsText);
-    formData.append('keyTakeaways', takeawaysText);
-    formData.append('chapterSnippets', chapterSnippetsText);
-    formData.append('downloadable', 'true');
+    try {
+      let finalPdfUrl = '';
+      if (uploadMode === 'file') {
+        if (!pdfFile) {
+          throw new Error('Please select a PDF file from your device.');
+        }
+        if (pdfFile.size > 30 * 1024 * 1024) {
+          throw new Error('File exceeds the 30 MB size limit.');
+        }
+        finalPdfUrl = await uploadBookPdfToStorage(pdfFile, (p) => setUploadProgress(p));
+      } else {
+        finalPdfUrl = convertGoogleDriveUrl(pdfUrl) || 'https://raw.githubusercontent.com/mozilla/pdf.js/ba2edeae/web/compressed.tracemonkey-pldi-09.pdf';
+      }
 
-    if (uploadMode === 'file' && pdfFile) {
-      formData.append('pdfFile', pdfFile);
-    } else {
-      formData.append('pdfUrl', finalUploadedPdfUrl || 'https://raw.githubusercontent.com/mozilla/pdf.js/ba2edeae/web/compressed.tracemonkey-pldi-09.pdf');
+      const formData = new FormData();
+      formData.append('title', title.trim());
+      formData.append('author', author.trim());
+      formData.append('program', program);
+      formData.append('category', category);
+      formData.append('fileType', uploadMode);
+      formData.append('description', description);
+      formData.append('highlights', highlightsText);
+      formData.append('keyTakeaways', takeawaysText);
+      formData.append('chapterSnippets', chapterSnippetsText);
+      formData.append('downloadable', 'true');
+      formData.append('pdfUrl', finalPdfUrl);
+
+      if (coverUrl) {
+        formData.append('coverUrl', convertGoogleDriveImageUrl(coverUrl));
+      }
+
+      await onUploadBook(formData);
+
+      setUploadSuccessMsg(`Book "${title}" published successfully to Sunstone Library!`);
+      setTitle('');
+      setAuthor('');
+      setPdfFile(null);
+      setPdfUrl('');
+      setCoverUrl('');
+      setDescription('');
+      setHighlightsText('');
+      setTakeawaysText('');
+      setChapterSnippetsText('');
+      setTimeout(() => setUploadSuccessMsg(''), 4000);
+    } catch (err) {
+      console.error('Book publish error:', err);
+      setUploadError(err.message || 'Failed to upload and publish book.');
+    } finally {
+      setIsUploading(false);
+      setUploadProgress(0);
     }
-
-    if (coverUrl) {
-      formData.append('coverUrl', convertGoogleDriveImageUrl(coverUrl));
-    }
-
-    await onUploadBook(formData);
-
-    setUploadSuccessMsg(`Book "${title}" published successfully to Sunstone Library!`);
-    setTitle('');
-    setAuthor('');
-    setPdfFile(null);
-    setPdfUrl('');
-    setCoverUrl('');
-    setDescription('');
-    setHighlightsText('');
-    setTakeawaysText('');
-    setChapterSnippetsText('');
-    setTimeout(() => setUploadSuccessMsg(''), 4000);
   };
 
   const handleSaveEditedBook = async (e) => {
@@ -237,11 +266,19 @@ export default function AdminConsole({
       return;
     }
 
+    const cleanEmail = newStudentEmail.trim().toLowerCase();
+    const emailRegex = /^[a-zA-Z0-9._%+-]+@[a-zA-Z0-9.-]+\.[a-zA-Z]{2,}$/;
+    if (!emailRegex.test(cleanEmail)) {
+      alert('Invalid email address format.');
+      return;
+    }
+
     if (onAddStudent) {
       await onAddStudent({
         id: 'usr_' + Date.now(),
         name: newStudentName.trim(),
-        email: newStudentEmail.trim().toLowerCase(),
+        displayName: newStudentName.trim(),
+        email: cleanEmail,
         program: newStudentProgram,
         role: 'student',
         status: 'Active',
@@ -868,12 +905,18 @@ export default function AdminConsole({
               </div>
 
               {uploadMode === 'file' ? (
-                <input
-                  type="file"
-                  accept="application/pdf"
-                  className="form-control"
-                  onChange={(e) => setPdfFile(e.target.files[0] || null)}
-                />
+                <div>
+                  <input
+                    type="file"
+                    accept="application/pdf"
+                    className="form-control"
+                    onChange={handlePdfFileChange}
+                    disabled={isUploading}
+                  />
+                  <div style={{ fontSize: '11px', color: 'var(--sunstone-text-muted)', marginTop: '4px' }}>
+                    Accepted format: PDF only. Maximum file size: 30 MB. Cloud-hosted on Firebase Storage.
+                  </div>
+                </div>
               ) : (
                 <input
                   type="url"
@@ -881,9 +924,35 @@ export default function AdminConsole({
                   placeholder="Paste Google Drive shareable link or raw PDF URL"
                   value={pdfUrl}
                   onChange={(e) => setPdfUrl(e.target.value)}
+                  disabled={isUploading}
                 />
               )}
             </div>
+
+            {uploadError && (
+              <div style={{
+                background: 'rgba(239, 68, 68, 0.1)',
+                border: '1px solid rgba(239, 68, 68, 0.3)',
+                color: '#dc2626',
+                padding: '10px 14px',
+                borderRadius: '8px',
+                fontSize: '12px'
+              }}>
+                {uploadError}
+              </div>
+            )}
+
+            {isUploading && (
+              <div style={{ background: 'var(--sunstone-hover-bg)', padding: '14px', borderRadius: '10px', border: '1px solid var(--sunstone-border)' }}>
+                <div style={{ display: 'flex', justifyContent: 'space-between', fontSize: '12px', fontWeight: '700', marginBottom: '6px' }}>
+                  <span>Uploading to Firebase Cloud Storage...</span>
+                  <span>{uploadProgress}%</span>
+                </div>
+                <div style={{ width: '100%', height: '8px', background: 'var(--sunstone-border)', borderRadius: '4px', overflow: 'hidden' }}>
+                  <div style={{ width: `${uploadProgress}%`, height: '100%', background: 'var(--accent-blue)', transition: 'width 0.2s ease' }} />
+                </div>
+              </div>
+            )}
 
             <div className="form-group">
               <label className="form-label">Cover Image URL (Optional - Google Drive or Web Image)</label>
@@ -893,6 +962,7 @@ export default function AdminConsole({
                 placeholder="https://drive.google.com/file/d/.../view or image URL"
                 value={coverUrl}
                 onChange={(e) => setCoverUrl(e.target.value)}
+                disabled={isUploading}
               />
             </div>
 
@@ -904,15 +974,31 @@ export default function AdminConsole({
                 placeholder="Brief summary of syllabus coverage, core competencies, and textbook audience..."
                 value={description}
                 onChange={(e) => setDescription(e.target.value)}
+                disabled={isUploading}
               />
             </div>
 
             <button
               type="submit"
               className="btn-primary"
-              style={{ padding: '12px 24px', alignSelf: 'flex-start', background: 'var(--sunstone-navy-dark)' }}
+              disabled={isUploading}
+              style={{
+                padding: '12px 24px',
+                alignSelf: 'flex-start',
+                background: 'var(--sunstone-navy-dark)',
+                cursor: isUploading ? 'wait' : 'pointer',
+                opacity: isUploading ? 0.7 : 1
+              }}
             >
-              <Upload size={16} /> Publish to Sunstone Library
+              {isUploading ? (
+                <>
+                  <Loader2 size={16} className="animate-spin" /> Uploading PDF ({uploadProgress}%)...
+                </>
+              ) : (
+                <>
+                  <Upload size={16} /> Publish to Sunstone Library
+                </>
+              )}
             </button>
           </form>
         </div>
@@ -1260,23 +1346,26 @@ export default function AdminConsole({
                       const userReqs = (borrowRequests || []).filter(
                         (r) => r && (
                           (u.id && r.studentId === u.id) ||
+                          (u.uid && r.studentId === u.uid) ||
                           (u.email && r.studentEmail && r.studentEmail.toLowerCase() === u.email.toLowerCase())
                         )
                       );
                       const userActiveLoans = userReqs.filter((r) => r.status === 'Approved');
                       const userPendingReqs = userReqs.filter((r) => r.status === 'Pending');
                       const isUserAdmin = u.role === 'admin';
-                      const isSelf = user && user.id === u.id;
+                      const isSelf = user && (user.id === u.id || user.uid === u.uid || user.email === u.email);
+                      const userDisplayName = u.displayName || u.name || (u.email ? u.email.split('@')[0] : 'User');
+                      const userAvatar = u.photoUrl || u.photoURL;
 
                       return (
-                        <tr key={u.id} style={{ borderBottom: '1px solid var(--sunstone-border)' }}>
+                        <tr key={u.uid || u.id} style={{ borderBottom: '1px solid var(--sunstone-border)' }}>
                           {/* User Column */}
                           <td style={{ padding: '12px 10px' }}>
                             <div style={{ display: 'flex', alignItems: 'center', gap: '10px' }}>
-                              {u.photoUrl ? (
+                              {userAvatar ? (
                                 <img
-                                  src={u.photoUrl}
-                                  alt={u.name}
+                                  src={userAvatar}
+                                  alt={userDisplayName}
                                   style={{ width: '34px', height: '34px', borderRadius: '50%', objectFit: 'cover' }}
                                 />
                               ) : (
@@ -1292,12 +1381,12 @@ export default function AdminConsole({
                                   fontWeight: '800',
                                   fontSize: '13px'
                                 }}>
-                                  {u.name ? u.name.charAt(0).toUpperCase() : 'U'}
+                                  {userDisplayName.charAt(0).toUpperCase()}
                                 </div>
                               )}
                               <div>
                                 <div style={{ fontWeight: '700', color: 'var(--sunstone-text-primary)' }}>
-                                  {u.name} {isSelf && <span style={{ fontSize: '11px', color: 'var(--accent-blue)' }}>(You)</span>}
+                                  {userDisplayName} {isSelf && <span style={{ fontSize: '11px', color: 'var(--accent-blue)' }}>(You)</span>}
                                 </div>
                                 <div style={{ fontSize: '11px', color: 'var(--sunstone-text-muted)' }}>
                                   {u.email}
